@@ -1,0 +1,27 @@
+[submodule "msys2-doc"]
+	path = msys2-doc
+	url = git@github.com:msys2/msys2.github.io.git
+[submodule "MINGW-packages"]
+	path = MINGW-packages
+	url = git@github.com:msys2/MINGW-packages.git
+[submodule "msys2-packages"]
+	path = msys2-packages
+	url = git@github.com:msys2/msys2-packages.git
+[submodule "setup-msys2"]
+	path = setup-msys2
+	url = git@github.com:msys2/setup-msys2.git
+[submodule "cygwin"]
+	path = cygwin
+	url = git@github.com:msys2/cygwin.git
+[submodule "msys2-installer"]
+	path = msys2-installer
+	url = git@github.com:msys2/msys2-installer.git
+[submodule "msys2-web"]
+	path = msys2-web
+	url = git@github.com:msys2/msys2-web.git
+[submodule "msys2-launcher"]
+	path = msys2-launcher
+	url = git@github.com:msys2/msys2-launcher.git
+[submodule "msys2"]
+	path = msys2
+	url = git@github.com:msys2/msys2.git
