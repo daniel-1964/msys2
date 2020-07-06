@@ -1,0 +1,27 @@
+diff -pur libid3tag-0.15.1b~/compat.h libid3tag-0.15.1b/compat.h
+--- libid3tag-0.15.1b~/compat.h	2004-01-23 10:41:32.000000000 +0100
++++ libid3tag-0.15.1b/compat.h	2020-06-29 21:12:41.969795600 +0200
+@@ -33,8 +33,8 @@ struct id3_compat {
+   id3_compat_func_t *translate;
+ };
+ 
+-struct id3_compat const *id3_compat_lookup(register char const *,
+-					   register unsigned int);
++const struct id3_compat *id3_compat_lookup(register const char *,
++					   register size_t);
+ 
+ int id3_compat_fixup(struct id3_tag *);
+ 
+diff -pur libid3tag-0.15.1b~/frametype.h libid3tag-0.15.1b/frametype.h
+--- libid3tag-0.15.1b~/frametype.h	2004-01-23 10:41:32.000000000 +0100
++++ libid3tag-0.15.1b/frametype.h	2020-06-29 21:10:16.066415000 +0200
+@@ -36,7 +36,7 @@ extern struct id3_frametype const id3_fr
+ extern struct id3_frametype const id3_frametype_unknown;
+ extern struct id3_frametype const id3_frametype_obsolete;
+ 
+-struct id3_frametype const *id3_frametype_lookup(register char const *,
+-						 register unsigned int);
++const struct id3_frametype *id3_frametype_lookup(register const char *,
++						 register size_t);
+ 
+ # endif
