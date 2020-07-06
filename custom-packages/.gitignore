@@ -1,0 +1,8 @@
+*.bz2
+*.gz
+*.sig
+*.tgz
+*.xz
+*.zip
+*.zst
+*~
