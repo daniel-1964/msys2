@@ -1,0 +1,62 @@
+# Maintainer: David Runge <dave@sleepmap.de>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Vincent Cappe <vcappe at gmail dot com>
+# Contributor: Jeff Bailes <thepizzaking at gmail dot com>
+# Contributor: SpepS <dreamspepser at yahoo dot it>
+
+_realname=liboggz
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.1.1
+pkgrel=6
+pkgdesc="A simple programming interface for reading and writing Ogg files and streams"
+arch=('any')
+url="https://www.xiph.org/oggz/"
+license=('BSD')
+depends=('bash'
+         "${MINGW_PACKAGE_PREFIX}-libogg")
+makedepends=('doxygen')
+source=("https://downloads.xiph.org/releases/${_realname}/${_realname}-${pkgver}.tar.gz"
+        "autoreconf.patch"
+        "man-page-typos.patch"
+        "Makefile.am.patch")
+sha512sums=('8f5fc8ca49cb6f7a1160a9c1932876b771d55985d59ddc1f48497dfc08641414a58244d7a7e52bfcecdb69f52913d0123efd8f92513f8b9064e4abe1442f2cba'
+            '78b22fecc64980f55ab8fc2d2855304d5561b4fe49950782eb99c15f15463af1e48b7294bd4db65c712abd8c8992a34800a7a28f10ced79f82afdcbe1b911c21'
+            '289e0f9e28f3480b5b081d1d95c4a4dd2e06ce33d7cb82441caec2920c30d050dafd1a35bce75062c51017fa23874db4838c103bb4866387597b44710de0a820'
+            '1ea8581908cd4abaebaa975a0fb36d4c2df08a230e7c2665e31167ab7a3fa3d84cda88d4ed6f8a014bc7184c8ef4fd4b513a67c28cad420181059e10e1eca3d4')
+
+prepare() {
+    cd ${srcdir}/${_realname}-${pkgver}
+
+    patch -Np1 -i "${srcdir}/autoreconf.patch"
+    patch -Np1 -i "${srcdir}/man-page-typos.patch"
+    patch -Np1 -i "${srcdir}/Makefile.am.patch"
+    autoreconf -fiv -I m4
+}
+
+build() {
+  mkdir -p $srcdir/build-${MINGW_CHOST} && cd $srcdir/build-${MINGW_CHOST}
+
+  ../${_realname}-${pkgver}/configure  \
+    --prefix=${MINGW_PREFIX} \
+    --build=${MINGW_CHOST} \
+    --host=${MINGW_CHOST} \
+    --sysconfdir=${MINGW_PREFIX}/etc \
+    --enable-static \
+    --enable-shared 
+  make
+}
+
+package() {
+  cd "${srcdir}/build-${MINGW_CHOST}"
+
+  make DESTDIR="${pkgdir}" install
+  # license
+  install -D -m644 ${srcdir}/${_realname}-${pkgver}/COPYING "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+  # bash completion
+  install -vDm 644 ${srcdir}/${_realname}-${pkgver}/bash-completion/oggz \
+    -t "${pkgdir}/usr/share/bash-completion/completions/"
+  # docs
+  install -vDm 644 ${srcdir}/${_realname}-${pkgver}/{AUTHORS,ChangeLog,NEWS,README,TODO} \
+    -t "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+}
