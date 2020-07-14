@@ -1,0 +1,62 @@
+# Maintainer: Michał Górny <zrchos+arch@gmail.com>
+# Contributor: Brandon Invergo <brandon@invergo.net>
+# Contributor: juergen <juergen@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=gcal
+pkgver=4.1
+pkgrel=2
+pkgdesc="Display hybrid and proleptic Julian and Gregorian calendar sheets"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/gcal/"
+license=('GPL')
+depends=('perl')
+makedepends=('gettext-devel')
+install=gcal.install
+source=(ftp://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.xz
+        gcal.1.patch
+        gcal2txt.1.patch
+        tcal.1.patch
+        txt2gcal.1.patch
+        https://src.fedoraproject.org/rpms/gcal/raw/master/f/gcal-glibc-no-libio.patch)
+md5sums=('7560189fc2393fddc920c5843b27d295'
+         '8ee1c2e81328928757586d882dbd297a'
+         '81f5a161307d00f0347d34aab07090e0'
+         '14f0f6a3bc5fb9639b20bac52162ec1b'
+         '71a7b500a16a364195ad0391d4f50fd1'
+         'a04608e34328e54e7c408a57240abfb1')
+
+prepare() {
+  cd $srcdir/$pkgname-$pkgver
+  patch -Np0 -i "${srcdir}/gcal.1.patch"
+  patch -Np0 -i "${srcdir}/gcal2txt.1.patch"
+  patch -Np0 -i "${srcdir}/tcal.1.patch"
+  patch -Np0 -i "${srcdir}/txt2gcal.1.patch"
+  patch -Np1 -i "${srcdir}/gcal-glibc-no-libio.patch"
+}
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+  ./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info
+  make || return 1
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+  make DESTDIR="$pkgdir/" install
+  mkdir -p "$pkgdir/usr/share/man/man1"
+  cp -p "$srcdir/$pkgname-$pkgver/doc/en/man"/*.1 "$pkgdir/usr/share/man/man1"
+  mkdir -p ${pkgdir}/usr/share/doc/${pkgname}/misc
+  cp -pr $srcdir/$pkgname-$pkgver/misc/* ${pkgdir}/usr/share/doc/${pkgname}/misc
+  rm -f ${pkgdir}/usr/share/doc/${pkgname}/misc/Makefile
+  mkdir -p ${pkgdir}/usr/share/doc/${pkgname}/samples
+  cp -pr $srcdir/$pkgname-$pkgver/doc/en/examples/*.{rc,sh} ${pkgdir}/usr/share/doc/${pkgname}/samples
+  cp -p $srcdir/$pkgname-$pkgver/doc/GREG-REFORM ${pkgdir}/usr/share/doc/${pkgname}/
+  find  ${pkgdir}/usr/share -name '*.in' -delete
+  find  ${pkgdir}/usr/share -name '*.am' -delete
+  #find  ${pkgdir}/usr/share/doc/${pkgname} -name '*.bat' -delete
+  sed -i -e "s,../../src,/usr/bin," ${pkgdir}/usr/share/doc/${pkgname}/misc/*/*
+  sed -i -e "s,../../../src,/usr/bin," ${pkgdir}/usr/share/doc/${pkgname}/samples/*
+  install -vDm 644 ${srcdir}/${pkgname}-${pkgver}/{AUTHORS,BUGS,COPYING,NEWS,README,THANKS,TODO} \
+    -t "${pkgdir}/usr/share/doc/${pkgname}"
+}
