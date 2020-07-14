@@ -1,0 +1,27 @@
+pkgname=winver
+pkgver=1.0.4
+pkgrel=1
+pkgdesc="Display detailled Windows Version"
+arch=('any')
+url="https://github.com/daniel-1964/msys2/"
+license=('BSD')
+source=()
+#sha512sums=('skip')
+
+prepare()
+{
+    cd $srcdir
+    cp -pr ../${pkgname} .
+}
+
+build()
+{
+    cd ${srcdir}/${pkgname}
+    make PREFIX=/usr
+}
+
+package()
+{
+    cd ${srcdir}/${pkgname}
+    make install PREFIX=/usr DESTDIR=${pkgdir}
+}
