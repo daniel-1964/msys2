@@ -1,0 +1,23 @@
+post_install() {
+  # FS#49938: A bunch of compatibility symlinks
+  cd "/usr/share/unicode"
+  ln -s ../unicode ucd
+  cd ..
+  for _f in unicode-character-database unicode-data unidata; do
+    ln -s unicode "$_f"
+  done
+}
+
+post_upgrade() {
+  post_install $1
+}
+
+pre_remove() {
+  # FS#49938: A bunch of compatibility symlinks
+  cd "/usr/share/unicode"
+  unlink ucd
+  cd ..
+  for _f in unicode-character-database unicode-data unidata; do
+    unlink "$_f"
+  done
+}
