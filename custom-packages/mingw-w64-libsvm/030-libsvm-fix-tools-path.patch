@@ -1,0 +1,51 @@
+diff -puar libsvm-324.orig/tools/easy.py libsvm-324/tools/easy.py
+--- libsvm-324.orig/tools/easy.py	2019-09-10 21:05:26.000000000 +0200
++++ libsvm-324/tools/easy.py	2020-07-19 10:39:25.706039000 +0200
+@@ -12,18 +12,18 @@ if len(sys.argv) <= 1:
+ 
+ is_win32 = (sys.platform == 'win32')
+ if not is_win32:
+-	svmscale_exe = "../svm-scale"
+-	svmtrain_exe = "../svm-train"
+-	svmpredict_exe = "../svm-predict"
+-	grid_py = "./grid.py"
++	svmscale_exe = "/usr/bin/svm-scale"
++	svmtrain_exe = "/usr/bin/svm-train"
++	svmpredict_exe = "/usr/bin/svm-predict"
++	grid_py = "/usr/bin/svm-grid.py"
+ 	gnuplot_exe = "/usr/bin/gnuplot"
+ else:
+         # example for windows
+-	svmscale_exe = r"..\windows\svm-scale.exe"
+-	svmtrain_exe = r"..\windows\svm-train.exe"
+-	svmpredict_exe = r"..\windows\svm-predict.exe"
+-	gnuplot_exe = r"c:\tmp\gnuplot\binary\pgnuplot.exe"
+-	grid_py = r".\grid.py"
++	svmscale_exe = os.environ.get("MINGW_PREFIX", "/usr") + "/bin/svm-scale.exe"
++	svmtrain_exe = os.environ.get("MINGW_PREFIX", "/usr") + "/bin/svm-train.exe"
++	svmpredict_exe = os.environ.get("MINGW_PREFIX", "/usr") + "/bin/svm-predict.exe"
++	gnuplot_exe = os.environ.get("MINGW_PREFIX", "/usr") + "/bin/gnuplot.exe"
++	grid_py = os.environ.get("MINGW_PREFIX", "/usr") + "/bin/grid.py"
+ 
+ assert os.path.exists(svmscale_exe),"svm-scale executable not found"
+ assert os.path.exists(svmtrain_exe),"svm-train executable not found"
+diff -puar libsvm-324.orig/tools/grid.py libsvm-324/tools/grid.py
+--- libsvm-324.orig/tools/grid.py	2019-09-10 21:05:26.000000000 +0200
++++ libsvm-324/tools/grid.py	2020-07-19 10:42:56.359821100 +0200
+@@ -18,13 +18,13 @@ class GridOption:
+ 	def __init__(self, dataset_pathname, options):
+ 		dirname = os.path.dirname(__file__)
+ 		if sys.platform != 'win32':
+-			self.svmtrain_pathname = os.path.join(dirname, '../svm-train')
++			self.svmtrain_pathname = '/usr/bin/svm-train'
+ 			self.gnuplot_pathname = '/usr/bin/gnuplot'
+ 		else:
+ 			# example for windows
+-			self.svmtrain_pathname = os.path.join(dirname, r'..\windows\svm-train.exe')
++			self.svmtrain_pathname = os.environ.get("MINGW_PREFIX", "/usr") + '/bin/svm-train.exe'
+ 			# svmtrain_pathname = r'c:\Program Files\libsvm\windows\svm-train.exe'
+-			self.gnuplot_pathname = r'c:\tmp\gnuplot\binary\pgnuplot.exe'
++			self.gnuplot_pathname = os.environ.get("MINGW_PREFIX", "/usr") + '/bin/gnuplot.exe'
+ 		self.fold = 5
+ 		self.c_begin, self.c_end, self.c_step = -5,  15,  2
+ 		self.g_begin, self.g_end, self.g_step =  3, -15, -2

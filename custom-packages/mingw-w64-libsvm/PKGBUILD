@@ -1,0 +1,81 @@
+# Maintainer : Daniel Bermond <dbermond@archlinux.org>
+# Contributor: saxonbeta <saxonbeta at gmail>
+# Contributor: Pierre Gueth <pierre.gueth at gmail>
+# Contributor: Daniel YC Lin <dlin.tw at gmail>
+# Contributor: Tim Huetz <tim at huetz biz>
+
+_realname=libsvm
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=3.24
+_srcver="${pkgver/./}"
+pkgrel=2
+pkgdesc='A library for Support Vector Machines classification (includes binaries and bindings for python and java)'
+arch=('any')
+url='https://www.csie.ntu.edu.tw/~cjlin/libsvm/'
+license=('BSD')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=("${MINGW_PACKAGE_PREFIX}-qt5"
+             "${MINGW_PACKAGE_PREFIX}-python")
+optdepends=("${MINGW_PACKAGE_PREFIX}-qt5: for Qt5 interface with svm-toy"
+            "${MINGW_PACKAGE_PREFIX}-python: for python modules and python CLI tools"
+            "${MINGW_PACKAGE_PREFIX}-gnuplot: for using svm-easy.py")
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/cjlin1/libsvm/archive/v${_srcver}.tar.gz"
+        '020-libsvm-use-mingw-flags.patch'
+        '030-libsvm-fix-tools-path.patch')
+sha256sums=('3ba1ac74ee08c4dd57d3a9e4a861ffb57dab88c6a33fd53eac472fc84fbb2a8f'
+            'dc1076d37278644c9fccf30e0013b5a1f49d0a4d7079965f457170ba239f24ca'
+            '9b13557d0d2c60f4c46ba9cc7ee649eb08b72fbce30dd56c7d448a94b2545a88')
+
+prepare() {
+    patch -d "${_realname}-${_srcver}" -Np1 -i "${srcdir}/020-libsvm-use-mingw-flags.patch"
+    patch -d "${_realname}-${_srcver}" -Np1 -i "${srcdir}/030-libsvm-fix-tools-path.patch"
+}
+
+build() {
+  mkdir -p $srcdir/build-${MINGW_CHOST} && cd $srcdir/build-${MINGW_CHOST}
+  cp -a "${srcdir}/${_realname}-${_srcver}" .
+  cd "${_realname}-${_srcver}"
+  printf '%s\n' '  -> Building library and CLI binaries...'
+  make lib
+  make all
+  printf '%s\n' '  -> Building Qt5 interface...'
+  make -C svm-toy/qt
+}
+
+package() {
+  cd $srcdir/build-${MINGW_CHOST}/${_realname}-${_srcver}
+  local _pyver
+  local _sover
+  _pyver="$(python -c 'import sys; print("%s.%s" %sys.version_info[0:2])')"
+  _sover=2
+  # binaries
+  install -D -m755 svm-predict        -t "${pkgdir}${MINGW_PREFIX}/bin"
+  install -D -m755 svm-scale          -t "${pkgdir}${MINGW_PREFIX}/bin"
+  install -D -m755 svm-train          -t "${pkgdir}${MINGW_PREFIX}/bin"
+  install -D -m755 svm-toy/qt/svm-toy -t "${pkgdir}${MINGW_PREFIX}/bin"
+  # library
+  install -D -m755 "libsvm-${_sover}.dll" -t "${pkgdir}${MINGW_PREFIX}/bin"
+  install -D -m755 "libsvm.dll.a" -t "${pkgdir}${MINGW_PREFIX}/lib"
+  # header
+  install -D -m644 svm.h -t "${pkgdir}${MINGW_PREFIX}/include/libsvm"
+  # python modules
+  ## NOTE: 'grid.py' can be used either as a python module or a CLI/tool
+  ## https://github.com/cjlin1/libsvm/blob/v324/tools/README#L163-L164
+  install -D -m644 python/commonutil.py -t "${pkgdir}${MINGW_PREFIX}/lib/python${_pyver}/site-packages/libsvm"
+  install -D -m644 python/svm.py        -t "${pkgdir}${MINGW_PREFIX}/lib/python${_pyver}/site-packages/libsvm"
+  install -D -m644 python/svmutil.py    -t "${pkgdir}${MINGW_PREFIX}/lib/python${_pyver}/site-packages/libsvm"
+  printf '' | install -D -m644 /dev/stdin  "${pkgdir}${MINGW_PREFIX}/lib/python${_pyver}/site-packages/libsvm/__init__.py"
+  # python CLI/tools
+  install -D -m755 tools/checkdata.py "${pkgdir}${MINGW_PREFIX}/bin/svm-checkdata.py"
+  install -D -m755 tools/easy.py      "${pkgdir}${MINGW_PREFIX}/bin/svm-easy.py"
+  install -D -m755 tools/grid.py      "${pkgdir}${MINGW_PREFIX}/bin/svm-grid.py"
+  install -D -m755 tools/subset.py    "${pkgdir}${MINGW_PREFIX}/bin/svm-subset.py"
+  ln -s ../../../../bin/svm-grid.py        "${pkgdir}${MINGW_PREFIX}/lib/python${_pyver}/site-packages/libsvm/grid.py"
+  # java
+  #install -D -m644 java/libsvm.jar -t "${pkgdir}${MINGW_PREFIX}/share/java"
+  # doc
+  install -D -m644 FAQ.html README heart_scale -t "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+  # license
+  install -D -m644 COPYRIGHT "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}

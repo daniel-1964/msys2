@@ -1,0 +1,75 @@
+diff -Naurp libsvm-324.orig/Makefile libsvm-324/Makefile
+--- libsvm-324.orig/Makefile	2019-09-10 21:05:26.000000000 +0200
++++ libsvm-324/Makefile	2020-07-19 09:43:46.908649600 +0200
+@@ -1,25 +1,27 @@
+-CXX ?= g++
+-CFLAGS = -Wall -Wconversion -O3 -fPIC
++CXX ?= $(MINGW_CHOST)-g++
++CFLAGS += -Wall -Wconversion -fPIC
+ SHVER = 2
+ OS = $(shell uname)
++EXEEXT = .exe
+
+-all: svm-train svm-predict svm-scale
++all: lib svm-train$(EXEEXT) svm-predict$(EXEEXT) svm-scale$(EXEEXT)
+
+ lib: svm.o
+ 	if [ "$(OS)" = "Darwin" ]; then \
+ 		SHARED_LIB_FLAG="-dynamiclib -Wl,-install_name,libsvm.so.$(SHVER)"; \
+ 	else \
+-		SHARED_LIB_FLAG="-shared -Wl,-soname,libsvm.so.$(SHVER)"; \
++		SHARED_LIB_FLAG="-shared -Wl,--enable-auto-import -Wl,--out-implib=libsvm.dll.a"; \
+ 	fi; \
+-	$(CXX) $${SHARED_LIB_FLAG} svm.o -o libsvm.so.$(SHVER)
++	$(CXX) $(CFLAGS) $${SHARED_LIB_FLAG} svm.o -o libsvm-$(SHVER).dll $(LDFLAGS)
+
+-svm-predict: svm-predict.c svm.o
+-	$(CXX) $(CFLAGS) svm-predict.c svm.o -o svm-predict -lm
+-svm-train: svm-train.c svm.o
+-	$(CXX) $(CFLAGS) svm-train.c svm.o -o svm-train -lm
+-svm-scale: svm-scale.c
+-	$(CXX) $(CFLAGS) svm-scale.c -o svm-scale
++LIBS = -L. -lsvm
++svm-predict$(EXEEXT): svm-predict.c lib
++	$(CXX) $(CLAGS) svm-predict.c -o svm-predict$(EXEEXT) $(LIBS) $(LDFLAGS)
++svm-train$(EXEEXT): svm-train.c lib
++	$(CXX) $(CFLAGS) svm-train.c -o svm-train$(EXEEXT) $(LIBS) $(LDFLAGS)
++svm-scale$(EXEEXT): svm-scale.c
++	$(CXX) $(CFLAGS) svm-scale.c -o svm-scale$(EXEEXT) $(LIBS) $(LDFLAGS)
+ svm.o: svm.cpp svm.h
+ 	$(CXX) $(CFLAGS) -c svm.cpp
+ clean:
+-	rm -f *~ svm.o svm-train svm-predict svm-scale libsvm.so.$(SHVER)
++	rm -f *~ svm.o svm-train$(EXEEXT) svm-predict$(EXEEXT) svm-scale$(EXEEXT) libsvm-$(SHVER).dll
+diff -Naurp libsvm-324.orig/svm-toy/qt/Makefile libsvm-324/svm-toy/qt/Makefile
+--- libsvm-324.orig/svm-toy/qt/Makefile	2020-07-18 19:27:48.559863500 +0200
++++ libsvm-324/svm-toy/qt/Makefile	2020-07-19 09:50:33.732525500 +0200
+@@ -1,19 +1,17 @@
+ # use  ``export QT_SELECT=qt5'' in a command window for using qt5
+ # may need to adjust the path of header files
+-CXX? = g++
+-INCLUDE = /usr/include/x86_64-linux-gnu/qt5
+-CFLAGS = -Wall -O3 -I$(INCLUDE) -I$(INCLUDE)/QtWidgets -I$(INCLUDE)/QtGui -I$(INCLUDE)/QtCore -fPIC -std=c++11
+-LIB = -lQt5Widgets -lQt5Gui -lQt5Core
+-MOC = /usr/bin/moc
++CXX ?= $(MINGW_CHOST)-g++
++INCLUDE = $(MINGW_PREFIX)/include
++CFLAGS += -Wall -I$(INCLUDE) -I$(INCLUDE)/QtWidgets -I$(INCLUDE)/QtGui -I$(INCLUDE)/QtCore -fPIC -std=c++11
++LIB = -L ../.. -lsvm -lQt5Widgets -lQt5Gui -lQt5Core
++MOC = $(MINGW_PREFIX)/bin/moc
++EXEEXT = .exe
+
+-svm-toy: svm-toy.cpp svm-toy.moc ../../svm.o
+-	$(CXX) $(CFLAGS) svm-toy.cpp ../../svm.o -o svm-toy $(LIB)
++svm-toy$(EXEEXT): svm-toy.cpp svm-toy.moc
++	$(CXX) $(CFLAGS) svm-toy.cpp -o svm-toy$(EXEEXT) $(LIB) $(LDFLAGS)
+
+ svm-toy.moc: svm-toy.cpp
+ 	$(MOC) svm-toy.cpp -o svm-toy.moc
+
+-../../svm.o: ../../svm.cpp ../../svm.h
+-	make -C ../.. svm.o
+-
+ clean:
+-	rm -f *~ svm-toy svm-toy.moc ../../svm.o
++	rm -f *~ svm-toy$(EXEEXT) svm-toy.moc
