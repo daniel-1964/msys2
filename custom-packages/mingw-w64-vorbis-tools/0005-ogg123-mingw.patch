@@ -1,0 +1,184 @@
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/buffer.c vorbis-tools-1.4.0/ogg123/buffer.c
+--- vorbis-tools-1.4.0.orig/ogg123/buffer.c	2020-07-21 18:05:33.435885600 +0200
++++ vorbis-tools-1.4.0/ogg123/buffer.c	2020-07-21 18:03:53.779987100 +0200
+@@ -20,7 +20,9 @@
+ #endif
+ 
+ #include <sys/types.h>
++#ifndef __MINGW32__
+ #include <sys/wait.h>
++#endif
+ #include <sys/time.h>
+ #include <string.h>
+ #include <fcntl.h>
+@@ -77,17 +79,21 @@ void buffer_init_vars (buf_t *buf)
+ 
+ void buffer_thread_init (buf_t *buf)
+ {
++#ifndef __MINGW32__
+   sigset_t set;
++#endif
+ 
+   DEBUG("Enter buffer_thread_init");
+ 
+   /* Block signals to this thread */
++#ifndef __MINGW32__
+   sigfillset(&set);
+   sigaddset(&set, SIGINT);
+   sigaddset(&set, SIGTSTP);
+   sigaddset(&set, SIGCONT);
+   if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0)
+     DEBUG("pthread_sigmask failed");
++#endif
+ }
+ 
+ 
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/cmdline_options.c vorbis-tools-1.4.0/ogg123/cmdline_options.c
+--- vorbis-tools-1.4.0.orig/ogg123/cmdline_options.c	2020-07-21 18:05:33.435885600 +0200
++++ vorbis-tools-1.4.0/ogg123/cmdline_options.c	2020-07-21 18:03:53.880265900 +0200
+@@ -23,6 +23,10 @@
+ #include <string.h>
+ #include <ao/ao.h>
+ 
++#ifdef __MINGW32__
++#undef __argc
++#undef __argv
++#endif
+ #include "getopt.h"
+ #include "cmdline_options.h"
+ #include "status.h"
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/file_transport.c vorbis-tools-1.4.0/ogg123/file_transport.c
+--- vorbis-tools-1.4.0.orig/ogg123/file_transport.c	2010-01-27 05:14:11.000000000 +0100
++++ vorbis-tools-1.4.0/ogg123/file_transport.c	2020-07-21 18:16:02.766758200 +0200
+@@ -70,7 +70,7 @@ data_source_t* file_open (char *source_s
+     private->fp = stdin;
+     private->seekable = 0;
+   } else
+-    private->fp = fopen(source_string, "r");
++    private->fp = fopen(source_string, "rb");
+ 
+   if (private->fp == NULL) {
+     free(source->source_string);
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/format.h vorbis-tools-1.4.0/ogg123/format.h
+--- vorbis-tools-1.4.0.orig/ogg123/format.h	2020-07-21 18:05:33.451512200 +0200
++++ vorbis-tools-1.4.0/ogg123/format.h	2020-07-21 18:03:53.795611100 +0200
+@@ -32,6 +32,11 @@ typedef struct decoder_stats_t {
+ 
+ 
+ /* Severity constants */
++#ifdef __MINGW32__
++#undef ERROR
++#undef INFO
++#undef WARNING
++#endif
+ enum { ERROR, WARNING, INFO };
+ 
+ typedef struct decoder_callbacks_t {
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/http_transport.c vorbis-tools-1.4.0/ogg123/http_transport.c
+--- vorbis-tools-1.4.0.orig/ogg123/http_transport.c	2020-07-21 18:05:33.482759500 +0200
++++ vorbis-tools-1.4.0/ogg123/http_transport.c	2020-07-21 18:03:53.811237900 +0200
+@@ -134,6 +134,7 @@ void *curl_thread_func (void *arg)
+ {
+   http_private_t *myarg = (http_private_t *) arg;
+   CURLcode ret;
++#ifndef __MINGW32__
+   sigset_t set;
+ 
+   /* Block signals to this thread */
+@@ -143,6 +144,7 @@ void *curl_thread_func (void *arg)
+   sigaddset (&set, SIGCONT);
+   if (pthread_sigmask (SIG_BLOCK, &set, NULL) != 0)
+     status_error(_("ERROR: Could not set signal mask."));
++#endif
+ 
+   ret = curl_easy_perform((CURL *) myarg->curl_handle);
+ 
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/ogg123.c vorbis-tools-1.4.0/ogg123/ogg123.c
+--- vorbis-tools-1.4.0.orig/ogg123/ogg123.c	2020-07-21 18:05:33.489278300 +0200
++++ vorbis-tools-1.4.0/ogg123/ogg123.c	2020-07-21 18:03:53.811237900 +0200
+@@ -51,6 +51,10 @@
+ #include "ogg123.h"
+ #include "i18n.h"
+ 
++#ifdef __MINGW32__
++#define srandom(n) srand(n)
++#define random() rand()
++#endif
+ extern int exit_status; /* from status.c */
+ 
+ void play (char *source_string);
+@@ -120,6 +124,7 @@ void signal_handler (int signo)
+     sig_request.exit = 1;
+     break;
+ 
++#ifndef __MINGW32__
+   case SIGTSTP:
+     sig_request.pause = 1;
+     /* buffer_Pause (Options.outputOpts.buffer);
+@@ -139,6 +144,7 @@ void signal_handler (int signo)
+ 
+   case SIGCONT:
+     break;  /* Don't need to do anything special to resume */
++#endif
+   }
+ }
+ 
+@@ -465,8 +471,10 @@ int main(int argc, char **argv)
+   /* Setup signal handlers and callbacks */
+ 
+   signal (SIGINT, signal_handler);
++#ifndef __MINGW32__
+   signal (SIGTSTP, signal_handler);
+   signal (SIGCONT, signal_handler);
++#endif
+   signal (SIGTERM, signal_handler);
+ 
+   if (options.remote) {
+@@ -642,6 +650,7 @@ void play (char *source_string)
+ 		handle_seek_opt(&options, decoder, format);
+ 	}
+ 
++#ifndef __MINGW32__
+ 	if (sig_request.pause) {
+ 	if (audio_buffer)
+ 	  buffer_thread_pause (audio_buffer);
+@@ -654,6 +663,7 @@ void play (char *source_string)
+ 
+ 	sig_request.pause = 0;
+       }
++#endif
+ 
+ 
+       /* Read another block of audio data */
+@@ -750,4 +760,3 @@ void play (char *source_string)
+   if (sig_request.exit)
+     exit (exit_status);
+ }
+-
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/playlist.c vorbis-tools-1.4.0/ogg123/playlist.c
+--- vorbis-tools-1.4.0.orig/ogg123/playlist.c	2020-07-21 18:05:33.504929000 +0200
++++ vorbis-tools-1.4.0/ogg123/playlist.c	2020-07-21 18:03:53.833375100 +0200
+@@ -34,6 +34,8 @@
+ /* Work with *BSD differences */
+ #if !defined(NAME_MAX) && defined(MAXNAMLEN) 
+ #define NAME_MAX MAXNAMLEN
++#elif defined(__MINGW32__)
++#define NAME_MAX 260
+ #endif
+ 
+ playlist_element_t *playlist_element_create(char *filename)
+diff -apruw vorbis-tools-1.4.0.orig/ogg123/remote.c vorbis-tools-1.4.0/ogg123/remote.c
+--- vorbis-tools-1.4.0.orig/ogg123/remote.c	2020-07-21 18:05:33.504929000 +0200
++++ vorbis-tools-1.4.0/ogg123/remote.c	2020-07-21 18:03:53.833375100 +0200
+@@ -255,7 +255,11 @@ void remote_mainloop(void) {
+   char fname[MAXBUF+1];
+ 
+   /* Need to output line by line! */
++#ifndef __MINGW32__
+   setlinebuf(stdout);
++#else
++  setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
++#endif
+ 
+   /* Send a greeting */
+   send_msg("R ogg123 from " PACKAGE " " VERSION);
