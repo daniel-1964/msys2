@@ -1,0 +1,20 @@
+--- ocaml-4.10.0/testsuite/Makefile	2020-02-21 15:22:37.000000000 +0100
++++ build-x86_64-w64-mingw32/testsuite/Makefile	2020-07-30 20:16:57.955936400 +0200
+@@ -92,7 +92,7 @@ all:
+ new-without-report: lib tools
+ 	@rm -f $(failstamp)
+ 	@(IFS=$$(printf "\r\n"); \
+-	$(ocamltest) -find-test-dirs tests | while read dir; do \
++	$(ocamltest) -find-test-dirs tests | dos2unix | while read dir; do \
+ 	  echo Running tests from \'$$dir\' ... ; \
+ 	  $(MAKE) exec-ocamltest DIR=$$dir \
+ 	    OCAMLTESTENV="" OCAMLTESTFLAGS=""; \
+@@ -205,7 +205,7 @@ exec-ocamltest:
+ 	@if [ -z "$(DIR)" ]; then exit 1; fi
+ 	@if [ ! -d "$(DIR)" ]; then exit 1; fi
+ 	@(IFS=$$(printf "\r\n"); \
+-	$(ocamltest) -list-tests $(DIR) | while read testfile; do \
++	$(ocamltest) -list-tests $(DIR) | dos2unix | while read testfile; do \
+ 	   TERM=dumb $(OCAMLTESTENV) \
+ 	     $(ocamltest) $(OCAMLTESTFLAGS) $(DIR)/$$testfile || \
+ 	   echo " ... testing '$$testfile' => unexpected error"; \
