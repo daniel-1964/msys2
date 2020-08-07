@@ -1,0 +1,127 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Renato Silva <br.renatosilva@gmail.com>
+
+pkgname=('tiff' 'libtiff-doc' 'libtiff5' 'libtiff-devel')
+pkgbase=libtiff
+pkgver=4.1.0
+pkgrel=1
+pkgdesc="Library for manipulation of TIFF images (msys)"
+arch=('any')
+url="http://www.simplesystems.org/libtiff/"
+license=(MIT)
+depends=('gcc-libs'
+         'libjbig2'
+         'libjpeg8'
+         #'webp'
+         'liblzma'
+         'zlib'
+         'libzstd')
+makedepends=('gcc'
+             'cmake'
+             'libjbig-devel'
+             'libjpeg-devel'
+             'liblzma-devel'
+             'zlib-devel'
+             'libzstd-devel')
+options=('staticlibs' 'strip')
+source=(http://download.osgeo.org/libtiff/tiff-${pkgver}.tar.gz)
+sha256sums=('5d29f32517dadb6dbcd1255ea5bbc93a2b54b94fbf83653b4d65c7d6775b8634')
+
+prepare() {
+  cd tiff-${pkgver}
+}
+
+build() {
+  export CFLAGS+=" -fno-strict-aliasing"
+  export CXXFLAGS+=" -fno-strict-aliasing"
+
+  msg "Build static version"
+  [[ -d "${srcdir}/build-static" ]] && rm -rf "${srcdir}/build-static"
+  mkdir -p "${srcdir}/build-static" && cd "${srcdir}/build-static"
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF \
+    -Dzstd=ON \
+    -Djpeg=ON \
+    -Dlzma=on \
+    -Dwebp=OFF \
+    -Dcxx=ON \
+    -Djbig=ON \
+    ../tiff-${pkgver}
+  make
+
+  msg "Build shared version"
+  [[ -d "${srcdir}/build-shared" ]] && rm -rf "${srcdir}/build-shared"
+  mkdir -p "${srcdir}/build-shared" && cd "${srcdir}/build-shared"
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -Dzstd=ON \
+    -Djpeg=ON \
+    -Dlzma=on \
+    -Dwebp=OFF \
+    -Dcxx=ON \
+    -Djbig=ON \
+    ../tiff-${pkgver}
+  make
+
+  msg "Install to dest"
+  cd "${srcdir}/build-static"
+  make DESTDIR="${srcdir}/dest" install
+  cd "${srcdir}/build-shared"
+  make DESTDIR="${srcdir}/dest" install
+  cp -a ${srcdir}/tiff-${pkgver}/libtiff/{tiffiop,tif_dir}.h "${srcdir}/dest/usr/include/"
+  cp -a "libtiff/tif_config.h" "${srcdir}/dest/usr/include/"
+  # License
+  # See https://fedoraproject.org/wiki/Licensing:MIT#Hylafax_Variant
+  install -Dm644 "${srcdir}/tiff-${pkgver}/COPYRIGHT" "${srcdir}/dest/usr/share/licenses/${pkgbase}/COPYRIGHT"
+}
+
+check() {
+  cd "${srcdir}/build-shared"
+  make test || true
+}
+
+package_tiff() {
+  depends=("libtiff5=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{bin,share/man/man1}
+  cp -a ${srcdir}/dest/usr/bin/*.exe ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share/licenses ${pkgdir}/usr/share/
+  cp -a ${srcdir}/dest/usr/share/man/man1 ${pkgdir}/usr/share/man/
+}
+
+package_libtiff5() {
+  groups=('libraries')
+  depends=('gcc-libs'
+           'libjbig2'
+           'libjpeg8'
+           'liblzma'
+           'zlib'
+           'libzstd')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+}
+
+package_libtiff-doc() {
+  pkgdesc="Libtiff html documentation"
+  groups=('development')
+  depends=("libtiff5=${pkgver}")
+  mkdir -p ${pkgdir}/usr/share/doc
+  cp -a ${srcdir}/dest/usr/share/doc ${pkgdir}/usr/share/
+}
+
+package_libtiff-devel() {
+  pkgdesc="Libtiff headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libtiff5=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib,share/man/man3}
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/share/man/man3 ${pkgdir}/usr/share/man
+}
