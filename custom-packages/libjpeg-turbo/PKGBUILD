@@ -1,0 +1,105 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Renato Silva <br.renatosilva@gmail.com>
+
+pkgname=('jpeg' 'libjpeg8' 'libjpeg-devel' 'libturbojpeg0' 'libturbojpeg-devel')
+pkgbase=libjpeg-turbo
+pkgver=2.0.5
+pkgrel=1
+pkgdesc="JPEG image codec with accelerated baseline compression and decompression (msys)"
+arch=('any')
+url="https://libjpeg-turbo.virtualgl.org/"
+license=(custom:'BSD-like')
+depends=('gcc-libs')
+makedepends=('cmake'
+             'gcc'
+             'nasm')
+options=('staticlibs' 'strip')
+source=(${pkgbase}-${pkgver}.tar.gz::https://github.com/libjpeg-turbo/libjpeg-turbo/archive/${pkgver}.tar.gz
+        "0001-header-compat.mingw.patch"
+        "libjpeg-turbo-1.3.1-libmng-compatibility.patch"
+        "no-static-binaries.patch")
+sha256sums=('b3090cd37b5a8b3e4dbd30a1311b3989a894e5d3c668f14cbc6739d77c9402b7'
+            '166264f617734b33ac55ec8b70e6636d4e409c0d837667afe158e9d28200e6dd'
+            '16336caddc949a8a082f39c218b3289288d144bb3b87f62565ed1b294ff8e526'
+            'c3ee50c37f40cdd526ce6373dfd3ca1a9980c96005b697350db403ade1165cba')
+
+prepare() {
+  patch -d "${srcdir}/${pkgbase}-${pkgver}" -Np1 -i ${srcdir}/0001-header-compat.mingw.patch
+  patch -d "${srcdir}/${pkgbase}-${pkgver}" -Np1 -i ${srcdir}/libjpeg-turbo-1.3.1-libmng-compatibility.patch
+  patch -d "${srcdir}/${pkgbase}-${pkgver}" -Np1 -i ${srcdir}/no-static-binaries.patch
+}
+
+build() {
+  [[ -d ${srcdir}/build ]] && rm -rf ${srcdir}/build
+  mkdir -p "${srcdir}/build" && cd "${srcdir}/build"
+
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DWITH_JPEG8=ON \
+    -dWITH_SIMD=ON \
+    -Denable_SHARED=ON \
+    -DENABLE_STATIC=ON \
+    ../${pkgbase}-${pkgver}
+  make
+
+  make DESTDIR="${srcdir}/dest" install
+  cp "${srcdir}"/${pkgbase}-${pkgver}/{jinclude,transupp}.h ${srcdir}/dest/usr/include/
+  # Licenses
+  # See https://www.libjpeg-turbo.org/About/License
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+  install -Dm644 README.ijg            "${srcdir}/dest/usr/share/licenses/${pkgbase}/README.ijg"
+  install -Dm644 README.md  "${srcdir}/dest/usr/share/licenses/${pkgbase}/README.md"
+  install -Dm644 simd/nasm/jsimdext.inc "${srcdir}/dest/usr/share/licenses/${pkgbase}/simd/jsimdext.inc"
+}
+
+check() {
+  cd "${srcdir}/build"
+  make test || true
+}
+
+package_jpeg() {
+  depends=("libjpeg8=${pkgver}")
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/*jp{,e}g*.exe ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share ${pkgdir}/usr/
+}
+
+package_libjpeg8() {
+  provides=('libjpeg')
+  conflicts=('libjpeg')
+  replaces=('libjpeg')
+  groups=('libraries')
+  depends=('gcc-libs')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/msys-jpeg-8.dll ${pkgdir}/usr/bin/
+}
+
+package_libjpeg-devel() {
+  pkgdesc="Libjpeg headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libjpeg8=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib/pkgconfig}
+  cp -a ${srcdir}/dest/usr/include/{j*,transupp}.h ${pkgdir}/usr/include
+  cp -a ${srcdir}/dest/usr/lib/libjpeg.* ${pkgdir}/usr/lib
+  cp -a ${srcdir}/dest/usr/lib/pkgconfig/libjpeg.pc ${pkgdir}/usr/lib/pkgconfig
+}
+
+package_libturbojpeg0() {
+  groups=('libraries')
+  depends=('gcc-libs')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/{msys-turbojpeg-0.dll,tjbench.exe} ${pkgdir}/usr/bin/
+}
+
+package_libturbojpeg-devel() {
+  pkgdesc="Libturbojpeg headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libturbojpeg0=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib/pkgconfig}
+  cp -a ${srcdir}/dest/usr/include/turbojpeg.h ${pkgdir}/usr/include
+  cp -a ${srcdir}/dest/usr/lib/libturbojpeg.* ${pkgdir}/usr/lib
+  cp -a ${srcdir}/dest/usr/lib/pkgconfig/libturbojpeg.pc ${pkgdir}/usr/lib/pkgconfig
+}
