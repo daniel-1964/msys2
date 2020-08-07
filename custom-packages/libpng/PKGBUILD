@@ -1,0 +1,106 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgname=('png' 'libpng16' 'libpng-devel')
+pkgbase=libpng
+pkgver=1.6.37
+_apngver=1.6.37
+pkgrel=3
+arch=('any')
+pkgdesc="A collection of routines used to create PNG format graphics"
+depends=("gcc-libs"
+         "zlib")
+makedepends=("gcc"
+             "zlib-devel")
+license=('custom')
+url="http://www.libpng.org/pub/png/libpng.html"
+options=('strip' '!libtool' 'staticlibs')
+source=("https://downloads.sourceforge.net/sourceforge/libpng/${pkgbase}-${pkgver}.tar.xz"
+        "https://downloads.sourceforge.net/project/libpng-apng/libpng16/${_apngver}/${pkgbase}-${_apngver}-apng.patch.gz")
+sha256sums=('505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca'
+            '823bb2d1f09dc7dae4f91ff56d6c22b4b533e912cbd6c64e8762255e411100b6')
+validpgpkeys=('8048643BA2C840F4F92A195FF54984BFA16C640F')  # Glenn Randers-Pehrson (mozilla) <glennrp+bmo@gmail.com>
+
+prepare() {
+  # Add animated PNG (apng) support
+  patch -d "${srcdir}/${pkgbase}-${pkgver}" -Np1 -i "${srcdir}/${pkgbase}-${_apngver}-apng.patch"
+  sed -i 's/AND NOT CYGWIN/OR MSYS/g' "${srcdir}/${pkgbase}-${pkgver}/CMakeLists.txt"
+  sed -i 's/OR CYGWIN OR MINGW/& OR MSYS/g' "${srcdir}/${pkgbase}-${pkgver}/CMakeLists.txt"
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -rf "${srcdir}/build"
+  mkdir -p "${srcdir}/build"
+  cd "${srcdir}/build"
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPNG_SHARED=ON \
+    -DPNG_STATIC=ON \
+    ../"${pkgbase}-${pkgver}"
+  make
+
+  msg2 "Build contributed programs"
+  mkdir -p "pngminus" && cd "pngminus"
+  cp -a "${srcdir}/${pkgbase}-${pkgver}/contrib/pngminus"/* .
+  # libpng.a and libpng.dll.a are basically symlinks to libpng16.a
+  # and libpng16.dll.a that are created at "make install" but we are
+  # building the contributed programs before the "make install" so
+  # we have to link to libpng16.dll.a or libpng16.a if building
+  # statically. When building the static programs, we might also
+  # want to build with the static version of zlib.
+  make PNGINC="-I${srcdir}/${pkgbase}-${pkgver} -I${srcdir}/build" \
+    CC="/usr/bin/gcc" \
+    PNGLIB_SHARED="-L.. -lpng16" \
+    PNGLIB_STATIC="../libpng16.a" \
+    ZLIB_STATIC="/usr/lib/libz.a" \
+    CFLAGS="$CFLAGS '-Dsetmode(x,y)='" \
+    LDFLAGS="-L.. $LDFLAGS" \
+    png2pnm pnm2png
+
+  msg2 "Install to dest"
+  cd "${srcdir}/build"
+  make install DESTDIR="${srcdir}/dest"
+  install -D -m644 "${srcdir}/libpng-${pkgver}/LICENSE" "${srcdir}/dest/usr/share/licenses/${pkgbase}/LICENSE"
+
+  msg2 "Install contributed programs"
+  cd "pngminus"
+  # deploy both the shared lib and static programs in case a developer wants to
+  # redistribute those.  I was also building statically for some internal testing.
+  install -m0755 png2pnm.exe pnm2png.exe "${srcdir}/dest/usr/bin/"
+
+  # fix some bug in cmake installer
+  cd "${srcdir}/dest/usr/lib"
+  mv libpng.dll libpng.dll.a
+  mkdir cmake
+  mv libpng cmake
+}
+
+check() {
+  cd "${srcdir}/build"
+  make test
+}
+
+package_png() {
+  depends=("libpng16=${pkgver}")
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/*.exe ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share ${pkgdir}/usr/
+}
+
+package_libpng16() {
+  groups=('libraries')
+  depends=('gcc-libs' 'zlib')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+}
+
+package_libpng-devel() {
+  pkgdesc="Libpng headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libpng16=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{bin,include,lib}
+  cp -a ${srcdir}/dest/usr/bin/*-config ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+}
