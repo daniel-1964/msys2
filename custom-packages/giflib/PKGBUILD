@@ -1,0 +1,62 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgname=('giflib' 'libgif7' 'libgif-devel')
+pkgbase=giflib
+pkgver=5.2.1
+pkgrel=1
+pkgdesc="A library for reading and writing gif images (msys)"
+arch=('any')
+url="https://sourceforge.net/projects/giflib"
+license=("MIT")
+makedepends=("gcc"
+             "xmlto")
+depends=("gcc-libs")
+options=('staticlibs' 'strip')
+source=("https://downloads.sourceforge.net/sourceforge/giflib/${pkgbase}-${pkgver}.tar.gz"
+        "001-msys-build.patch")
+sha256sums=('31da5562f44c5f15d63340a09a4fd62b48c45620cd302f77a6d9acf0077879bd'
+            'a99ba2873f504c2c240f346833fd58465e51be8820c9fe1e8a54a7b171bff1cf')
+noextract=(${pkgbase}-${pkgver}.tar.gz)
+
+prepare() {
+  [[ -d ${srcdir}/${pkgbase}-${pkgver} ]] && rm -rf ${srcdir}/${pkgbase}-${pkgver}
+  tar -xzf ${srcdir}/${pkgbase}-${pkgver}.tar.gz -C ${srcdir} || true
+
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+  patch -Np1 -i "${srcdir}/001-msys-build.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+  make
+  make DESTDIR="${srcdir}/dest" PREFIX="/usr" install
+}
+
+check() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+  make -C tests
+}
+
+package_giflib() {
+  depends=("libgif7=${pkgver}")
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/*.exe ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share ${pkgdir}/usr/
+}
+
+package_libgif7() {
+  groups=('libraries')
+  depends=('gcc-libs' 'gettext')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+}
+
+package_libgif-devel() {
+  pkgdesc="Libgif headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libgif7=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib}
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+}
