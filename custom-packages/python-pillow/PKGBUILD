@@ -1,0 +1,107 @@
+# Maintainer: Alexey Pavlov <Alexpux@gmail.com>
+
+pkgbase=Pillow
+pkgname=("python-pillow")
+pkgver=6.2.1
+pkgrel=2
+provides=("python3-${pkgbase}=${pkgver}"
+          "python3-pillow=${pkgver}")
+conflicts=("python3-${pkgbase}"
+           "python3-pillow")
+replaces=("python3-${pkgbase}"
+          "python3-pillow")
+arch=('any')
+license=('custom')
+url="https://github.com/python-pillow/Pillow/"
+pkgdesc="Python Imaging Library (PIL) fork Python3 version (msys)"
+depends=('libfreetype6'
+         'liblcms2_2'
+         'libjpeg8'
+         'libtiff5'
+         'libwebp7'
+         'libwebpdemux2'
+         'libwebpmux3'
+         'libimagequant'
+         'libopenjp2_7'
+         'python'
+         'python-olefile'
+         'zlib')
+makedepends=('python-setuptools'
+             'libfreetype-devel'
+             'liblcms2-devel'
+             'libjpeg-devel'
+             'libtiff-devel'
+             'libwebp-devel'
+             'libimagequant-devel'
+             'libopenjp2-devel'
+             'zlib-devel')
+
+options=('staticlibs')
+source=(${pkgbase}-${pkgver}.tar.gz::https://github.com/python-pillow/Pillow/archive/${pkgver}.tar.gz
+        001-freeze-support.patch
+        002-shared-openjpeg.patch
+        dlopen-fix.patch)
+sha256sums=('7bf2d6bdb68fa6ccec15c0fd9aa20fac9641cd20dc6079344f5a6534e13a70f9'
+            '1abf215cd4730dc57441cb53ecec7ea0ca9870c7251f1d80674ec58ab0f4c7f1'
+            '581387337db4c6c0a7dae05d6462da92f47e822bd6b482a7a4e7c8637ca7e9f2'
+            '2154e61a7f88d4f22430fc20097431df827960777320e14f53c8e86e8f4f048b')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _fname in "$@"
+  do
+    msg2 "Applying ${_fname}"
+    patch -Nbp1 -i "${srcdir}"/${_fname}
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f ${_fname} ] || [ -d ${_fname} ]; then
+      rm -rf ${_fname}
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+  apply_patch_with_msg 001-freeze-support.patch \
+    002-shared-openjpeg.patch \
+    dlopen-fix.patch
+  cd ${srcdir}
+
+  [[ -d python-build ]] && rm -rf python-build
+  cp -r "${pkgbase}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python selftest.py || true
+  #setup.py test
+}
+
+package() {
+  local _py3basever=$(/usr/bin/python -c "import sys;sys.stdout.write('.'.join(map(str, sys.version_info[:2])))")
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install \
+   --prefix=/usr --root="${pkgdir}/" \
+   --optimize=0 --skip-build
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+  install -dm755 "${pkgdir}/usr/include/python${_py3basever}m/"
+  install -m644 -t "${pkgdir}/usr/include/python${_py3basever}m/" src/libImaging/*.h
+  # clean up bins
+  #  cd "${pkgdir}/usr/bin"
+  #  for f in *.py; do
+  #    sed -e "s|/usr/bin/|/usr/bin/env |g" -i ${f}
+  #    mv "$f" "${f%.py}"
+  #  done
+}
