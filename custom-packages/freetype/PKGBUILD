@@ -1,0 +1,123 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Renato Silva <br.renatosilva@gmail.com>
+
+pkgname=('libfreetype6' 'libfreetype-devel')
+ppkgbase=freetype
+pkgver=2.10.2
+pkgrel=2
+pkgdesc="TrueType font rendering library (msys)"
+arch=('any')
+url="https://www.freetype.org/"
+license=(GPL2+ custom:FreeType)
+depends=("gcc-libs"
+         "brotli"
+         "libbz2"
+         "libpng16"
+         "zlib")
+makedepends=("gcc"
+             "cmake"
+             "libbz2-devel"
+             "brotli-devel"
+             "zlib-devel"
+             "libpng-devel"
+             "pkg-config")
+options=('strip' '!libtool' 'staticlibs')
+source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.xz{,.sig}
+        freetype-2.10.0-enable-valid.patch
+        freetype-2.10.0-enable-spr.patch
+        freetype-2.5.1-enable-sph.patch)
+sha256sums=('1543d61025d2e6312e0a1c563652555f17378a204a61e99928c9fcef030a2d8b'
+            'SKIP'
+            '30e84993f899b66c31451992667f7ac6cc9e0b19dfe2f47ccb546d77bbc77ef5'
+            '0571f18d97834df020e4cbdb1338b14f9160669f868237080951e01f5b86727c'
+            '324012ad68388d22c63368314721d2360b48dd40daa808d0383699a281d931b0')
+validpgpkeys=('58E0C111E39F5408C5D3EC76C1A60EACE707FDA5')
+
+prepare() {
+  cd "${srcdir}/freetype-${pkgver}"
+  plain "freetype-2.10.0-enable-valid.patch"
+  patch -Np1 -i "${srcdir}/freetype-2.10.0-enable-valid.patch"
+  plain "freetype-2.10.0-enable-spr.patch"
+  patch -Np1 -i "${srcdir}/freetype-2.10.0-enable-spr.patch"
+
+  # Disabled for now due to resistance
+  # Kept here for easier rebuilds via ABS
+  # https://bugs.archlinux.org/task/35274
+  #patch -Np1 -i "${srcdir}/freetype-2.5.1-enable-sph.patch"
+}
+
+build() {
+  msg "Build static version"
+  [[ -d ${srcdir}/build-static ]] && rm -rf ${srcdir}/build-static
+  mkdir ${srcdir}/build-static && cd ${srcdir}/build-static
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_SYSTEM_PREFIX_PATH=/usr \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
+    -DFT_WITH_PNG=ON  \
+    -DFT_WITH_ZLIB=ON  \
+    -DFT_WITH_BZIP2=ON \
+    -DFT_WITH_BROTLI=ON \
+    -DFT_WITH_HARFBUZZ=OFF \
+    ../freetype-${pkgver}
+  make
+
+  msg "Build shared version"
+  [[ -d "${srcdir}/build-shared" ]] && rm -rf "${srcdir}/build-shared"
+  mkdir -p "${srcdir}/build-shared" && cd "${srcdir}/build-shared"
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_SYSTEM_PREFIX_PATH=/usr \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TESTING=ON \
+    -DFT_WITH_PNG=ON  \
+    -DFT_WITH_ZLIB=ON  \
+    -DFT_WITH_BZIP2=ON \
+    -DFT_WITH_BROTLI=ON \
+    -DFT_WITH_HARFBUZZ=OFF \
+    ../freetype-${pkgver}
+  make
+
+  msg "Install to dest"
+  cd "${srcdir}/build-static"
+  make DESTDIR=${srcdir}/dest install
+  cd "${srcdir}/build-shared"
+  make DESTDIR=${srcdir}/dest install
+  # Licenses
+  install -Dm644 "${srcdir}/${ppkgbase}-${pkgver}/docs/LICENSE.TXT" "${srcdir}/dest/usr/share/licenses/${ppkgbase}/LICENSE.TXT"
+  install -Dm644 "${srcdir}/${ppkgbase}-${pkgver}/docs/GPLv2.TXT"   "${srcdir}/dest/usr/share/licenses/${ppkgbase}/GPLv2.TXT"
+  install -Dm644 "${srcdir}/${ppkgbase}-${pkgver}/docs/FTL.TXT"     "${srcdir}/dest/usr/share/licenses/${ppkgbase}/FTL.TXT"
+}
+
+check() {
+  plain "No tsts are defined"
+  #cd "${srcdir}/build-shared"
+  #make test
+}
+
+package_libfreetype6() {
+  groups=('libraries')
+  depends=("gcc-libs"
+           "brotli"
+           "libbz2"
+           "libpng16"
+           "zlib")
+  mkdir -p ${pkgdir}/usr/{bin,share}
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share ${pkgdir}/usr/
+}
+
+package_libfreetype-devel() {
+  pkgdesc="Libfreetype headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libfreetype6=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib}
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+}
