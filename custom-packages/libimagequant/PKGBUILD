@@ -1,0 +1,62 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+pkgname=('libimagequant' 'libimagequant-devel')
+pkgbase=libimagequant
+pkgver=2.12.6
+pkgrel=1
+pkgdesc="Palette quantization library (msys)"
+arch=('any')
+url='https://github.com/ImageOptim/libimagequant'
+license=("GPL3" "MIT")
+source=("${pkgbase}-${pkgver}.tar.gz"::"https://github.com/ImageOptim/${pkgbase}/archive/${pkgver}.tar.gz"
+        "0001-min-build-fix.patch")
+sha256sums=('b34964512c0dbe550c5f1b394c246c42a988cd73b71a76c5838aa2b4a96e43a0'
+            '9e8833679949ec2e51d9ccdc7005262898de02ba4a8f5f8463e07501c6878447')
+
+prepare() {
+  cd $srcdir/${pkgbase}-${pkgver}
+  #patch -p1 -i ${srcdir}/0001-min-build-fix.patch
+}
+
+build() {
+  msg "Build package"
+  [[ -d "${srcdir}"/build ]] && rm -rf "${srcdir}"/build
+  cp -a "${srcdir}/${pkgbase}-${pkgver}" "${srcdir}/build"
+  cd "${srcdir}"/build
+  ./configure --prefix=/usr \
+    CC="/usr/bin/gcc" \
+    --enable-sse
+  make --jobs=1 \
+    static dll imagequant.pc \
+    DLL=msys-imagequant.dll \
+    DLLIMP=libimagequant.dll.a
+
+  msg "Install to dest"
+   mkdir -p ${srcdir}/dest/usr/{bin,lib/pkgconfig,include,share/{doc,licenses}/libimagequant}
+   install -m 0644 -p msys-imagequant.dll -t ${srcdir}/dest/usr/bin/
+   install -m 0644 -p libimagequant.a -t ${srcdir}/dest/usr/lib/
+   install -m 0644 -p libimagequant.dll.a -t ${srcdir}/dest/usr/lib/
+   install -m 0644 -p libimagequant.h -t ${srcdir}/dest/usr/include/
+   install -m 0644 -p imagequant.pc -t ${srcdir}/dest/usr/lib/pkgconfig/
+   install -m 0644 -p CHANGELOG -t ${srcdir}/dest/usr/share/doc/libimagequant/
+   install -m 0644 -p README.md -t ${srcdir}/dest/usr/share/doc/libimagequant/
+   install -m 0644 -p COPYRIGHT -t ${srcdir}/dest/usr/share/licenses/libimagequant/
+}
+
+package_libimagequant() {
+  groups=('libraries')
+  depends=("gcc-libs")
+  mkdir -p ${pkgdir}/usr/{bin,share}
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share ${pkgdir}/usr/
+}
+
+package_libimagequant-devel() {
+  pkgdesc="Libimagequant headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libimagequant=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib}
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+}
