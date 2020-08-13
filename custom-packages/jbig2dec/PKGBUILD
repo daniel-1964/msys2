@@ -1,0 +1,67 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+pkgbase=jbig2dec
+pkgname=('jbig2dec' 'libjbig2dec0' 'libjbig2dec-devel')
+pkgver=0.17
+pkgrel=1
+pkgdesc='Decoder implementation of the JBIG2 image compression format (msys)'
+url='https://jbig2dec.com/'
+arch=('any')
+license=('AGPL')
+depends=('libpng16')
+makedepends=('libpng-devel')
+source=("${pkgbase}-${pkgver}.tar.gz"::https://github.com/ArtifexSoftware/jbig2dec/archive/${pkgver}.tar.gz
+        01-dont-run-configure-from-autogen.patch)
+sha256sums=('e14c0a978332e0cad011b1aeb9aab7555c73b55e9907f08cb1c74bb6d78a7c59'
+            '8715e0b3dfd738f9db57c656859897a41bc43d308ba86318ced625736784b54b')
+
+prepare() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+  patch -p1 -i ${srcdir}/01-dont-run-configure-from-autogen.patch
+  ./autogen.sh
+}
+
+build() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+  [[ -d "${srcdir}"/build ]] && rm -rf "${srcdir}"/build
+  mkdir -p "${srcdir}"/build && cd "${srcdir}"/build
+  #cp -r ${pkgbase}-${pkgver} "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+
+  export lt_cv_deplibs_check_method='pass_all'
+  ../${pkgbase}-${pkgver}/configure \
+      --prefix=/usr \
+      --enable-shared \
+      --enable-static
+
+  make
+
+  msg "Install to dest"
+  cd "${srcdir}/build"
+  make DESTDIR="${srcdir}/dest" install
+  install -Dm644 ${srcdir}/${pkgbase}-${pkgver}/COPYING ${srcdir}/dest/usr/share/licenses/${pkgbase}/COPYING
+  install -Dm644 ${srcdir}/${pkgbase}-${pkgver}/LICENSE ${srcdir}/dest/usr/share/licenses/${pkgbase}/LICENSE
+}
+
+package_jbig2dec() {
+  depends=("libjbig2dec0=${pkgver}" "libpng16")
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/*.exe ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share ${pkgdir}/usr/
+}
+
+package_libjbig2dec0() {
+  groups=('libraries')
+  depends=('gcc-libs' 'libpng16')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+}
+
+package_libjbig2dec-devel() {
+  pkgdesc="Libjbig2dec headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libjbig2dec0=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib}
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+}
