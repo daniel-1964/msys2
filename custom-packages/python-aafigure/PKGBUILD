@@ -1,0 +1,26 @@
+pkgbase=aafigure
+pkgname=('python-aafigure')
+pkgver=0.6
+pkgrel=1
+pkgdesc="Aafigure provides ASCII art to image converter (msys)"
+arch=('any')
+url="https://launchpad.net/aafigure"
+license=('BSD')
+makedepends=('python'
+             'python-setuptools')
+optdepends=('python-pillow: For bitmap formats support'
+            'python-reportlab: For PDF output')
+options=(!emptydirs)
+source=("https://files.pythonhosted.org/packages/source/a/aafigure/aafigure-$pkgver.tar.gz")
+md5sums=('2d3d03665af6e9318c9440355193bd25')
+
+build() {
+  cd ${srcdir}/aafigure-${pkgver}
+  python setup.py build
+}
+
+package_python-aafigure() {
+  depends=('python')
+  cd "$srcdir/aafigure-$pkgver"
+  python setup.py install --root=$pkgdir/ --optimize=1
+}
