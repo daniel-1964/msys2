@@ -1,0 +1,52 @@
+# Maintainer: Oscar Fuentes <ofv@wanadoo.es>
+
+pkgbase=tclx
+pkgname="${pkgbase}"
+_majorminor=8.4
+pkgver=${_majorminor}.4
+pkgrel=1
+pkgdesc="Extends Tcl by providing new operating system interface commands, extended file control and many other (msys)"
+arch=('any')
+url="https://tclx.sourceforge.io/"
+license=('BSD')
+depends=("tcl")
+source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/flightaware/tclx/archive/v${pkgver}.tar.gz"
+        '001-fix-detect-mingw.patch'
+        '002-fix-func-declaration.patch'
+        'random.c'
+        'tcl.m4')
+sha256sums=('44d834d0996e9a7bbaf22d85d9dc17eac2ccc43ab0243a21087e3944c7bc3825'
+            '5018594a4889c41fcb1a669f29b971dff19759c0fb2d8939bb495bb3715dbf08'
+            '1f7d6a6c6fa7d3535ff57cac9701bdc8a156bd0f6b6d3e9da69c91c3b9bb8fea'
+            '32b1b0685d67f20d8f7943682d16caaa86915937f745471652835239af51750c'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+
+prepare() {
+  local dst=${srcdir}/${pkgbase}-${pkgver}/compat
+  mkdir -p ${dst}
+  cp random.c ${dst}
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+  patch -p1 -i ${srcdir}/001-fix-detect-mingw.patch
+  patch -p1 -i ${srcdir}/002-fix-func-declaration.patch
+  cp -f ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  mkdir -p "${srcdir}/build"
+  cd "${srcdir}/build"
+  CFLAGS="-DUSE_INTERP_ERRORLINE $CFLAGS" \
+  ../${pkgbase}-${pkgver}/configure \
+    --prefix=/usr \
+    --enable-64bit
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+
+  mv ${pkgdir}/usr/lib/tclx8.6/*.dll ${pkgdir}/usr/bin/
+  install -Dm644 "${srcdir}"/${pkgbase}-${pkgver}/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
+}
