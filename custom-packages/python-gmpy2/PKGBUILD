@@ -1,0 +1,86 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+pkgbase=gmpy2
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=2.1.0b4
+pkgrel=2
+pkgdesc="Provides C-coded Python modules for fast multiple-precision arithmetic (msys)"
+arch=('any')
+url='https://github.com/aleaxit/gmpy'
+license=('LGPL2.1')
+depends=('python'
+         'mpc')
+makedepends=('python-setuptools'
+             'mpc-devel')
+options=('staticlibs' 'strip' '!debug')
+source=("${pkgbase}-${pkgver}.tar.gz"::"https://github.com/aleaxit/gmpy/archive/${pkgbase}-${pkgver}.tar.gz"
+        "remove-wrong-msys2-checks.patch")
+noextract=("${pkgbase}-${pkgver}.tar.gz")
+sha256sums=('83589062bc2b221080d6e32aa197b845be16dcda8aa0f92781854636f17b0a5b'
+            '96355ecdb49a266146c9fc370a434af472519039ed5fa41c22b1b7ce70f4910c')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+  # bsd tar does not handle the symlinks in the distribution file
+  # at least if you don't have admin privilleges. This is just a workaround
+  # for that.
+  tar zxf "${pkgbase}-${pkgver}.tar.gz" || true
+  pushd "gmpy-${pkgbase}-${pkgver}"
+  [ -L gmpy2/gmpy2.h ] && unlink gmpy2/gmpy2.h
+  cp src/gmpy2.h gmpy2/gmpy2.h
+  [ -L gmpy2/gmpy2.pxd ] && unlink gmpy2/gmpy2.pxd
+  cp src/gmpy2.pxd gmpy2/gmpy2.pxd
+
+  # https://github.com/aleaxit/gmpy/issues/268
+  apply_patch_with_msg remove-wrong-msys2-checks.patch
+  popd
+
+  [[ -d python-build  ]] && rm -rf python-build
+  cp -a "gmpy-${pkgbase}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py check
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -d -m 755 ${pkgdir}/usr/share/doc/python-${pkgbase}
+  install -m 644 -t ${pkgdir}/usr/share/doc/python-${pkgbase} docs/*
+}
