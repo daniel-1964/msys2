@@ -1,0 +1,54 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Ray Donnelly <mingw.android@gmail.com>
+
+pkgbase=reportlab
+pkgname=("python-${pkgbase}")
+pkgver=3.5.42
+pkgrel=1
+provides=("python3-${pkgbase}=${pkgver}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgdesc="A proven industry-strength PDF generating solution (msys)"
+arch=('any')
+license=('custom')
+url="https://bitbucket.org/rptlab/reportlab"
+depends=("libfreetype6"
+         "python-pillow")
+makedepends=("python-setuptools"
+             "libfreetype-devel")
+source=(https://files.pythonhosted.org/packages/source/${pkgbase::1}/${pkgbase}/${pkgbase}-${pkgver}.tar.gz
+        "0001-Do-not-specialcase-quote-LIBART_VERSION-on-Windows.patch")
+sha256sums=('9c21f202697a6cea57b9d716288fc919d99cbabeb30222eebfc7ff77eac32744'
+            '084b3574f7cb83dc7c9412b9976d672fda0f5f20cef6c6f6b66a6cefc31220ef')
+
+prepare() {
+  pushd ${pkgbase}-${pkgver}
+    patch -Np1 -i ${srcdir}/0001-Do-not-specialcase-quote-LIBART_VERSION-on-Windows.patch
+  popd
+
+  [[ -d python-build ]] && rm -rf python-build
+  cp -a "${pkgbase}-${pkgver}" "python-build"
+}
+
+build() {
+  export FT_LIB=/usr/lib/libfreetype.dll.a
+  export FT_INC=/usr/include/freetype2
+
+  msg "Python build for ${CARCH}"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py tests  || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 src/reportlab/license.txt \
+    "${pkgdir}/usr"/share/licenses/python-${pkgbase}/LICENSE
+}
