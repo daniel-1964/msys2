@@ -1,0 +1,58 @@
+# Based on Arch's PKGBUILD
+
+pkgbase=tclvfs
+pkgname=${pkgbase}-cvs
+pkgver=20130425
+pkgrel=3
+pkgdesc="Virtual Filesystem support for Tcl (msys)"
+arch=('any')
+url="https://sourceforge.net/projects/tclvfs/"
+license=('BSD')
+depends=("tcl")
+makedepends=('cvs')
+provides=("tclvfs")
+conflicts=("tclvfs")
+source=('tcl.m4')
+# generate with 'makepkg -g'
+sha256sums=('2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+
+_cvsroot=":pserver:anonymous:@tclvfs.cvs.sourceforge.net:/cvsroot/tclvfs"
+_cvsmod="${pkgbase}"
+
+_build="${srcdir}/$_cvsmod-build"
+
+prepare() {
+  cd "${srcdir}"
+  msg "Connecting to $_cvsmod.sourceforge.net CVS server...."
+  if [ -d $_cvsmod/CVS ]; then
+    cd $_cvsmod
+    cvs -z3 update -d
+  else
+    cvs -z3 -d $_cvsroot co -D ${pkgver} -f $_cvsmod
+  fi
+
+  msg "CVS checkout done or server timeout"
+
+  cd "${srcdir}/tclvfs"
+
+  cp -f ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  msg "Starting build..."
+
+  rm -rf "${_build}"
+  cp -a "${srcdir}/${_cvsmod}" "$_build"
+
+  cd "${_build}"
+  ./configure \
+    --prefix=/usr \
+    --mandir=/usr/share/man
+  make
+}
+
+package() {
+  cd "${_build}"
+  make DESTDIR="${pkgdir}" install
+}
