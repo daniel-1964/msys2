@@ -1,0 +1,61 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+pkgbase=mpmath
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Python library for arbitrary-precision floating-point arithmetic (msys)"
+arch=('any')
+url='http://www.mpmath.org/'
+license=('BSD')
+depends=("python"
+         "python-gmpy2")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=(${pkgbase}-${pkgver}.tar.gz::"https://github.com/fredrik-johansson/mpmath/archive/${pkgver}.tar.gz")
+sha256sums=('16c01d589bcb1be5cab3a07de2855b578e5fc4a7882fb61a15f2aaf118fdd06e')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+  [[ -d python-build ]] && rm -rf python-build
+  cp -a "${pkgbase}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/COPYING"
+}
