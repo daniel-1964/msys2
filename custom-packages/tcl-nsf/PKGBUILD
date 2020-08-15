@@ -1,0 +1,39 @@
+# $Id$
+# Maintainer: Richard Leys <leys.richard@gmail.com>
+# Based on Arch's PKGBUILD
+
+pkgbase=tcl-nsf
+pkgname="${pkgbase}"
+pkgver=2.1.0
+pkgrel=1
+pkgdesc="Next Scripting Language (msys)"
+arch=('any')
+url="https://next-scripting.org"
+license=('MIT')
+depends=("tcl")
+source=("https://downloads.sourceforge.net/project/next-scripting/${pkgver}/nsf${pkgver}.tar.gz"
+        'tcl.m4')
+sha256sums=('be4d7ed30bc366ca9c264626d55d5dd029eec6bf51d2a8a5e26803d64684b020'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+
+prepare() {
+  cd $srcdir/nsf${pkgver}
+  sed -i '1i #define MAX(a,b) (((a)>(b))?(a):(b))' generic/nsf.c
+  cp -f ${srcdir}/tcl.m4 m4/tcl.m4
+  autoreconf -fiv
+  cd library/mongodb
+  cp -f ${srcdir}/tcl.m4 m4/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+
+  cd $srcdir/nsf${pkgver}
+  ./configure --prefix=/usr --enable-64bit
+  make
+}
+
+package() {
+  cd $srcdir/nsf${pkgver}
+  make DESTDIR="${pkgdir}" install
+}
