@@ -1,0 +1,20 @@
+--- a/tclreadline.c
++++ b/tclreadline.c
+@@ -620,7 +620,7 @@
+        = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ 
+        rl_filename_quoting_function
+-       = (CPFunction*) TclReadlineFilenameQuotingFunction;
++       = (rl_quote_func_t *) TclReadlineFilenameQuotingFunction;
+      */
+     /*
+        rl_filename_quoting_desired = 1;
+@@ -635,7 +635,7 @@
+      * directory. If this failes, this
+      * is *not* an error.
+      */
+-    rl_attempted_completion_function = (CPPFunction *) TclReadlineCompletion;
++    rl_attempted_completion_function = (rl_completion_func_t *) TclReadlineCompletion;
+     if (read_history(historyfile)) {
+ 	if (write_history(historyfile)) {
+ 	    Tcl_AppendResult (interp, "warning: `",

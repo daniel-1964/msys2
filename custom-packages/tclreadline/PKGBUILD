@@ -1,0 +1,72 @@
+pkgbase=tclreadline
+pkgname="${pkgbase}"
+pkgver=2.1.0
+pkgrel=3
+pkgdesc="GNU Readline Extension for Tcl/Tk (msys)"
+arch=('any')
+url="http://tclreadline.sourceforge.net"
+license=('BSD')
+depends=('tcl')
+makedepends=('libreadline-devel')
+source=("https://download.sourceforge.net/${pkgbase}/${pkgbase}-${pkgver}.tar.gz"
+        'complete_nontcl.patch'
+        'completion_matches.patch'
+        'completion_pbug.patch'
+        'functions.patch'
+        'makefile.patch'
+        'manpage.patch'
+        'memuse.patch'
+        'tclshpath.patch'
+        'tinfo.patch'
+        'varnames.patch'
+        'ding.patch')
+sha256sums=('def2325e45e2b7f30b04ad5078481740596599622c253043c503c2285f5672e7'
+            '32f6b14539b295aa1ec68bf20cb0f8bf93b9b9cdde5a2f660203f4081d23c199'
+            '8a6232bb07ac611ed9a4eab563b626d5b05245473ef853757fcef4887e3f162a'
+            '39f100403760e7af3dba76a921930919c43e2403b709c049ed44bed19e845c45'
+            '4669555383c5fb4637234a4da0b83e6d77b9cdb314c4f77953e883c62dd5e457'
+            '646be24215db37a75c6be70d065f761988b7e37dc1b9e2fe693e3213d9a0fdc7'
+            '04524cd5d3260ad901847060aae807ddfaf700be9b953c400fce280dcb22eaf0'
+            'e14f0b7fce775d71ee9a5c1f27e6d25b0678a9dcd623fa0662513ccc4e40315f'
+            '6831b1d926f23556192aa00b69d7b22fd666b018b77650122de83bd5c7dbe523'
+            '08a70e05b28351e0155c71ae8c5c788caf2a903fc9fc5ca31925b8ec5fe3e7f5'
+            'b433e3b661771cdab84298336a101ad94c18e073952c8de16fcfcbbec02041be'
+            '80d50bf96cc34d34c6fc86d9aad9b8e646e8aaee4b07a750d1ee27b1db275d2b')
+
+prepare() {
+  cd $srcdir/${pkgbase}-${pkgver}
+  patch -Np1 -i ${srcdir}/complete_nontcl.patch
+  patch -Np1 -i ${srcdir}/completion_matches.patch
+  patch -Np1 -i ${srcdir}/completion_pbug.patch
+  patch -Np1 -i ${srcdir}/functions.patch
+  patch -Np2 -i ${srcdir}/makefile.patch
+  patch -Np1 -i ${srcdir}/manpage.patch
+  patch -Np1 -i ${srcdir}/memuse.patch
+  patch -Np1 -i ${srcdir}/tclshpath.patch
+  patch -Np1 -i ${srcdir}/tinfo.patch
+  patch -Np1 -i ${srcdir}/varnames.patch
+  patch -Np1 -i ${srcdir}/ding.patch
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/${pkgbase}-${pkgver} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr \
+    --enable-shared \
+    --disable-tclshrl \
+    --disable-wishrl \
+    LIBS="-ltcl"
+  # uggly but it works
+  sed -i 's/msys-/lib/' libtool
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  sed -i 's#usr/lib libtclreadline#usr/bin libtclreadline-2-1-0#' ${pkgdir}/usr/lib/tclreadline2.1.0/tclreadlineInit.tcl
+  install -Dm644 "${srcdir}"/${pkgbase}-${pkgver}/COPYING ${pkgdir}/usr/share/licenses/${pkgbase}/COPYING
+}

@@ -1,0 +1,23 @@
+--- origsrc/tclreadline-2.1.0/Makefile.am	2000-12-08 01:50:51.000000000 +0100
++++ src/tclreadline-2.1.0/Makefile.am	2015-11-13 15:13:55.114423100 +0100
+@@ -20,7 +20,7 @@ include_HEADERS = tclreadline.h
+ INCLUDES = -I$(TCL_INCLUDE_DIR) -I$(READLINE_INCLUDE_DIR)
+ 
+ ## libtclreadline_la_LIBADD = $(LIBS)
+-libtclreadline_la_LDFLAGS = -release $(MAJOR).$(MINOR).$(PATCHLEVEL)
++libtclreadline_la_LDFLAGS = -no-undefined -release $(MAJOR).$(MINOR).$(PATCHLEVEL)
+ 
+ tclrldir = @TCLRL_DIR@
+ tclrl_SCRIPTS = pkgIndex.tcl tclreadlineCompleter.tcl tclreadlineInit.tcl tclreadlineSetup.tcl
+
+--- origsrc/tclreadline-2.1.0/Makefile.in	2001-01-04 21:10:30.000000000 +0100
++++ src/tclreadline-2.1.0/Makefile.in	2016-06-21 10:58:02.604805200 +0200
+@@ -88,7 +88,7 @@ include_HEADERS = tclreadline.h
+ 
+ INCLUDES = -I$(TCL_INCLUDE_DIR) -I$(READLINE_INCLUDE_DIR)
+ 
+-libtclreadline_la_LDFLAGS = -release $(MAJOR).$(MINOR).$(PATCHLEVEL)
++libtclreadline_la_LDFLAGS = -no-undefined -release $(MAJOR).$(MINOR).$(PATCHLEVEL)
+ 
+ tclrldir = @TCLRL_DIR@
+ tclrl_SCRIPTS = pkgIndex.tcl tclreadlineCompleter.tcl tclreadlineInit.tcl tclreadlineSetup.tcl

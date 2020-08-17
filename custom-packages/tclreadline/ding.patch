@@ -1,0 +1,15 @@
+Author: Sergei Golovan
+Description: Patch replaces the deprecated ding() call by rl_ding().
+Last-Modified: Sat, 08 Oct 2016 11:17:43 +0300
+
+--- a/tclreadline.c
++++ b/tclreadline.c
+@@ -419,7 +419,7 @@
+ 	     * settings -- audible or visible.
+ 	     */
+ 
+-	    ding();
++	    rl_ding();
+ 	    break;
+ 
+         case TCLRL_UPDATE:
