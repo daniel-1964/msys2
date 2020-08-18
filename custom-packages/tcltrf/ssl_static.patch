@@ -1,0 +1,80 @@
+Patch (a quick hack actually) together with two lines in debian/rules
+allows to link libcrypto at build time (not using dl_open at runtime).
+
+--- a/generic/loadman.c
++++ b/generic/loadman.c
+@@ -134,6 +134,13 @@
+ TrfLoadMD2 (interp)
+     Tcl_Interp* interp;
+ {
++#ifdef SSL_STATIC_BUILD
++  md2f.loaded = 1;
++  md2f.init   = MD2_Init;
++  md2f.update = MD2_Update;
++  md2f.final  = MD2_Final;
++  return TCL_OK;
++#else
+   int res;
+ 
+   TrfLock; /* THREADING: serialize initialization */
+@@ -161,6 +168,7 @@
+ 
+   TrfUnlock;
+   return TCL_ERROR;
++#endif
+ }
+ 
+ /*
+@@ -234,6 +242,13 @@
+ TrfLoadSHA1 (interp)
+     Tcl_Interp* interp;
+ {
++#ifdef SSL_STATIC_BUILD
++  sha1f.loaded = 1;
++  sha1f.init   = SHA1_Init;
++  sha1f.update = SHA1_Update;
++  sha1f.final  = SHA1_Final;
++  return TCL_OK;
++#else
+   int res;
+ 
+   TrfLock; /* THREADING: serialize initialization */
+@@ -261,5 +276,6 @@
+ 
+   TrfUnlock;
+   return TCL_ERROR;
++#endif
+ }
+ 
+--- a/generic/loadman.h
++++ b/generic/loadman.h
+@@ -101,10 +101,10 @@
+ 
+ typedef struct Md2Functions {
+   long loaded;
+-  void (* init)   _ANSI_ARGS_ ((MD2_CTX* c));
+-  void (* update) _ANSI_ARGS_ ((MD2_CTX* c, unsigned char* data,
+-				unsigned long length));
+-  void (* final)  _ANSI_ARGS_ ((unsigned char* digest, MD2_CTX* c));
++  int (* init)   _ANSI_ARGS_ ((MD2_CTX* c));
++  int (* update) _ANSI_ARGS_ ((MD2_CTX* c, const unsigned char* data,
++				size_t length));
++  int (* final)  _ANSI_ARGS_ ((unsigned char* digest, MD2_CTX* c));
+ } md2Functions;
+ 
+ typedef struct Md5Functions {
+@@ -120,10 +120,10 @@
+ 
+ typedef struct Sha1Functions {
+   long loaded;
+-  void (* init)   _ANSI_ARGS_ ((SHA_CTX* c));
+-  void (* update) _ANSI_ARGS_ ((SHA_CTX* c, unsigned char* data,
+-				unsigned long length));
+-  void (* final)  _ANSI_ARGS_ ((unsigned char* digest, SHA_CTX* c));
++  int (* init)   _ANSI_ARGS_ ((SHA_CTX* c));
++  int (* update) _ANSI_ARGS_ ((SHA_CTX* c, const void *data,
++				size_t length));
++  int (* final)  _ANSI_ARGS_ ((unsigned char* digest, SHA_CTX* c));
+ } sha1Functions;
+ 
+ 

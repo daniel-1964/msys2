@@ -1,0 +1,24 @@
+--- configure.in	2016-06-24 15:11:40.864125600 +0200
++++ configure.in	2016-06-24 15:20:37.630796900 +0200
+@@ -167,7 +167,7 @@ fi
+ #--------------------------------------------------------------------
+ 
+ case "`uname -s`" in
+-    *win32* | *WIN32* | *CYGWIN_NT* | *CYGWIN_98* | *CYGWIN_95* | MINGW32_NT*)
++    *win32* | *WIN32* | MINGW32_NT*)
+ 	# On windows tclLoadWin.c depends on internal headers. Darn.
+ 	TEA_PRIVATE_TCL_HEADERS
+     ;;
+@@ -276,10 +276,10 @@ TEA_PROG_TCLSH
+ #--------------------------------------------------------------------
+ 
+ case "`uname -s`" in
+-    *win32* | *WIN32* | *CYGWIN_NT* | *CYGWIN_98* | *CYGWIN_95* | MINGW32_NT*)
++    *win32* | *WIN32* | MINGW32_NT*)
+ 	TEA_ADD_SOURCES([compat/tclLoadWin.c])
+     ;;
+-    *Darwin)
++    *Darwin | *CYGWIN*)
+     ;;
+     *)
+ 	if test "x${DL_OBJS}" != "xtclLoadDl.o"

@@ -1,0 +1,5453 @@
+Pregenerated C API documentation.
+
+--- doc/capi/html/Trf_CheckOptions.html
++++ doc/capi/html/Trf_CheckOptions.html
+@@ -0,0 +1,108 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_CheckOptions - Interface to procedures to check an option container.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_CheckOptions - Interface to procedures to check an option container.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_CheckOptions
++(
++	Trf_Options options,
++	Tcl_Interp *interp,
++	const Trf_BaseOptions *baseOptions,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_Options options<dd>
++Container with options to check.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter to write error
++messages to (NULL possible!).
++<dt>
++const Trf_BaseOptions *baseOptions<dd>
++Info about common options.
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined
++in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The procedure has to check the contents of the specified
++container for errors, consistency, etc. It is allowed to
++set default values into unspecified slots. Return value
++is a standard tcl error code. In case of failure and interp
++not NULL an error message should be left in the result area
++of the specified interpreter.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_ClearCtrlBlock.html
++++ doc/capi/html/Trf_ClearCtrlBlock.html
+@@ -0,0 +1,98 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_ClearCtrlBlock - Interface for procedures to reset the internal state of an encoder/decoder.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_ClearCtrlBlock - Interface for procedures to reset the internal state of an encoder/decoder.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_ClearCtrlBlock
++(
++	Trf_ControlBlock ctrlBlock,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_ControlBlock ctrlBlock<dd>
++State of
++encoder/decoder.
++<dt>
++ClientData clientData<dd>
++Arbitrary
++information,
++as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The generic io layer of tcl sometimes discards its input buffer. A procedure
++of this type will be called in such a case to reset the internal state of
++the control structure and to discard buffered characters.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_ConverterOptions.html
++++ doc/capi/html/Trf_ConverterOptions.html
+@@ -0,0 +1,80 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_ConverterOptions - Return the set of option processing procedures required by conversion transformers.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_ConverterOptions - Return the set of option processing procedures required by conversion transformers.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++Trf_OptionVectors *Trf_ConverterOptions(void);
++</pre>
++<h1>DESCRIPTION</h1>
++Return the set of option processing procedures required by conversion transformers.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_CreateCtrlBlock.html
++++ doc/capi/html/Trf_CreateCtrlBlock.html
+@@ -0,0 +1,115 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_CreateCtrlBlock - Interface to procedure for creation of encoder/decoder control structures.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_CreateCtrlBlock - Interface to procedure for creation of encoder/decoder control structures.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++Trf_ControlBlock Trf_CreateCtrlBlock
++(
++	ClientData writeClientData,
++	Trf_WriteProc *fun,
++	Trf_Options optInfo,
++	Tcl_Interp *interp,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++ClientData writeClientData<dd>
++Arbitrary information
++given as clientdata
++to 'fun'.
++<dt>
++Trf_WriteProc *fun<dd>
++Vector to use for writing
++generated results.
++<dt>
++Trf_Options optInfo<dd>
++Options to configure the
++control.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error
++messages.
++<dt>
++ClientData clientData<dd>
++Arbitrary information,
++as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The procedure has to create a control structure for an encoder/decoder. The
++structure must be initialized with the contents of the the option
++container. Return value is an opaque handle aof the control structure or NULL
++in case of failure. An error message should be left in the result area
++of the specified interpreter then.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_CreateOptions.html
++++ doc/capi/html/Trf_CreateOptions.html
+@@ -0,0 +1,88 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_CreateOptions - Interface to procedures to create a container holding option values.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_CreateOptions - Interface to procedures to create a container holding option values.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++Trf_Options Trf_CreateOptions(ClientData clientData);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++It is the responsibility of the procedure to create and
++initialize a container to hold option values. An opaque
++handle to the new container has to be returned.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_DeleteCtrlBlock.html
++++ doc/capi/html/Trf_DeleteCtrlBlock.html
+@@ -0,0 +1,95 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_DeleteCtrlBlock - Interface to procedure for destruction of encoder/decoder control structures.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_DeleteCtrlBlock - Interface to procedure for destruction of encoder/decoder control structures.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_DeleteCtrlBlock
++(
++	Trf_ControlBlock ctrlBlock,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_ControlBlock ctrlBlock<dd>
++Control structure to destroy.
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++It is the responsibility of the procedure to clear and release all memory
++associated to the specified control structure (which must have been created
++by the appropriate procedure of type 'Trf_CreateCtrlBlock').
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_DeleteOptions.html
++++ doc/capi/html/Trf_DeleteOptions.html
+@@ -0,0 +1,95 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_DeleteOptions - Interface to proceduress to delete a container made with 'Trf_CreateOptions'.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_DeleteOptions - Interface to proceduress to delete a container made with 'Trf_CreateOptions'.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_DeleteOptions
++(
++	Trf_Options options,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_Options options<dd>
++The container to destroy.
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++It is the responsibility of this procedure to clear and release
++all memory of the specified container (which must have been
++created by the corresponding procedure of type 'Trf_CreateOptions').
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_FlipRegisterLong.html
++++ doc/capi/html/Trf_FlipRegisterLong.html
+@@ -0,0 +1,92 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_FlipRegisterLong - Swap the bytes of all 4-byte words contained in the buffer.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_FlipRegisterLong - Swap the bytes of all 4-byte words contained in the buffer.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_FlipRegisterLong
++(
++	void *buffer,
++	int length
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *buffer<dd>
++Data to swap.
++<dt>
++int length<dd>
++Length of buffer (in byte).
++</dl>
++<h1>DESCRIPTION</h1>
++Swap the bytes of all 4-byte words contained in the buffer.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_FlipRegisterShort.html
++++ doc/capi/html/Trf_FlipRegisterShort.html
+@@ -0,0 +1,92 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_FlipRegisterShort - Swap the bytes of all 2-byte words contained in the buffer.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_FlipRegisterShort - Swap the bytes of all 2-byte words contained in the buffer.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_FlipRegisterShort
++(
++	void *buffer,
++	int length
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *buffer<dd>
++Data to swap.
++<dt>
++int length<dd>
++Length of buffer (in byte).
++</dl>
++<h1>DESCRIPTION</h1>
++Swap the bytes of all 2-byte words contained in the buffer.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_FlushTransformation.html
++++ doc/capi/html/Trf_FlushTransformation.html
+@@ -0,0 +1,102 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_FlushTransformation - Interface to procedures used to flush buffered characters.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_FlushTransformation - Interface to procedures used to flush buffered characters.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_FlushTransformation
++(
++	Trf_ControlBlock ctrlBlock,
++	Tcl_Interp *interp,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_ControlBlock ctrlBlock<dd>
++State of encoder/decoder.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error messages
++(NULL posssible).
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++An encoder/decoder is allowed to buffer characters internally. A procedure
++of this type is called just before destruction to invoke special processing
++of such characters. Return value is a standard tcl error code. In case of
++failure and interp not NULL an error message should be left in the result
++area of the specified interpreter.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_Init.html
++++ doc/capi/html/Trf_Init.html
+@@ -0,0 +1,88 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_Init - Initialize extension in standard interpreter.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_Init - Initialize extension in standard interpreter.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_Init(Tcl_Interp *interp);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Interpreter to initialize.
++</dl>
++<h1>DESCRIPTION</h1>
++Extends the interpreter with extension-specific
++structures and installs the globally visible
++command of Tcl-TRF.  Will catch attempts for
++multiple initialization of an interpreter.
++<h1>SEE ALSO</h1>
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_InitStubs.html
++++ doc/capi/html/Trf_InitStubs.html
+@@ -0,0 +1,97 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_InitStubs - Convenience declaration of Trf_InitStubs.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_InitStubs - Convenience declaration of Trf_InitStubs.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++extern char *Trf_InitStubs
++(
++	Tcl_Interp *interp,
++	const char *version,
++	int exact
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Not Documented.
++<dt>
++const char *version<dd>
++Not Documented.
++<dt>
++int exact<dd>
++Not Documented.
++</dl>
++<h1>DESCRIPTION</h1>
++This function is not *implemented* by the trf library, so the storage
++class is neither DLLEXPORT nor DLLIMPORT.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++
++
++</body>
+--- doc/capi/html/Trf_IsInitialized.html
++++ doc/capi/html/Trf_IsInitialized.html
+@@ -0,0 +1,86 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_IsInitialized - Check initialization state of specified interpreter.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_IsInitialized - Check initialization state of specified interpreter.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_IsInitialized(Tcl_Interp *interp);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Interpreter to check for initialization.
++</dl>
++<h1>DESCRIPTION</h1>
++Check, wether this extension was initialized for the
++specified interpreter or not.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_LoadLibrary.html
++++ doc/capi/html/Trf_LoadLibrary.html
+@@ -0,0 +1,104 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_LoadLibrary - General purpose library loader functionality.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_LoadLibrary - General purpose library loader functionality.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_LoadLibrary
++(
++	Tcl_Interp *interp,
++	const char *libName,
++	void **handlePtr,
++	char **symbols,
++	int num
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Not Documented.
++<dt>
++const char *libName<dd>
++Not Documented.
++<dt>
++void **handlePtr<dd>
++Not Documented.
++<dt>
++char **symbols<dd>
++Not Documented.
++<dt>
++int num<dd>
++Not Documented.
++</dl>
++<h1>DESCRIPTION</h1>
++Used by -&gt; TrfLoadZlib, -&gt; TrfLoadLibdes.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_MDCheck.html
++++ doc/capi/html/Trf_MDCheck.html
+@@ -0,0 +1,85 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_MDCheck - Interface to procedures for check/manipulation of the environment (shared libraries, ...).</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_MDCheck - Interface to procedures for check/manipulation of the environment (shared libraries, ...).
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_MDCheck(Tcl_Interp *interp);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++The interpreter for error messages.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called before doing any sort of processing.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_MDFinal.html
++++ doc/capi/html/Trf_MDFinal.html
+@@ -0,0 +1,94 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_MDFinal - Interface to procedures for generation of the final digest from a MD state.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_MDFinal - Interface to procedures for generation of the final digest from a MD state.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_MDFinal
++(
++	void *context,
++	void *digest
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *context<dd>
++State to finalize.
++<dt>
++void *digest<dd>
++Result area to fill.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called after processing the final character. It
++is its responsibility to finalize the internal state of the MD algorithm and
++to generate the resulting digest from this.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_MDStart.html
++++ doc/capi/html/Trf_MDStart.html
+@@ -0,0 +1,88 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_MDStart - Interface to procedures for initialization of a MD context.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_MDStart - Interface to procedures for initialization of a MD context.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_MDStart(void *context);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *context<dd>
++State to initialize.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called to initialize the structure
++containing the state of a special message digest algorithm. The
++memory block was allocated by the caller, with the size as specified
++in the 'Trf_MessageDigestDescription' structure of the algorithm.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_MDUpdateBuf.html
++++ doc/capi/html/Trf_MDUpdateBuf.html
+@@ -0,0 +1,98 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_MDUpdateBuf - Interface to procedures for update of a MD context.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_MDUpdateBuf - Interface to procedures for update of a MD context.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_MDUpdateBuf
++(
++	void *context,
++	unsigned char *buf,
++	int bufLen
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *context<dd>
++State to update.
++<dt>
++unsigned char *buf<dd>
++Buffer to hash into the state.
++<dt>
++int bufLen<dd>
++Number of characters in the buffer.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called for character buffer to hash
++into the final digest. This procedure is optional, its definition
++has precedence over 'Trf_MDUpdate'.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_MDUpdate.html
++++ doc/capi/html/Trf_MDUpdate.html
+@@ -0,0 +1,93 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_MDUpdate - Interface to procedures for update of a MD context.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_MDUpdate - Interface to procedures for update of a MD context.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_MDUpdate
++(
++	void *context,
++	unsigned int character
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *context<dd>
++State to update.
++<dt>
++unsigned int character<dd>
++Character to hash into the state.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called for every character to hash
++into the final digest.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_QueryMaxRead.html
++++ doc/capi/html/Trf_QueryMaxRead.html
+@@ -0,0 +1,103 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_QueryMaxRead - Interface for procedures to query a transformation about the max.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_QueryMaxRead - Interface for procedures to query a transformation about the max.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_QueryMaxRead
++(
++	Trf_ControlBlock ctrlBlock,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_ControlBlock ctrlBlock<dd>
++State of
++encoder/decoder.
++<dt>
++ClientData clientData<dd>
++Arbitrary
++information, as
++defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++ Number of bytes to read in the next call to the down channel.
++This procedure will be called by the generic trf layer just before reading
++data from the channel below the transformation. This way a transformation
++is able to control its consumption of characters. An example would be
++'identity with stop after n characters'. This would transfer at most n
++characters and then basically fake higher transformations into believing
++that EOF occured. Then popping it would reveal the truth. Pattern matching
++could be used here too (internet protocols !).
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_QueryOptions.html
++++ doc/capi/html/Trf_QueryOptions.html
+@@ -0,0 +1,103 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_QueryOptions - Interface to procedures to query an option container.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_QueryOptions - Interface to procedures to query an option container.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_QueryOptions
++(
++	Trf_Options options,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_Options options<dd>
++Option container to query.
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The result value decides wether the encoder- or decoder-set of vectors
++must be used during immediate execution of the transformer configured
++with the container contents.
++<h1>RETURNS</h1>
++<dl><dt>
++0<dd>
++Use decoder.
++<dt>
++1<dd>
++Use encoder.
++</dl>
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_Register.html
++++ doc/capi/html/Trf_Register.html
+@@ -0,0 +1,94 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_Register - Register the specified transformation at the given interpreter.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_Register - Register the specified transformation at the given interpreter.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_Register
++(
++	Tcl_Interp *interp,
++	const Trf_TypeDefinition *type
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Interpreter to register at.
++<dt>
++const Trf_TypeDefinition *type<dd>
++Transformation to register.
++</dl>
++<h1>DESCRIPTION</h1>
++Extends the given interpreter with a new command giving access
++to the transformation described in 'type'. 'Type-&gt;name' is used
++as name of the command.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_RegisterMessageDigest.html
++++ doc/capi/html/Trf_RegisterMessageDigest.html
+@@ -0,0 +1,95 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_RegisterMessageDigest - Procedure to register a message digest algorithm in an interpreter.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_RegisterMessageDigest - Procedure to register a message digest algorithm in an interpreter.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_RegisterMessageDigest
++(
++	Tcl_Interp *interp,
++	const Trf_MessageDigestDescription *md_desc
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Interpreter to register the MD algorithm at.
++<dt>
++const Trf_MessageDigestDescription *md_desc<dd>
++Description of the MD
++algorithm.
++</dl>
++<h1>DESCRIPTION</h1>
++The procedure registers the described MDA at the given interpreter. Return
++value is a standard tcl error code. In case of failure an error message
++should be left in the result area of the given interpreter.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_SafeInit.html
++++ doc/capi/html/Trf_SafeInit.html
+@@ -0,0 +1,89 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_SafeInit - Initialize extension in SAFE interpreter.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_SafeInit - Initialize extension in SAFE interpreter.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_SafeInit(Tcl_Interp *interp);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Interpreter to initialize.
++</dl>
++<h1>DESCRIPTION</h1>
++Same as --&gt; Trf_Init.  The only security
++relevant operations are reading from and
++writing to a file.  As Tcl-Handles are
++given to these commands it is assumed that
++they were checked and cleared beforehand.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_SeekQueryOptions.html
++++ doc/capi/html/Trf_SeekQueryOptions.html
+@@ -0,0 +1,110 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_SeekQueryOptions - Interface to procedures to query an option container.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_SeekQueryOptions - Interface to procedures to query an option container.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_SeekQueryOptions
++(
++	Tcl_Interp *interp,
++	Trf_Options options,
++	Trf_SeekInformation *seekInfo,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Tcl_Interp *interp<dd>
++Interpreter to use
++for reflecting the
++query up into tcl,
++if necessary.
++<dt>
++Trf_Options options<dd>
++Option container
++to query.
++<dt>
++Trf_SeekInformation *seekInfo<dd>
++The policy to modify.
++<dt>
++ClientData clientData<dd>
++Arbitrary
++information, as
++defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The procedure is allowed to change the natural seek policy defined for the
++transformation according to the current configuration.
++<h1>RETURNS</h1>
++Nothing.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_SetObjOption.html
++++ doc/capi/html/Trf_SetObjOption.html
+@@ -0,0 +1,113 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_SetObjOption - Interface to procedures to define the value of an option.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_SetObjOption - Interface to procedures to define the value of an option.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_SetObjOption
++(
++	Trf_Options options,
++	Tcl_Interp *interp,
++	const char *optname,
++	const Tcl_Obj *optvalue,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_Options options<dd>
++Container to place the value into.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error messages
++(NULL possible).
++<dt>
++const char *optname<dd>
++Name of option to define.
++<dt>
++const Tcl_Obj *optvalue<dd>
++Value to set into the container.
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The procedure takes the specified optionname (rejecting
++illegal ones) and places the given optionvalue into the
++container. All necessary conversions from a Tcl_Obj to the
++required type should be done here. Return value is a standard
++tcl error code. In case of failure and interp not NULL an
++error message should be left in the result area of the
++specified interpreter. This procedure makes sense for tcl
++version 8 and above only.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_SetOption.html
++++ doc/capi/html/Trf_SetOption.html
+@@ -0,0 +1,112 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_SetOption - Interface to procedures to define the value of an option.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_SetOption - Interface to procedures to define the value of an option.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_SetOption
++(
++	Trf_Options options,
++	Tcl_Interp *interp,
++	const char *optname,
++	const char *optvalue,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_Options options<dd>
++Container to place the value into.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error messages
++(NULL possible).
++<dt>
++const char *optname<dd>
++Name of option to define.
++<dt>
++const char *optvalue<dd>
++Value to set into the container.
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++The procedure takes the specified optionname (rejecting
++illegal ones) and places the given optionvalue into the
++container. All necessary conversions from a string to the
++required type should be done here. Return value is a standard
++tcl error code. In case of failure and interp not NULL an
++error message should be left in the result area of the
++specified interpreter.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_ShiftRegister.html
++++ doc/capi/html/Trf_ShiftRegister.html
+@@ -0,0 +1,102 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_ShiftRegister - Shift the register.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_ShiftRegister - Shift the register.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_ShiftRegister
++(
++	void *buffer,
++	void *in,
++	int shift,
++	int buffer_length
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *buffer<dd>
++Data shifted to the left.
++<dt>
++void *in<dd>
++2nd register shifted into the buffer.
++<dt>
++int shift<dd>
++Number of bytes to shift out (and in).
++<dt>
++int buffer_length<dd>
++Length of buffer and in (in byte).
++</dl>
++<h1>DESCRIPTION</h1>
++The register is shifted 'shift' bytes to the left. The same
++number of bytes from the left of the 2nd register ('in') is
++inserted at the right of 'buffer' to replace the lost bytes.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_TransformBuffer.html
++++ doc/capi/html/Trf_TransformBuffer.html
+@@ -0,0 +1,111 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_TransformBuffer - Interface to procedures for transformation of character sequences.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_TransformBuffer - Interface to procedures for transformation of character sequences.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_TransformBuffer
++(
++	Trf_ControlBlock ctrlBlock,
++	unsigned char *buf,
++	int bufLen,
++	Tcl_Interp *interp,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_ControlBlock ctrlBlock<dd>
++State of encoder/decoder.
++<dt>
++unsigned char *buf<dd>
++Characters to transform.
++<dt>
++int bufLen<dd>
++Number of characters.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error messages
++(NULL possible).
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined
++in Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called to encode/decode a complete buffer. Return
++value is a standard tcl error code. In case of failure and interp not
++NULL an error message should be left in the result area of the specified
++interpreter. Only one of 'Trf_TransformCharacter' and 'Trf_TransformBuffer'
++must be provided. The first named is easier to implement, this one should be
++faster. If both are provided, -&gt; 'Trf_TransformBuffer' takes precedence.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<A Href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_TransformCharacter.html
++++ doc/capi/html/Trf_TransformCharacter.html
+@@ -0,0 +1,108 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_TransformCharacter - Interface to procedures for transformation of a single character.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_TransformCharacter - Interface to procedures for transformation of a single character.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_TransformCharacter
++(
++	Trf_ControlBlock ctrlBlock,
++	unsigned int character,
++	Tcl_Interp *interp,
++	ClientData clientData
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++Trf_ControlBlock ctrlBlock<dd>
++State of encoder/decoder.
++<dt>
++unsigned int character<dd>
++Character to transform.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error messages
++(NULL possible).
++<dt>
++ClientData clientData<dd>
++Arbitrary information, as defined
++in Trf_TypeDefinition.clientData.
++</dl>
++<h1>DESCRIPTION</h1>
++A procedure of this type is called to encode/decode a single
++character. Return value is a standard tcl error code. In case of
++failure and interp not NULL an error message should be left in the
++result area of the specified interpreter. Only one of 'Trf_TransformCharacter'
++and 'Trf_TransformBuffer' must be provided. This one is easier to
++implement, the second one should be faster. If both are
++provided, -&gt; 'Trf_TransformBuffer' takes precedence.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_WriteProc.html
++++ doc/capi/html/Trf_WriteProc.html
+@@ -0,0 +1,106 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_WriteProc - Interface to procedures used by an encoder/decoder to write its transformation results.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_WriteProc - Interface to procedures used by an encoder/decoder to write its transformation results.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++int Trf_WriteProc
++(
++	ClientData clientData,
++	unsigned char *outString,
++	int outLen,
++	Tcl_Interp *interp
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++ClientData clientData<dd>
++Arbitrary information, defined during
++controlblock creation.
++<dt>
++unsigned char *outString<dd>
++Buffer with characters to write.
++<dt>
++int outLen<dd>
++Number of characters in buffer.
++<dt>
++Tcl_Interp *interp<dd>
++Interpreter for error messages
++(NULL possible).
++</dl>
++<h1>DESCRIPTION</h1>
++Procedures of this type are called by an encoder/decoder to write
++(partial) transformation results, decoupling the final destination
++from result generation.  Return value is a standard tcl error code. In
++case of failure and interp not NULL an error message should be left
++in the result area of the specified interpreter.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_XorBuffer.html>Trf_XorBuffer</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/html/Trf_XorBuffer.html
++++ doc/capi/html/Trf_XorBuffer.html
+@@ -0,0 +1,97 @@
++<!WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++<!DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++<header>
++<title>Trf_XorBuffer - XOR the bytes in a buffer with a mask.</title>
++</header>
++<body>
++<h1>NAME</h1>
++Trf_XorBuffer - XOR the bytes in a buffer with a mask.
++<h1>SYNOPSIS</h1>
++<pre>#include &lt;transform.h&gt;
++
++void Trf_XorBuffer
++(
++	void *buffer,
++	void *mask,
++	int length
++);
++</pre>
++<h1>PARAMETERS</h1>
++<dl><dt>
++void *buffer<dd>
++Buffer to xor the mask with.
++<dt>
++void *mask<dd>
++Mask bytes xor'ed into the buffer.
++<dt>
++int length<dd>
++Length of mask and buffer (in byte).
++</dl>
++<h1>DESCRIPTION</h1>
++Internally used by the implementation of the
++various stream modes available to blockciphers.
++<h1>SEE ALSO</h1>
++<a href=Trf_Init.html>Trf_Init</a>
++,
++<a href=Trf_SafeInit.html>Trf_SafeInit</a>
++,
++<a href=Trf_IsInitialized.html>Trf_IsInitialized</a>
++,
++<a href=Trf_CreateOptions.html>Trf_CreateOptions</a>
++,
++<a href=Trf_DeleteOptions.html>Trf_DeleteOptions</a>
++,
++<a href=Trf_CheckOptions.html>Trf_CheckOptions</a>
++,
++<a href=Trf_SetOption.html>Trf_SetOption</a>
++,
++<a href=Trf_SetObjOption.html>Trf_SetObjOption</a>
++,
++<a href=Trf_QueryOptions.html>Trf_QueryOptions</a>
++,
++<a href=Trf_SeekQueryOptions.html>Trf_SeekQueryOptions</a>
++,
++<a href=Trf_WriteProc.html>Trf_WriteProc</a>
++,
++<a href=Trf_CreateCtrlBlock.html>Trf_CreateCtrlBlock</a>
++,
++<a href=Trf_DeleteCtrlBlock.html>Trf_DeleteCtrlBlock</a>
++,
++<a href=Trf_TransformCharacter.html>Trf_TransformCharacter</a>
++,
++<a href=Trf_TransformBuffer.html>Trf_TransformBuffer</a>
++,
++<a href=Trf_FlushTransformation.html>Trf_FlushTransformation</a>
++,
++<a href=Trf_ClearCtrlBlock.html>Trf_ClearCtrlBlock</a>
++,
++<a href=Trf_QueryMaxRead.html>Trf_QueryMaxRead</a>
++,
++<a href=Trf_Register.html>Trf_Register</a>
++,
++<a href=Trf_ConverterOptions.html>Trf_ConverterOptions</a>
++,
++<a href=Trf_MDStart.html>Trf_MDStart</a>
++,
++<a href=Trf_MDUpdate.html>Trf_MDUpdate</a>
++,
++<a href=Trf_MDUpdateBuf.html>Trf_MDUpdateBuf</a>
++,
++<a href=Trf_MDFinal.html>Trf_MDFinal</a>
++,
++<a href=Trf_MDCheck.html>Trf_MDCheck</a>
++,
++<a href=Trf_RegisterMessageDigest.html>Trf_RegisterMessageDigest</a>
++,
++<a href=Trf_LoadLibrary.html>Trf_LoadLibrary</a>
++,
++<a href=Trf_ShiftRegister.html>Trf_ShiftRegister</a>
++,
++<a href=Trf_FlipRegisterShort.html>Trf_FlipRegisterShort</a>
++,
++<a href=Trf_FlipRegisterLong.html>Trf_FlipRegisterLong</a>
++,
++<a href=Trf_InitStubs.html>Trf_InitStubs</a>
++
++
++</body>
+--- doc/capi/man/Trf_CheckOptions.3
++++ doc/capi/man/Trf_CheckOptions.3
+@@ -0,0 +1,78 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_CheckOptions" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_CheckOptions \- Interface to procedures to check an option container.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_CheckOptions
++.br
++(
++.br
++	Trf_Options options,
++.br
++	Tcl_Interp *interp,
++.br
++	const Trf_BaseOptions *baseOptions,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_Options options"
++Container with options to check.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to write error
++messages to (NULL possible!).
++.TP
++.B "const Trf_BaseOptions *baseOptions"
++Info about common options.
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined
++in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The procedure has to check the contents of the specified
++container for errors, consistency, etc. It is allowed to
++set default values into unspecified slots. Return value
++is a standard tcl error code. In case of failure and interp
++not NULL an error message should be left in the result area
++of the specified interpreter.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_ClearCtrlBlock.3
++++ doc/capi/man/Trf_ClearCtrlBlock.3
+@@ -0,0 +1,66 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_ClearCtrlBlock" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_ClearCtrlBlock \- Interface for procedures to reset the internal state of an encoder/decoder.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_ClearCtrlBlock
++.br
++(
++.br
++	Trf_ControlBlock ctrlBlock,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_ControlBlock ctrlBlock"
++State of
++encoder/decoder.
++.TP
++.B "ClientData clientData"
++Arbitrary
++information,
++as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The generic io layer of tcl sometimes discards its input buffer. A procedure
++of this type will be called in such a case to reset the internal state of
++the control structure and to discard buffered characters.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_ConverterOptions.3
++++ doc/capi/man/Trf_ConverterOptions.3
+@@ -0,0 +1,45 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_ConverterOptions" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_ConverterOptions \- Return the set of option processing procedures required by conversion transformers.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++Trf_OptionVectors *Trf_ConverterOptions(void);
++.ft R
++.SH "DESCRIPTION"
++Return the set of option processing procedures required by conversion transformers.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_CreateCtrlBlock.3
++++ doc/capi/man/Trf_CreateCtrlBlock.3
+@@ -0,0 +1,86 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_CreateCtrlBlock" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_CreateCtrlBlock \- Interface to procedure for creation of encoder/decoder control structures.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++Trf_ControlBlock Trf_CreateCtrlBlock
++.br
++(
++.br
++	ClientData writeClientData,
++.br
++	Trf_WriteProc *fun,
++.br
++	Trf_Options optInfo,
++.br
++	Tcl_Interp *interp,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "ClientData writeClientData"
++Arbitrary information
++given as clientdata
++to 'fun'.
++.TP
++.B "Trf_WriteProc *fun"
++Vector to use for writing
++generated results.
++.TP
++.B "Trf_Options optInfo"
++Options to configure the
++control.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error
++messages.
++.TP
++.B "ClientData clientData"
++Arbitrary information,
++as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The procedure has to create a control structure for an encoder/decoder. The
++structure must be initialized with the contents of the the option
++container. Return value is an opaque handle aof the control structure or NULL
++in case of failure. An error message should be left in the result area
++of the specified interpreter then.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_CreateOptions.3
++++ doc/capi/man/Trf_CreateOptions.3
+@@ -0,0 +1,52 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_CreateOptions" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_CreateOptions \- Interface to procedures to create a container holding option values.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++Trf_Options Trf_CreateOptions(ClientData clientData);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++It is the responsibility of the procedure to create and
++initialize a container to hold option values. An opaque
++handle to the new container has to be returned.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_DeleteCtrlBlock.3
++++ doc/capi/man/Trf_DeleteCtrlBlock.3
+@@ -0,0 +1,63 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_DeleteCtrlBlock" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_DeleteCtrlBlock \- Interface to procedure for destruction of encoder/decoder control structures.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_DeleteCtrlBlock
++.br
++(
++.br
++	Trf_ControlBlock ctrlBlock,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_ControlBlock ctrlBlock"
++Control structure to destroy.
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++It is the responsibility of the procedure to clear and release all memory
++associated to the specified control structure (which must have been created
++by the appropriate procedure of type 'Trf_CreateCtrlBlock').
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_DeleteOptions.3
++++ doc/capi/man/Trf_DeleteOptions.3
+@@ -0,0 +1,63 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_DeleteOptions" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_DeleteOptions \- Interface to proceduress to delete a container made with 'Trf_CreateOptions'.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_DeleteOptions
++.br
++(
++.br
++	Trf_Options options,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_Options options"
++The container to destroy.
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++It is the responsibility of this procedure to clear and release
++all memory of the specified container (which must have been
++created by the corresponding procedure of type 'Trf_CreateOptions').
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_FlipRegisterLong.3
++++ doc/capi/man/Trf_FlipRegisterLong.3
+@@ -0,0 +1,60 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_FlipRegisterLong" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_FlipRegisterLong \- Swap the bytes of all 4-byte words contained in the buffer.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_FlipRegisterLong
++.br
++(
++.br
++	void *buffer,
++.br
++	int length
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *buffer"
++Data to swap.
++.TP
++.B "int length"
++Length of buffer (in byte).
++.SH "DESCRIPTION"
++Swap the bytes of all 4-byte words contained in the buffer.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_FlipRegisterShort.3
++++ doc/capi/man/Trf_FlipRegisterShort.3
+@@ -0,0 +1,60 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_FlipRegisterShort" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_FlipRegisterShort \- Swap the bytes of all 2-byte words contained in the buffer.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_FlipRegisterShort
++.br
++(
++.br
++	void *buffer,
++.br
++	int length
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *buffer"
++Data to swap.
++.TP
++.B "int length"
++Length of buffer (in byte).
++.SH "DESCRIPTION"
++Swap the bytes of all 2-byte words contained in the buffer.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_FlushTransformation.3
++++ doc/capi/man/Trf_FlushTransformation.3
+@@ -0,0 +1,71 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_FlushTransformation" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_FlushTransformation \- Interface to procedures used to flush buffered characters.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_FlushTransformation
++.br
++(
++.br
++	Trf_ControlBlock ctrlBlock,
++.br
++	Tcl_Interp *interp,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_ControlBlock ctrlBlock"
++State of encoder/decoder.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error messages
++(NULL posssible).
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++An encoder/decoder is allowed to buffer characters internally. A procedure
++of this type is called just before destruction to invoke special processing
++of such characters. Return value is a standard tcl error code. In case of
++failure and interp not NULL an error message should be left in the result
++area of the specified interpreter.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_Init.3
++++ doc/capi/man/Trf_Init.3
+@@ -0,0 +1,52 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_Init" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_Init \- Initialize extension in standard interpreter.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_Init(Tcl_Interp *interp);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to initialize.
++.SH "DESCRIPTION"
++Extends the interpreter with extension-specific
++structures and installs the globally visible
++command of Tcl-TRF.  Will catch attempts for
++multiple initialization of an interpreter.
++.SH "SEE ALSO"
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_InitStubs.3
++++ doc/capi/man/Trf_InitStubs.3
+@@ -0,0 +1,66 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_InitStubs" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_InitStubs \- Convenience declaration of Trf_InitStubs.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++extern char *Trf_InitStubs
++.br
++(
++.br
++	Tcl_Interp *interp,
++.br
++	const char *version,
++.br
++	int exact
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Not Documented.
++.TP
++.B "const char *version"
++Not Documented.
++.TP
++.B "int exact"
++Not Documented.
++.SH "DESCRIPTION"
++This function is not *implemented* by the trf library, so the storage
++class is neither DLLEXPORT nor DLLIMPORT.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3)
+--- doc/capi/man/Trf_IsInitialized.3
++++ doc/capi/man/Trf_IsInitialized.3
+@@ -0,0 +1,50 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_IsInitialized" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_IsInitialized \- Check initialization state of specified interpreter.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_IsInitialized(Tcl_Interp *interp);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to check for initialization.
++.SH "DESCRIPTION"
++Check, wether this extension was initialized for the
++specified interpreter or not.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_LoadLibrary.3
++++ doc/capi/man/Trf_LoadLibrary.3
+@@ -0,0 +1,75 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_LoadLibrary" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_LoadLibrary \- General purpose library loader functionality.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_LoadLibrary
++.br
++(
++.br
++	Tcl_Interp *interp,
++.br
++	const char *libName,
++.br
++	void **handlePtr,
++.br
++	char **symbols,
++.br
++	int num
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Not Documented.
++.TP
++.B "const char *libName"
++Not Documented.
++.TP
++.B "void **handlePtr"
++Not Documented.
++.TP
++.B "char **symbols"
++Not Documented.
++.TP
++.B "int num"
++Not Documented.
++.SH "DESCRIPTION"
++Used by -> TrfLoadZlib, -> TrfLoadLibdes.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_MDCheck.3
++++ doc/capi/man/Trf_MDCheck.3
+@@ -0,0 +1,49 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_MDCheck" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_MDCheck \- Interface to procedures for check/manipulation of the environment (shared libraries, ...).
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_MDCheck(Tcl_Interp *interp);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++The interpreter for error messages.
++.SH "DESCRIPTION"
++A procedure of this type is called before doing any sort of processing.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_MDFinal.3
++++ doc/capi/man/Trf_MDFinal.3
+@@ -0,0 +1,62 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_MDFinal" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_MDFinal \- Interface to procedures for generation of the final digest from a MD state.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_MDFinal
++.br
++(
++.br
++	void *context,
++.br
++	void *digest
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *context"
++State to finalize.
++.TP
++.B "void *digest"
++Result area to fill.
++.SH "DESCRIPTION"
++A procedure of this type is called after processing the final character. It
++is its responsibility to finalize the internal state of the MD algorithm and
++to generate the resulting digest from this.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_MDStart.3
++++ doc/capi/man/Trf_MDStart.3
+@@ -0,0 +1,52 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_MDStart" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_MDStart \- Interface to procedures for initialization of a MD context.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_MDStart(void *context);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *context"
++State to initialize.
++.SH "DESCRIPTION"
++A procedure of this type is called to initialize the structure
++containing the state of a special message digest algorithm. The
++memory block was allocated by the caller, with the size as specified
++in the 'Trf_MessageDigestDescription' structure of the algorithm.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_MDUpdate.3
++++ doc/capi/man/Trf_MDUpdate.3
+@@ -0,0 +1,61 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_MDUpdate" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_MDUpdate \- Interface to procedures for update of a MD context.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_MDUpdate
++.br
++(
++.br
++	void *context,
++.br
++	unsigned int character
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *context"
++State to update.
++.TP
++.B "unsigned int character"
++Character to hash into the state.
++.SH "DESCRIPTION"
++A procedure of this type is called for every character to hash
++into the final digest.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_MDUpdateBuf.3
++++ doc/capi/man/Trf_MDUpdateBuf.3
+@@ -0,0 +1,67 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_MDUpdateBuf" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_MDUpdateBuf \- Interface to procedures for update of a MD context.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_MDUpdateBuf
++.br
++(
++.br
++	void *context,
++.br
++	unsigned char *buf,
++.br
++	int bufLen
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *context"
++State to update.
++.TP
++.B "unsigned char *buf"
++Buffer to hash into the state.
++.TP
++.B "int bufLen"
++Number of characters in the buffer.
++.SH "DESCRIPTION"
++A procedure of this type is called for character buffer to hash
++into the final digest. This procedure is optional, its definition
++has precedence over 'Trf_MDUpdate'.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_QueryMaxRead.3
++++ doc/capi/man/Trf_QueryMaxRead.3
+@@ -0,0 +1,71 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_QueryMaxRead" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_QueryMaxRead \- Interface for procedures to query a transformation about the max.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_QueryMaxRead
++.br
++(
++.br
++	Trf_ControlBlock ctrlBlock,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_ControlBlock ctrlBlock"
++State of
++encoder/decoder.
++.TP
++.B "ClientData clientData"
++Arbitrary
++information, as
++defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++ Number of bytes to read in the next call to the down channel.
++This procedure will be called by the generic trf layer just before reading
++data from the channel below the transformation. This way a transformation
++is able to control its consumption of characters. An example would
++be 'identity with stop after n characters'. This would transfer at most n
++characters and then basically fake higher transformations into believing
++that EOF occured. Then popping it would reveal the truth. Pattern matching
++could be used here too (internet protocols !).
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_QueryOptions.3
++++ doc/capi/man/Trf_QueryOptions.3
+@@ -0,0 +1,70 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_QueryOptions" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_QueryOptions \- Interface to procedures to query an option container.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_QueryOptions
++.br
++(
++.br
++	Trf_Options options,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_Options options"
++Option container to query.
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The result value decides wether the encoder- or decoder-set of vectors
++must be used during immediate execution of the transformer configured
++with the container contents.
++.SH "RETURNS"
++.TP
++.B "0"
++Use decoder.
++.TP
++.B "1"
++Use encoder.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_Register.3
++++ doc/capi/man/Trf_Register.3
+@@ -0,0 +1,62 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_Register" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_Register \- Register the specified transformation at the given interpreter.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_Register
++.br
++(
++.br
++	Tcl_Interp *interp,
++.br
++	const Trf_TypeDefinition *type
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to register at.
++.TP
++.B "const Trf_TypeDefinition *type"
++Transformation to register.
++.SH "DESCRIPTION"
++Extends the given interpreter with a new command giving access
++to the transformation described in 'type'. 'Type->name' is used
++as name of the command.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_RegisterMessageDigest.3
++++ doc/capi/man/Trf_RegisterMessageDigest.3
+@@ -0,0 +1,63 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_RegisterMessageDigest" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_RegisterMessageDigest \- Procedure to register a message digest algorithm in an interpreter.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_RegisterMessageDigest
++.br
++(
++.br
++	Tcl_Interp *interp,
++.br
++	const Trf_MessageDigestDescription *md_desc
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to register the MD algorithm at.
++.TP
++.B "const Trf_MessageDigestDescription *md_desc"
++Description of the MD
++algorithm.
++.SH "DESCRIPTION"
++The procedure registers the described MDA at the given interpreter. Return
++value is a standard tcl error code. In case of failure an error message
++should be left in the result area of the given interpreter.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_SafeInit.3
++++ doc/capi/man/Trf_SafeInit.3
+@@ -0,0 +1,53 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_SafeInit" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_SafeInit \- Initialize extension in SAFE interpreter.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_SafeInit(Tcl_Interp *interp);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to initialize.
++.SH "DESCRIPTION"
++Same as --> Trf_Init.  The only security
++relevant operations are reading from and
++writing to a file.  As Tcl-Handles are
++given to these commands it is assumed that
++they were checked and cleared beforehand.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_SeekQueryOptions.3
++++ doc/capi/man/Trf_SeekQueryOptions.3
+@@ -0,0 +1,80 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_SeekQueryOptions" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_SeekQueryOptions \- Interface to procedures to query an option container.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_SeekQueryOptions
++.br
++(
++.br
++	Tcl_Interp *interp,
++.br
++	Trf_Options options,
++.br
++	Trf_SeekInformation *seekInfo,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Tcl_Interp *interp"
++Interpreter to use
++for reflecting the
++query up into tcl,
++if necessary.
++.TP
++.B "Trf_Options options"
++Option container
++to query.
++.TP
++.B "Trf_SeekInformation *seekInfo"
++The policy to modify.
++.TP
++.B "ClientData clientData"
++Arbitrary
++information, as
++defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The procedure is allowed to change the natural seek policy defined for the
++transformation according to the current configuration.
++.SH "RETURNS"
++Nothing.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_SetObjOption.3
++++ doc/capi/man/Trf_SetObjOption.3
+@@ -0,0 +1,84 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_SetObjOption" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_SetObjOption \- Interface to procedures to define the value of an option.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_SetObjOption
++.br
++(
++.br
++	Trf_Options options,
++.br
++	Tcl_Interp *interp,
++.br
++	const char *optname,
++.br
++	const Tcl_Obj *optvalue,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_Options options"
++Container to place the value into.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error messages
++(NULL possible).
++.TP
++.B "const char *optname"
++Name of option to define.
++.TP
++.B "const Tcl_Obj *optvalue"
++Value to set into the container.
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The procedure takes the specified optionname (rejecting
++illegal ones) and places the given optionvalue into the
++container. All necessary conversions from a Tcl_Obj to the
++required type should be done here. Return value is a standard
++tcl error code. In case of failure and interp not NULL an
++error message should be left in the result area of the
++specified interpreter. This procedure makes sense for tcl
++version 8 and above only.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_SetOption.3
++++ doc/capi/man/Trf_SetOption.3
+@@ -0,0 +1,83 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_SetOption" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_SetOption \- Interface to procedures to define the value of an option.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_SetOption
++.br
++(
++.br
++	Trf_Options options,
++.br
++	Tcl_Interp *interp,
++.br
++	const char *optname,
++.br
++	const char *optvalue,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_Options options"
++Container to place the value into.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error messages
++(NULL possible).
++.TP
++.B "const char *optname"
++Name of option to define.
++.TP
++.B "const char *optvalue"
++Value to set into the container.
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined in
++Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++The procedure takes the specified optionname (rejecting
++illegal ones) and places the given optionvalue into the
++container. All necessary conversions from a string to the
++required type should be done here. Return value is a standard
++tcl error code. In case of failure and interp not NULL an
++error message should be left in the result area of the
++specified interpreter.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_ShiftRegister.3
++++ doc/capi/man/Trf_ShiftRegister.3
+@@ -0,0 +1,72 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_ShiftRegister" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_ShiftRegister \- Shift the register.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_ShiftRegister
++.br
++(
++.br
++	void *buffer,
++.br
++	void *in,
++.br
++	int shift,
++.br
++	int buffer_length
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *buffer"
++Data shifted to the left.
++.TP
++.B "void *in"
++2nd register shifted into the buffer.
++.TP
++.B "int shift"
++Number of bytes to shift out (and in).
++.TP
++.B "int buffer_length"
++Length of buffer and in (in byte).
++.SH "DESCRIPTION"
++The register is shifted 'shift' bytes to the left. The same
++number of bytes from the left of the 2nd register ('in') is
++inserted at the right of 'buffer' to replace the lost bytes.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_TransformBuffer.3
++++ doc/capi/man/Trf_TransformBuffer.3
+@@ -0,0 +1,82 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_TransformBuffer" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_TransformBuffer \- Interface to procedures for transformation of character sequences.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_TransformBuffer
++.br
++(
++.br
++	Trf_ControlBlock ctrlBlock,
++.br
++	unsigned char *buf,
++.br
++	int bufLen,
++.br
++	Tcl_Interp *interp,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_ControlBlock ctrlBlock"
++State of encoder/decoder.
++.TP
++.B "unsigned char *buf"
++Characters to transform.
++.TP
++.B "int bufLen"
++Number of characters.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error messages
++(NULL possible).
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined
++in Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++A procedure of this type is called to encode/decode a complete buffer. Return
++value is a standard tcl error code. In case of failure and interp not
++NULL an error message should be left in the result area of the specified
++interpreter. Only one of 'Trf_TransformCharacter' and 'Trf_TransformBuffer'
++must be provided. The first named is easier to implement, this one should be
++faster. If both are provided, -> 'Trf_TransformBuffer' takes precedence.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_TransformCharacter.3
++++ doc/capi/man/Trf_TransformCharacter.3
+@@ -0,0 +1,78 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_TransformCharacter" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_TransformCharacter \- Interface to procedures for transformation of a single character.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_TransformCharacter
++.br
++(
++.br
++	Trf_ControlBlock ctrlBlock,
++.br
++	unsigned int character,
++.br
++	Tcl_Interp *interp,
++.br
++	ClientData clientData
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "Trf_ControlBlock ctrlBlock"
++State of encoder/decoder.
++.TP
++.B "unsigned int character"
++Character to transform.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error messages
++(NULL possible).
++.TP
++.B "ClientData clientData"
++Arbitrary information, as defined
++in Trf_TypeDefinition.clientData.
++.SH "DESCRIPTION"
++A procedure of this type is called to encode/decode a single
++character. Return value is a standard tcl error code. In case of
++failure and interp not NULL an error message should be left in the
++result area of the specified interpreter. Only one of 'Trf_TransformCharacter'
++and 'Trf_TransformBuffer' must be provided. This one is easier to
++implement, the second one should be faster. If both are
++provided, -> 'Trf_TransformBuffer' takes precedence.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_WriteProc.3
++++ doc/capi/man/Trf_WriteProc.3
+@@ -0,0 +1,76 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_WriteProc" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_WriteProc \- Interface to procedures used by an encoder/decoder to write its transformation results.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++int Trf_WriteProc
++.br
++(
++.br
++	ClientData clientData,
++.br
++	unsigned char *outString,
++.br
++	int outLen,
++.br
++	Tcl_Interp *interp
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "ClientData clientData"
++Arbitrary information, defined during
++controlblock creation.
++.TP
++.B "unsigned char *outString"
++Buffer with characters to write.
++.TP
++.B "int outLen"
++Number of characters in buffer.
++.TP
++.B "Tcl_Interp *interp"
++Interpreter for error messages
++(NULL possible).
++.SH "DESCRIPTION"
++Procedures of this type are called by an encoder/decoder to write
++(partial) transformation results, decoupling the final destination
++from result generation.  Return value is a standard tcl error code. In
++case of failure and interp not NULL an error message should be left
++in the result area of the specified interpreter.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_XorBuffer(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)
+--- doc/capi/man/Trf_XorBuffer.3
++++ doc/capi/man/Trf_XorBuffer.3
+@@ -0,0 +1,66 @@
++.\" WARNING! THIS FILE WAS GENERATED AUTOMATICALLY BY c2man!
++.\" DO NOT EDIT! CHANGES MADE TO THIS FILE WILL BE LOST!
++.TH "Trf_XorBuffer" 3 "27 August 2002" "c2man transform.h"
++.SH "NAME"
++Trf_XorBuffer \- XOR the bytes in a buffer with a mask.
++.SH "SYNOPSIS"
++.ft B
++#include <transform.h>
++.sp
++void Trf_XorBuffer
++.br
++(
++.br
++	void *buffer,
++.br
++	void *mask,
++.br
++	int length
++.br
++);
++.ft R
++.SH "PARAMETERS"
++.TP
++.B "void *buffer"
++Buffer to xor the mask with.
++.TP
++.B "void *mask"
++Mask bytes xor'ed into the buffer.
++.TP
++.B "int length"
++Length of mask and buffer (in byte).
++.SH "DESCRIPTION"
++Internally used by the implementation of the
++various stream modes available to blockciphers.
++.SH "SEE ALSO"
++Trf_Init(3),
++Trf_SafeInit(3),
++Trf_IsInitialized(3),
++Trf_CreateOptions(3),
++Trf_DeleteOptions(3),
++Trf_CheckOptions(3),
++Trf_SetOption(3),
++Trf_SetObjOption(3),
++Trf_QueryOptions(3),
++Trf_SeekQueryOptions(3),
++Trf_WriteProc(3),
++Trf_CreateCtrlBlock(3),
++Trf_DeleteCtrlBlock(3),
++Trf_TransformCharacter(3),
++Trf_TransformBuffer(3),
++Trf_FlushTransformation(3),
++Trf_ClearCtrlBlock(3),
++Trf_QueryMaxRead(3),
++Trf_Register(3),
++Trf_ConverterOptions(3),
++Trf_MDStart(3),
++Trf_MDUpdate(3),
++Trf_MDUpdateBuf(3),
++Trf_MDFinal(3),
++Trf_MDCheck(3),
++Trf_RegisterMessageDigest(3),
++Trf_LoadLibrary(3),
++Trf_ShiftRegister(3),
++Trf_FlipRegisterShort(3),
++Trf_FlipRegisterLong(3),
++Trf_InitStubs(3)

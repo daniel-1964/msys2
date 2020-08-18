@@ -1,0 +1,86 @@
+Patch limits salt for crypt command by two bytes, and for md5crypt
+by eight bytes (instead of two). Also, it retains $1$ magic prefix
+in md5crypt command result.
+
+--- a/generic/crypt.c
++++ b/generic/crypt.c
+@@ -70,6 +70,7 @@
+ #else
+   const char* passwd;
+   const char* salt;
++  char        salt_b [3];
+   Tcl_Obj*    res;
+ 
+   if (objc != 3) {
+@@ -82,11 +83,17 @@
+   passwd = Tcl_GetStringFromObj (objv [1], NULL);
+   salt   = Tcl_GetStringFromObj (objv [2], NULL);
+ 
++  /* 1) We need only the first two bytes of salt;
++   * 2) Avoiding use of md5_crypt if salt starts with $1$ (as in glibc) */
++  salt_b [0] = salt [0];
++  salt_b [1] = salt [1];
++  salt_b [2] = '\0';
++
+   /* THREADING: Serialize access to result string of 'crypt'.
+    */
+ 
+   TrfLock;
+-  res = Tcl_NewStringObj ((char*) crypt (passwd, salt), -1);
++  res = Tcl_NewStringObj ((char*) crypt (passwd, salt_b), -1);
+   TrfUnlock;
+ 
+   Tcl_SetObjResult (interp, res);
+@@ -124,7 +131,7 @@
+ 
+   const char* passwd;
+   const char* salt;
+-  char        salt_b [6];
++  char        salt_b [12];
+   Tcl_Obj*    res;
+ 
+   if (TrfLoadMD5 (interp) != TCL_OK) {
+@@ -152,13 +159,19 @@
+   salt_b [2] = '$';
+   salt_b [3] = salt [0];
+   salt_b [4] = salt [1];
+-  salt_b [5] = '\0';
++  salt_b [5] = salt [2];
++  salt_b [6] = salt [3];
++  salt_b [7] = salt [4];
++  salt_b [8] = salt [5];
++  salt_b [9] = salt [6];
++  salt_b [10] = salt [7];
++  salt_b [11] = '\0';
+ 
+   /* THREADING: Serialize access to result string of 'md5f.crypt'.
+    */
+ 
+   TrfLock;
+-  res = Tcl_NewStringObj ((char*) md5f.crypt (passwd, salt_b) + 3, -1);
++  res = Tcl_NewStringObj ((char*) md5f.crypt (passwd, salt_b), -1);
+   TrfUnlock;
+ 
+   Tcl_SetObjResult (interp, res);
+--- a/md5-crypt/trf_crypt.h
++++ b/md5-crypt/trf_crypt.h
+@@ -28,7 +28,7 @@
+ #include <tcl.h>
+ 
+ /* Encrypt at most 8 characters from KEY using salt to perturb DES.  */
+-extern char *crypt _ANSI_ARGS_ ((CONST char *__key, CONST char *__salt));
++extern char *crypt_md5 _ANSI_ARGS_ ((CONST char *__key, CONST char *__salt));
+ 
+ 
+ /* Reentrant versions of the functions above.  The additional argument
+--- a/md5-crypt/crypt-entry.c
++++ b/md5-crypt/crypt-entry.c
+@@ -70,7 +70,7 @@
+ 
+ /* The same here, only we call the non-reentrant version.  */
+ char *
+-crypt (key, salt)
++crypt_md5 (key, salt)
+      const char *key;
+      const char *salt;
+ {

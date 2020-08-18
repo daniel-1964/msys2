@@ -1,0 +1,180 @@
+Patch adds modifications by Andreas Kupries to HAVAL message digest library;
+and switches tcltrf to use haval-1.1 subdirectory instead of haval.1996.
+
+--- generic/haval.c
++++ generic/haval.c
+@@ -28,7 +28,7 @@
+  */
+ 
+ #include "transformInt.h"
+-#include "haval.1996/haval.h"
++#include "haval-1.1/haval.h"
+ 
+ /*
+  * Generator description
+@@ -204,4 +204,4 @@
+  * External code from here on.
+  */
+ 
+-#include "haval.1996/haval.c" /* THREADING: import of one constant var, read-only => safe */
++#include "haval-1.1/haval.c" /* THREADING: import of one constant var, read-only => safe */
+--- generic/haval-1.1/havalapp.h
++++ generic/haval-1.1/havalapp.h
+@@ -60,11 +60,19 @@
+  *   FPTLEN   define the length of a fingerprint (128, 160, 192, 224 or 256)
+  */
+ 
+-#include "config.h"
++/* #include "config.h" -- Sergei Golovan */
+ 
+-#ifdef THIS_IS_JUST_A_DUMMY_DIRECTIVE
++/* #ifdef THIS_IS_JUST_A_DUMMY_DIRECTIVE -- Sergei Golovan */
+ 
+-#undef LITTLE_ENDIAN
++/*#undef LITTLE_ENDIAN -- aku */
++
++/* aku -- use configure of Tcl-TRF */
++#ifdef  WORDS_BIGENDIAN
++#undef  LITTLE_ENDIAN
++#else
++#undef  LITTLE_ENDIAN
++#define LITTLE_ENDIAN
++#endif
+ 
+ #ifndef PASS
+ #define PASS       3        /* 3, 4, or 5 */
+@@ -75,6 +83,6 @@
+ #define FPTLEN     256      /* 128, 160, 192, 224 or 256 */
+ #endif
+ 
+-#endif /* THIS_IS_JUST_A_DUMMY_DIRECTIVE */
++/* #endif -- Sergei Golovan */ /* THIS_IS_JUST_A_DUMMY_DIRECTIVE */
+ 
+ 
+--- generic/haval-1.1/haval.c
++++ generic/haval-1.1/haval.c
+@@ -76,21 +76,21 @@
+ 
+ #include <stdio.h>
+ #include <string.h>
+-/* #include "havalapp.h" */
+-#include "config.h"
++#include "havalapp.h" /* uncommented by Sergei Golovan */
++/* #include "config.h" -- Sergei Golovan */
+ #include "haval.h"
+ 
+ #define HAVAL_VERSION    1                   /* current version number */
+ 
+-void haval_string (char *, unsigned char *); /* hash a string */
+-int  haval_file (char *, unsigned char *);   /* hash a file */
+-void haval_stdin (void);                     /* hash input from stdin */
+-void haval_start (haval_state *);            /* initialization */
+-void haval_hash (haval_state *,
+-        unsigned char *, unsigned int);      /* updating routine */
+-void haval_end (haval_state *, unsigned char *); /* finalization */
+-void haval_hash_block (haval_state *);       /* hash a 32-word block */
+-static void haval_tailor (haval_state *);    /* folding the last output */
++void haval_string _ANSI_ARGS_((char *, unsigned char *)); /* hash a string */
++int  haval_file _ANSI_ARGS_((char *, unsigned char *));   /* hash a file */
++void haval_stdin _ANSI_ARGS_((void));                     /* hash input from stdin */
++void haval_start _ANSI_ARGS_((haval_state *));            /* initialization */
++void haval_hash _ANSI_ARGS_((haval_state *,
++        unsigned char *, unsigned int));      /* updating routine */
++void haval_end _ANSI_ARGS_((haval_state *, unsigned char *)); /* finalization */
++void haval_hash_block _ANSI_ARGS_((haval_state *));       /* hash a 32-word block */
++static void haval_tailor _ANSI_ARGS_((haval_state *));    /* folding the last output */
+ 
+ static unsigned char padding[128] = {        /* constants for padding */
+ 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+@@ -103,26 +103,30 @@
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ };
+ 
++/* aku, Jul 8, 1997, added () to eliminate gcc warnings:
++ * "suggest parentheses around arithmetic in operand of ^"
++ * semantics not changed!
++ */
+ #define f_1(x6, x5, x4, x3, x2, x1, x0)          \
+-           ((x1) & ((x0) ^ (x4)) ^ (x2) & (x5) ^ \
+-            (x3) & (x6) ^ (x0))
++           (((x1) & ((x0) ^ (x4))) ^ ((x2) & (x5)) ^ \
++            ((x3) & (x6)) ^ (x0))
+ 
+ #define f_2(x6, x5, x4, x3, x2, x1, x0)                         \
+-           ((x2) & ((x1) & ~(x3) ^ (x4) & (x5) ^ (x6) ^ (x0)) ^ \
+-            (x4) & ((x1) ^ (x5)) ^ (x3) & (x5) ^ (x0)) 
++           (((x2) & (((x1) & ~(x3)) ^ ((x4) & (x5)) ^ (x6) ^ (x0))) ^ \
++            ((x4) & ((x1) ^ (x5))) ^ ((x3) & (x5)) ^ (x0)) 
+ 
+ #define f_3(x6, x5, x4, x3, x2, x1, x0)          \
+-           ((x3) & ((x1) & (x2) ^ (x6) ^ (x0)) ^ \
+-            (x1) & (x4) ^ (x2) & (x5) ^ (x0))
++           (((x3) & (((x1) & (x2)) ^ (x6) ^ (x0))) ^ \
++            ((x1) & (x4)) ^ ((x2) & (x5)) ^ (x0))
+ 
+ #define f_4(x6, x5, x4, x3, x2, x1, x0)                                 \
+-           ((x4) & ((x5) & ~(x2) ^ (x3) & ~(x6) ^ (x1) ^ (x6) ^ (x0)) ^ \
+-            (x3) & ((x1) & (x2) ^ (x5) ^ (x6)) ^                        \
+-            (x2) & (x6) ^ (x0))
++           (((x4) & (((x5) & ~(x2)) ^ ((x3) & ~(x6)) ^ (x1) ^ (x6) ^ (x0))) ^ \
++            ((x3) & (((x1) & (x2)) ^ (x5) ^ (x6))) ^                        \
++            ((x2) & (x6)) ^ (x0))
+ 
+ #define f_5(x6, x5, x4, x3, x2, x1, x0)             \
+-           ((x0) & ((x1) & (x2) & (x3) ^ ~(x5)) ^   \
+-            (x1) & (x4) ^ (x2) & (x5) ^ (x3) & (x6))
++           (((x0) & (((x1) & (x2) & (x3)) ^ ~(x5))) ^   \
++            ((x1) & (x4)) ^ ((x2) & (x5)) ^ ((x3) & (x6)))
+ 
+ /*
+  * Permutations phi_{i,j}, i=3,4,5, j=1,...,i.
+@@ -633,7 +637,9 @@
+ /* tailor the last output */
+ static void haval_tailor (haval_state *state)
+ {
++#if (FPTLEN != 224) && (FPTLEN != 256) /* aku, Jul 8, 1997, define temp only if necessary */
+   haval_word temp;
++#endif
+ 
+ #if FPTLEN == 128
+   temp = (state->fingerprint[7] & 0x000000FFL) | 
+--- generic/haval-1.1/haval.h
++++ generic/haval-1.1/haval.h
+@@ -68,7 +68,13 @@
+  *  For a list of changes, see the ChangeLog file.
+  */
+ 
+-typedef unsigned long int haval_word; /* a HAVAL word = 32 bits */
++#ifndef HAVAL_H
++#define HAVAL_H
++
++#include <tcl.h> /* to surely have _ANSI_ARGS_ */
++
++#include <stdint.h> /* for uint32_t */
++typedef uint32_t haval_word; /* a HAVAL word = 32 bits */
+ 
+ typedef struct {
+   haval_word    count[2];                /* number of bits in a message */
+@@ -77,13 +83,13 @@
+   unsigned char remainder[32*4];         /* unhashed chars (No.<128) */   
+ } haval_state;
+ 
+-void haval_string (char *, unsigned char *); /* hash a string */
+-int  haval_file (char *, unsigned char *);   /* hash a file */
+-void haval_stdin (void);                     /* filter -- hash input from stdin */
+-void haval_start (haval_state *);            /* initialization */
+-void haval_hash (haval_state *, unsigned char *,
+-                 unsigned int);              /* updating routine */
+-void haval_end (haval_state *, unsigned char *); /* finalization */
+-void haval_hash_block (haval_state *);       /* hash a 32-word block */
+-
++void haval_string _ANSI_ARGS_((char *, unsigned char *)); /* hash a string */
++int  haval_file _ANSI_ARGS_((char *, unsigned char *));   /* hash a file */
++void haval_stdin _ANSI_ARGS_((void));                     /* filter -- hash input from stdin */
++void haval_start _ANSI_ARGS_((haval_state *));            /* initialization */
++void haval_hash _ANSI_ARGS_((haval_state *, unsigned char *,
++                            unsigned int));              /* updating routine */
++void haval_end _ANSI_ARGS_((haval_state *, unsigned char *)); /* finalization */
++void haval_hash_block _ANSI_ARGS_((haval_state *));       /* hash a 32-word block */
+ 
++#endif /* HAVAL_H */

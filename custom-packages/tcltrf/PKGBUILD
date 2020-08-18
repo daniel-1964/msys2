@@ -1,0 +1,100 @@
+pkgbase="trf"
+pkgname="tcltrf"
+pkgver=2.1.4
+pkgrel=1
+pkgdesc="Tcl extension for data transformations (msys)"
+arch=('any')
+url="http://tcltrf.sourceforge.net"
+license=('BSD')
+depends=('tcl'
+         'tcllib'
+         'libbz2'
+         'libcrypt'
+         'libopenssl'
+         'zlib')
+makedepends=('libbz2-devel'
+             'libcrypt-devel'
+             'openssl-devel'
+             'tclmemchan'
+             'zlib-devel')
+source=("https://download.sourceforge.net/${pkgname}/${pkgbase}${pkgver}.tar.gz"
+        'crypt.patch'
+        'bzip2.patch'
+        'static.patch'
+        'ssl_static.patch'
+        'haval-1.1.patch'
+        'haval.patch'
+        'md2.patch'
+        'ripemd.patch'
+        'doc.patch'
+        'tcl.m4'
+        'configure.in.patch'
+        'tests.patch')
+sha256sums=('ddc24212a26b25820cf2830a510ec4a59e7ab3e73b1d2bec7042f82883189624'
+            'd4fe7219d68b898eaa2652dbbf418d19f2754dbc49d8d703bd0b45424688ef30'
+            'a265f8afe49f2fcc5c55cce562b6713b103929fd11bbcb78887d74c20cb9fcab'
+            '60a47d4a909b5d6cdf8563f5a16537449e27fb1b5d442482a89f898d413820b2'
+            '157ca528d15b642700248c8b39b2b8326e700c30e6dd9441e67b7b298f880965'
+            'dc41232dba4eb8dc9aefa159ad9ed8f847a449976279fed0ebf393f36b4cb9b4'
+            '7791638fa8c599af915f0ed83d396389f3976ecd7660576c28735e29c425f724'
+            '3320ba51fd93b9098404d10888d736323b7848f9efbc30da9c1db2a80e375cae'
+            '1a0072e3fe8cfadee3aa80d9aa36ac8d1c06604feadaeb1a51f6918dc8555fb6'
+            'bf796e435254ec619b05859f0ac09060b46d0ac8d5a142e5e9cfa2e5e4e641ea'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c'
+            '1c21616e92f6db4f86c694245d70ca31cd41eef4593d33ba41e1465873db8e8a'
+            'af6392b4240f31220b60ed805d57dc8734e1614dbc5da6b836332a288feda5eb')
+options=('!emptydirs')
+
+prepare() {
+  cd $srcdir/${pkgbase}${pkgver}
+  patch -Np1 -i ${srcdir}/crypt.patch
+  patch -Np1 -i ${srcdir}/bzip2.patch
+  patch -Np1 -i ${srcdir}/static.patch
+  patch -Np1 -i ${srcdir}/ssl_static.patch
+  patch -Np0 -i ${srcdir}/haval-1.1.patch
+  patch -Np0 -i ${srcdir}/haval.patch
+  patch -Np0 -i ${srcdir}/md2.patch
+  patch -Np0 -i ${srcdir}/ripemd.patch
+  patch -Np0 -i ${srcdir}/doc.patch
+  patch -Np0 -i ${srcdir}/configure.in.patch
+  patch -Np0 -i ${srcdir}/tests.patch
+  sed -i 's/\*Darwin | \*CYGWIN\*/& | MSYS_*/' configure.in
+  cp -a ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/${pkgbase}${pkgver} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr \
+    --enable-shared \
+    --with-ssl=/usr \
+    --with-zlib=/usr \
+    --with-bz2=/usr \
+    --enable-static-zlib \
+    --enable-static-md5 \
+    --enable-static-bzlib \
+    no_zlibtcl=true \
+    CFLAGS="${CFLAGS} -DSSL_STATIC_BUILD" \
+    LIBS="-lz -lbz2 -lcrypt -lcrypto"
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
+  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/man/*.n -t ${pkgdir}/usr/share/man/mann
+  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/capi/man/*.3 -t ${pkgdir}/usr/share/man/man3
+  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/html/*.html -t ${pkgdir}/usr/share/doc/${pkgbase}/html
+  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/capi/html/*.html -t ${pkgdir}/usr/share/doc/${pkgbase}/html
+  # Avoid manpage name clash with tcllib
+  rename .n .ntrf ${pkgdir}/usr/share/man/mann/*.n
+}
+
+check() {
+  cd "${srcdir}/build"
+  make test
+}

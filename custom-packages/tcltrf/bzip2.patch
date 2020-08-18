@@ -1,0 +1,23 @@
+Patch allows to link Trf to newer bzip2 library.
+
+--- a/generic/bz2lib.c
++++ b/generic/bz2lib.c
+@@ -42,12 +42,12 @@
+ #ifdef BZLIB_STATIC_BUILD
+ bzFunctions bz = {
+   0,
+-  bzCompress,
+-  bzCompressEnd,
+-  bzCompressInit,
+-  bzDecompress,
+-  bzDecompressEnd,
+-  bzDecompressInit,
++  BZ2_bzCompress,
++  BZ2_bzCompressEnd,
++  BZ2_bzCompressInit,
++  BZ2_bzDecompress,
++  BZ2_bzDecompressEnd,
++  BZ2_bzDecompressInit,
+ };
+ #else
+ bzFunctions bz = {0}; /* THREADING: serialize initialization */
