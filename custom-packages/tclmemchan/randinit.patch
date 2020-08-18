@@ -1,0 +1,17 @@
+Author: Sergei Golovan
+Description: Patch fixes buffer underrun (calling randinit() with one
+ parameter instead of two.
+Debian-Bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=748163
+Last-Modified: Thu, 15 May 2014 08:19:21 +0400
+
+--- a/generic/random.c
++++ b/generic/random.c
+@@ -526,7 +526,7 @@
+      */
+     seed = time(NULL) + ((long)Tcl_GetCurrentThread() << 12);
+     memcpy(&instance->state.randrsl, &seed, sizeof(seed));
+-    randinit(&instance->state);
++    randinit(&instance->state, TRUE);
+     
+     Tcl_RegisterChannel  (interp, chan);
+     Tcl_SetChannelOption (interp, chan, "-buffering", "none");

@@ -1,0 +1,51 @@
+pkgbase="Memchan"
+pkgname="tclmemchan"
+pkgver=2.3
+pkgrel=1
+pkgdesc="Tcl extension for in-memory channels. (msys)"
+arch=('any')
+url="http://memchan.sourceforge.net"
+license=('BSD')
+depends=('tcl'
+         'tcllib'
+         'libbz2'
+         'libcrypt'
+         'libopenssl'
+         'zlib')
+makedepends=('libbz2-devel'
+             'libcrypt-devel'
+             'openssl-devel'
+             'zlib-devel')
+source=("https://download.sourceforge.net/memchan/${pkgbase}${pkgver}.tar.gz"
+        'configure.patch'
+        'randinit.patch'
+        'tcl.m4')
+sha256sums=('adaa5952fe532a917372dcdbc873c082656c49b613d92b09e7938d8f276f2749'
+            '9b2d080a5b843b002ec87f70dbfb6020978d1d42e12a0ccbc2f4c5b7cce5a032'
+            '720c14844067ac76f1003fbca42b0b9105289bf8c69508a72ec3cd6c2b6874b3'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+options=('!emptydirs')
+
+prepare() {
+  cd $srcdir/${pkgbase}${pkgver}
+  patch -Np1 -i ${srcdir}/configure.patch
+  patch -Np1 -i ${srcdir}/randinit.patch
+  cp -a ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/${pkgbase}${pkgver} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr \
+    --enable-shared
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
+}

@@ -1,0 +1,25 @@
+Patch fixes typo in configure script and prevents removing $(srcdir) from
+VPATH in Makefile.
+
+Also, fixes build on hurd-i386, kfreebsd-i386 and kfreebsd-amd64
+architectures.
+
+--- memchan-2.3.orig/configure
++++ memchan-2.3/configure
+@@ -8793,7 +8793,7 @@
+ fi
+ 
+ 	    ;;
+-	Linux*)
++	Linux*|GNU*)
+ 	    SHLIB_CFLAGS="-fPIC"
+ 	    SHLIB_SUFFIX=".so"
+ 
+@@ -11704,7 +11704,6 @@
+ # (actually we leave an empty line to preserve line numbers).
+ if test "x$srcdir" = x.; then
+   ac_vpsub='/^[	 ]*VPATH[	 ]*=/{
+-s/:*\$(srcdir):*/:/
+ s/:*\${srcdir}:*/:/
+ s/:*@srcdir@:*/:/
+ s/^\([^=]*=[	 ]*\):*/\1/
