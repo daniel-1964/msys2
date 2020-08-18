@@ -1,0 +1,398 @@
+diff -pur tclcurl-7.22.0/configure.in tclcurl-7.22.0+hg20151017/configure.in
+--- tclcurl-7.22.0/configure.in	2011-09-27 20:19:16.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/configure.in	2020-08-18 09:49:51.381361200 +0200
+@@ -134,7 +134,16 @@ if test "${CURL_VERSION}" != "" ; then
+ fi
+ AC_MSG_RESULT(yes)
+ 
+-TEA_ADD_LIBS([`$curlpath/curl-config --libs`])
++# We need to modify this original line to strip a few things
++# See: http://lists.debian.org/debian-devel-announce/2006/09/msg00018.html
++
++TEA_ADD_LIBS([`$curlpath/curl-config --libs|sed \
++    -e 's/\-lkrb5\>//g' \
++    -e 's/\-lgssapi_krb5//g' \
++    -e 's/\-lk5crypto//g' \
++    -e 's/\-lkrb5support//g' \
++ `])
++
+ 
+ #--------------------------------------------------------------------
+ # __CHANGE__
+diff -pur tclcurl-7.22.0/doc/tclcurl.html tclcurl-7.22.0+hg20151017/doc/tclcurl.html
+--- tclcurl-7.22.0/doc/tclcurl.html	2011-10-02 00:44:58.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/doc/tclcurl.html	2020-08-18 09:49:51.403454900 +0200
+@@ -1,7 +1,7 @@
+ <HTML><HEAD><TITLE>Manpage of TclCurl</TITLE>
+ </HEAD><BODY>
+ <H1>TclCurl</H1>
+-Section: Easy inteface (n)<BR>Updated: 03 October 2011<BR>
++Section: Easy inteface (3)<BR>Updated: 03 October 2011<BR>
+ <A NAME="lbAB">&nbsp;</A>
+ <hr>
+ <H2>NAME</H2>
+diff -pur tclcurl-7.22.0/doc/tclcurl.n tclcurl-7.22.0+hg20151017/doc/tclcurl.n
+--- tclcurl-7.22.0/doc/tclcurl.n	2011-10-01 17:48:32.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/doc/tclcurl.n	2020-08-18 09:49:51.419083200 +0200
+@@ -1,7 +1,7 @@
+ .\" You can view this file with:
+ .\" nroff -man [file]
+ .\" Adapted from libcurl docs by fandom@telefonica.net
+-.TH TclCurl n "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
++.TH TclCurl 3 "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
+ .SH NAME
+ TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+ LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+@@ -19,7 +19,7 @@ LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMT
+ .sp
+ .IB curlhandle " reset"
+ .sp
+-.IB curlHandle " duhandle"
++.IB curlHandle " duphandle"
+ .sp
+ .IB curlHandle " pause"
+ .sp
+@@ -52,7 +52,7 @@ curl and this call MUST have a correspon
+ .I cleanup
+ when the operation is completed.
+ You should perform all your sequential file transfers using the same
+-curlHandle. This enables TclCurl to use persistant connections when
++curlHandle. This enables TclCurl to use persistent connections when
+ possible.
+ .sp
+ .B RETURN VALUE
+@@ -347,7 +347,7 @@ allows you to have a TclCurl built to su
+ specific transfers to only be allowed to use a subset of them. 
+ 
+ Accepted protocols are 'http', 'https', 'ftp', 'ftps', 'scp', 'sftp', 'telnet', 'ldap',
+-'ldaps','dict', 'file','tftp', 'imap', 'imaps', 'pop', 'pop3', 'smtp', 'smtps', 'gopher'
++\&'ldaps', 'dict', 'file','tftp', 'imap', 'imaps', 'pop', 'pop3', 'smtp', 'smtps', 'gopher'
+ and 'all'.
+ 
+ .TP
+@@ -397,12 +397,12 @@ HTTP proxies.
+ .B -proxyport
+ Use this option to set the proxy port to use unless it is specified in
+ the proxy string by \fB-proxy\fP. If not specified, TclCurl will default
+--to using port 1080 for proxies.
++to using port 1080 for proxies.
+ 
+ .TP
+ .B -proxytype
+ Pass the type of  the  proxy. Available options are 'http', 'http1.0', 'socks4', 'socks4a',
+-'socks5' and 'socks5h', with the HTTP one being the default.
++\&'socks5' and 'socks5h', with the HTTP one being the default.
+ 
+ If you set it to \fIhttp1.0\fP, it will only affect how libcurl speaks to a proxy
+ when CONNECT is used. The HTTP version used for "regular" HTTP requests is instead
+@@ -460,7 +460,7 @@ too low might cause unnecessary connecti
+ .TP
+ .B -dnscachetimeout
+ Pass the timeout in seconds. Name resolves will be kept in memory for this number
+-of seconds. Set to '0' to completely disable caching, or '-1' to make the
++of seconds. Set to '0' to completely disable caching, or '\-1' to make the
+ cached entries remain forever. By default, TclCurl caches this info for 60 seconds.
+ 
+ The name resolve functions of various libc implementations don't re-read name
+@@ -479,7 +479,7 @@ to using the share interface instead! Se
+ 
+ .TP
+ .B -buffersize
+-Pass your prefered size for the receive buffer in TclCurl. The main point of this
++Pass your preferred size for the receive buffer in TclCurl. The main point of this
+ would be that the write callback gets called more often and with smaller chunks.
+ This is just treated as a request, not an order. You cannot be guaranteed to
+ actually get the given size.
+@@ -657,11 +657,12 @@ TclCurl will automatically select the on
+ 
+ .TP
+ .B anysafe
+-It may use anything but basic, TclCurl will automaticly select the
++It may use anything but basic, TclCurl will automatically select the
+ one it finds most secure.
+ .RE
+ 
+-.TP -tlsauthtype
++.TP
++.B -tlsauthtype
+ Use it to tell TclCurl which authentication method(s) you want it to use for TLS authentication.
+ .RS
+ .TP 5
+@@ -761,7 +762,7 @@ is  meaningful  only  when setting \fB-f
+ Sets the redirection limit. If that many redirections have been followed,
+ the next redirect will cause an error. This option only makes sense if the
+ \fB-followlocation\fP option is used at the same time. Setting the limit
+-to 0 will make libcurl refuse any redirect. Set it to -1 for an infinite
++to 0 will make libcurl refuse any redirect. Set it to \-1 for an infinite
+ number of redirects (which is the default)
+ 
+ .TP
+@@ -961,17 +962,17 @@ response will be treated as a valid HTTP
+ 
+ .TP
+ .B -cookie
+-Pass a string as parameter. It will be used to
+-set a cookie in the http request. The format of the string should be
+-'[NAME]=[CONTENTS];'. Where NAME is the cookie name and  CONTENTS is
+-what the cookie should contain.
++Pass a string as parameter.
++It will be used to set a cookie in the http request. The format of
++the string should be '[NAME]=[CONTENTS];'. Where NAME is the cookie
++name and  CONTENTS is what the cookie should contain.
+ 
+ If  you  need  to  set mulitple cookies, you need to set them all using
+ a single option and thus you need to concatenate them all in one single string.
+ Set multiple cookies in one string like this: "name1=content1; name2=content2;"
+ etc.
+ 
+-This option sets the cookie header explictly in the outgoing request(s).
++This option sets the cookie header explicitly in the outgoing request(s).
+ If multiple requests are done due to authentication, followed redirections or similar,
+ they will all get this cookie passed on.
+ 
+@@ -1341,7 +1342,7 @@ Pass the offset in number of bytes that
+ Set this option to 0 to make the transfer start from the beginning
+ (effectively disabling resume).
+ 
+-For FTP, set this option to -1 to make the transfer start from the end of the
++For FTP, set this option to \-1 to make the transfer start from the end of the
+ target file (useful to continue an interrupted upload). 
+ 
+ When doing uploads with FTP, the resume position is where in the local/source
+@@ -1467,7 +1468,7 @@ than or equal to the parameter value. De
+ 
+ .TP
+ .B -maxconnects
+-Sets the persistant connection cache size in all the protocols that support 
++Sets the persistent connection cache size in all the protocols that support 
+ persistent conecctions. The set amount will be the maximum amount of simultaneous
+ connections that TclCurl may cache in this easy handle. Default is 5, and there
+ isn't much point in changing this value unless you are perfectly aware of how this
+@@ -1536,7 +1537,7 @@ HOST+PORT will instead use your provided
+ 
+ You can remove names from the DNS cache again, to stop providing these fake
+ resolves, by including a string in the linked list that uses the format
+-"-HOST:PORT". The host name must be prefixed with a dash, and the host name
++"\-HOST:PORT". The host name must be prefixed with a dash, and the host name
+ and port number must exactly match what was already added previously.
+ 
+ .TP
+@@ -1636,6 +1637,15 @@ Force SSLv2
+ .TP
+ .B sslv3
+ Force SSLv3
++.TP
++.B tlsv1_0
++Force TLSv1.0
++.TP
++.B tlsv1_1
++Force TLSv1.1
++.TP
++.B tlsv1_2
++Force TLSv1.2
+ .RE
+ 
+ .TP
+@@ -1771,7 +1781,7 @@ are also acceptable separators but colon
+ used as operators. 
+ 
+ For OpenSSL and GnuTLS valid examples of cipher lists include 'RC4-SHA', 'SHA1+DES',
+-'TLSv1' and 'DEFAULT'. The default list is normally set when you compile OpenSSL.
++\&'TLSv1' and 'DEFAULT'. The default list is normally set when you compile OpenSSL.
+ 
+ You will find more details about cipher lists on this URL:
+     http://www.openssl.org/docs/apps/ciphers.html
+@@ -1781,7 +1791,7 @@ etc. With NSS you don't add/remove ciphe
+ ciphers are disabled and only those passed in are enabled.
+  
+ You'll find more details about the NSS cipher lists on this URL:
+-    http://directory.fedora.redhat.com/docs/mod_nss.html
++<http://directory.fedora.redhat.com/docs/mod_nss.html>
+ 
+ .TP
+ .B -sslsessionidcache
+@@ -1976,7 +1986,7 @@ same handle. Let it return first before
+ you want parallel transfers, you must use several curl handles.
+ .TP
+ .B RETURN VALUE
+-'0' if all went well, non-zero if it didn't. In case of error, if the
++\&'0' if all went well, non-zero if it didn't. In case of error, if the
+ .I errorbuffer
+ was set with
+ .I configure
+@@ -2077,7 +2087,7 @@ Internal error. A function was called wi
+ Interface error. A specified outgoing interface could not be used.
+ .IP 47
+ Too many redirects. When following redirects, TclCurl hit the maximum amount, set
+-your limit with --maxredirs
++your limit with \-\-maxredirs
+ .IP 48
+ An option passed to TclCurl is not recognized/known. Refer to the appropriate
+ documentation. This is most likely a problem in the program that uses
+@@ -2186,7 +2196,7 @@ Returns the last received proxy response
+ .TP
+ .B filetime
+ Returns the remote time of the retrieved document (in number of seconds
+-since 1 jan 1970 in the GMT/UTC time zone). If you get -1,
++since 1 jan 1970 in the GMT/UTC time zone). If you get \-1,
+ it can be because of many reasons (unknown, the server hides it or the
+ server doesn't support the command that tells document time etc) and the time
+ of the document is unknown.
+@@ -2303,7 +2313,7 @@ requests. Note that this may be more tha
+ .TP
+ .B sslverifyresult
+ Returns the result of the certification verification that was requested
+-(using the -sslverifypeer option to configure).
++(using the \-sslverifypeer option to configure).
+ 
+ .TP
+ .B sslengines
+@@ -2315,7 +2325,7 @@ engines may be available at run-time.
+ .B contentlengthdownload
+ Returns the content-length of the download. This is the value read from the
+ .B Content-Length:
+-field. If the size isn't known, it returns -1.
++field. If the size isn't known, it returns \-1.
+ 
+ .TP
+ .B contentlengthupload
+@@ -2412,7 +2422,7 @@ to pause the transfer.
+ Resumes a transfer paused with \fBcurlhandle pause\fP
+ 
+ .SH curl::transfer
+-In case you do not want to use persistant connections you can use this
++In case you do not want to use persistent connections you can use this
+ command, it takes the same arguments as the \fIcurlHandle\fP \fBconfigure\fP
+ and will init, configure, perform and cleanup a connection for you.
+ 
+diff -pur tclcurl-7.22.0/doc/tclcurl_multi.html tclcurl-7.22.0+hg20151017/doc/tclcurl_multi.html
+--- tclcurl-7.22.0/doc/tclcurl_multi.html	2011-10-02 00:33:58.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/doc/tclcurl_multi.html	2020-08-18 09:49:51.434703900 +0200
+@@ -1,7 +1,7 @@
+ <HTML><HEAD><TITLE>Manpage of TclCurl</TITLE>
+ </HEAD><BODY>
+ <H1>TclCurl</H1>
+-Section: TclCurl Multi Interface (n)<BR>Updated: 03 September 2011<BR><HR>
++Section: TclCurl Multi Interface (3)<BR>Updated: 03 September 2011<BR><HR>
+ 
+ <A NAME="lbAB">&nbsp;</A>
+ <H2>NAME</H2>
+diff -pur tclcurl-7.22.0/doc/tclcurl_multi.n tclcurl-7.22.0+hg20151017/doc/tclcurl_multi.n
+--- tclcurl-7.22.0/doc/tclcurl_multi.n	2011-09-28 20:08:10.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/doc/tclcurl_multi.n	2020-08-18 09:49:51.535354100 +0200
+@@ -1,7 +1,7 @@
+ .\" You can view this file with:
+ .\" nroff -man [file]
+ .\" Adapted from libcurl docs by fandom@telefonica.net
+-.TH TclCurl n "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
++.TH TclCurl 3 "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
+ .SH NAME
+ TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+ LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+@@ -186,7 +186,7 @@ you can use the
+ command, it will return the number of transfers currently active.
+ .sp
+ .B RETURN VALUE
+-The number of active transfers or '-1' in case of error.
++The number of active transfers or '\-1' in case of error.
+ 
+ .SH multiHandle getinfo
+ This procedure returns very simple information about the transfers, you
+diff -pur tclcurl-7.22.0/doc/tclcurl_share.html tclcurl-7.22.0+hg20151017/doc/tclcurl_share.html
+--- tclcurl-7.22.0/doc/tclcurl_share.html	2011-10-02 00:34:24.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/doc/tclcurl_share.html	2020-08-18 09:49:51.550987500 +0200
+@@ -1,7 +1,7 @@
+ <HTML><HEAD><TITLE>Manpage of TclCurl</TITLE>
+ </HEAD><BODY>
+ <H1>TclCurl</H1>
+-Section: TclCurl share data api (n)<BR>Updated: 03 October 2011<BR><HR>
++Section: TclCurl share data api (3)<BR>Updated: 03 October 2011<BR><HR>
+ 
+ <A NAME="lbAB">&nbsp;</A>
+ <H2>NAME</H2>
+diff -pur tclcurl-7.22.0/doc/tclcurl_share.n tclcurl-7.22.0+hg20151017/doc/tclcurl_share.n
+--- tclcurl-7.22.0/doc/tclcurl_share.n	2011-09-28 20:08:10.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/doc/tclcurl_share.n	2020-08-18 09:49:51.550987500 +0200
+@@ -1,7 +1,7 @@
+ .\" You can view this file with:
+ .\" nroff -man [file]
+ .\" Adapted from libcurl docs by fandom@telefonica.net
+-.TH TclCurl n "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
++.TH TclCurl 3 "3 October 2011" "TclCurl 7.22.0 "TclCurl Easy Interface"
+ .SH NAME
+ TclCurl: - get  a  URL with FTP, FTPS, HTTP, HTTPS, SCP, SFTP, TFTP, TELNET, DICT, FILE, LDAP,
+ LDAPS, IMAP, IMAPS, POP, POP3, SMTP, SMTPS and gopher syntax.
+diff -pur tclcurl-7.22.0/generic/tclcurl.c tclcurl-7.22.0+hg20151017/generic/tclcurl.c
+--- tclcurl-7.22.0/generic/tclcurl.c	2011-10-01 17:36:56.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/generic/tclcurl.c	2020-08-18 09:49:51.566636800 +0200
+@@ -748,8 +748,13 @@ curlSetOpts(Tcl_Interp *interp, struct c
+ /*                        fprintf(stdout,"Section contents: %s\n",Tcl_GetString(httpPostData[i+1]));*/
+                         tmpStr=Tcl_GetStringFromObj(httpPostData[i+1],&curlformBufferSize);
+                         formArray[formArrayIndex].option = CURLFORM_COPYCONTENTS;
+-                        formArray[formArrayIndex].value  = (char *)
+-                                memcpy(Tcl_Alloc(curlformBufferSize), tmpStr, curlformBufferSize);
++
++                        formArray[formArrayIndex].value = Tcl_Alloc((curlformBufferSize > 0) ? curlformBufferSize : 1);
++                        if (curlformBufferSize > 0) {
++                                memcpy((char *)formArray[formArrayIndex].value,tmpStr,curlformBufferSize);
++                        } else {
++                                memset((char *)formArray[formArrayIndex].value,0,1);
++                        }
+ 
+                         formArrayIndex++;
+                         formArray[formArrayIndex].option = CURLFORM_CONTENTSLENGTH;
+@@ -854,6 +859,15 @@ curlSetOpts(Tcl_Interp *interp, struct c
+                     break;
+                 case 3:
+                     longNumber=CURL_SSLVERSION_SSLv3;
++                    break;
++                case 4:
++                    longNumber=CURL_SSLVERSION_TLSv1_0;
++                    break;
++                case 5:
++                    longNumber=CURL_SSLVERSION_TLSv1_1;
++                    break;
++                case 6:
++                    longNumber=CURL_SSLVERSION_TLSv1_2;
+             }
+             tmpObjPtr=Tcl_NewLongObj(longNumber);
+             if (SetoptLong(interp,curlHandle,CURLOPT_SSLVERSION,
+diff -pur tclcurl-7.22.0/generic/tclcurl.h tclcurl-7.22.0+hg20151017/generic/tclcurl.h
+--- tclcurl-7.22.0/generic/tclcurl.h	2011-09-30 20:32:02.000000000 +0200
++++ tclcurl-7.22.0+hg20151017/generic/tclcurl.h	2020-08-18 09:49:51.582217800 +0200
+@@ -344,7 +344,7 @@ CONST static char *ftpsslccc[] = {
+ };
+ 
+ CONST static char *sslversion[] = {
+-    "default", "tlsv1", "sslv2", "sslv3", (char *)NULL
++    "default", "tlsv1", "sslv2", "sslv3", "tlsv1_0", "tlsv1_1", "tlsv1_2", (char *)NULL
+ };
+ 
+ CONST static char *ftpfilemethod[] = {
+diff -pur tclcurl-7.22.0/tests/multi/auto.tcl tclcurl-7.22.0+hg20151017/tests/multi/auto.tcl
+--- tclcurl-7.22.0/tests/multi/auto.tcl	2006-11-05 00:46:36.000000000 +0100
++++ tclcurl-7.22.0+hg20151017/tests/multi/auto.tcl	2020-08-18 09:49:51.604185200 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/wish8.4
++#!/usr/bin/wish
+ 
+ package require TclCurl
+ 
+diff -pur tclcurl-7.22.0/tests/multi/autoGUI.tcl tclcurl-7.22.0+hg20151017/tests/multi/autoGUI.tcl
+--- tclcurl-7.22.0/tests/multi/autoGUI.tcl	2006-11-05 00:46:36.000000000 +0100
++++ tclcurl-7.22.0+hg20151017/tests/multi/autoGUI.tcl	2020-08-18 09:49:51.604185200 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/wish8.4
++#!/usr/bin/wish
+ 
+ package require TclCurl
+ 
+diff -pur tclcurl-7.22.0/tests/multi/cancelTrans.tcl tclcurl-7.22.0+hg20151017/tests/multi/cancelTrans.tcl
+--- tclcurl-7.22.0/tests/multi/cancelTrans.tcl	2006-11-05 00:46:36.000000000 +0100
++++ tclcurl-7.22.0+hg20151017/tests/multi/cancelTrans.tcl	2020-08-18 09:49:51.619856100 +0200
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/wish8.4
++#!/usr/bin/wish
+ 
+ package require TclCurl
+ 

@@ -1,0 +1,108 @@
+Description: close the file handle in time, increase space allocated for handleName and shandleName
+Origin: https://www.androwish.org/index.html/vpatch?from=e4864fde820aac71&to=ce9a5b5886ac7381
+Author: Christian Werner <chw@ch-werner.de>
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=719441
+Forwarded: yes, email
+
+Index: tclcurl/generic/tclcurl.c
+===================================================================
+--- tclcurl.orig/generic/tclcurl.c
++++ tclcurl/generic/tclcurl.c
+@@ -87,7 +87,7 @@ curlCreateObjCmd (Tcl_Interp *interp,str
+     Tcl_Command         cmdToken;
+
+     /* We try with curl1, if it already exists with curl2...*/
+-    handleName=(char *)Tcl_Alloc(10);
++    handleName=(char *)Tcl_Alloc(32);
+     for (i=1;;i++) {
+         sprintf(handleName,"curl%d",i);
+         if (!Tcl_GetCommandInfo(interp,handleName,&info)) {
+@@ -483,6 +483,12 @@ curlSetOpts(Tcl_Interp *interp, struct c
+         case 2:
+             Tcl_Free(curlData->inFile);
+             curlData->inFile=curlstrdup(Tcl_GetString(objv));
++            if (curlData->inFlag) {
++                if (curlData->inHandle!=NULL) {
++                    fclose(curlData->inHandle);
++                    curlData->inHandle=NULL;
++                }
++            }
+             if ((strcmp(curlData->inFile,""))&&(strcmp(curlData->inFile,"stdin"))) {
+                 curlData->inFlag=1;
+             } else {
+@@ -914,6 +920,13 @@ curlSetOpts(Tcl_Interp *interp, struct c
+         case 44:
+             Tcl_Free(curlData->headerFile);
+             curlData->headerFile=curlstrdup(Tcl_GetString(objv));
++            if (curlData->headerFlag) {
++                if (curlData->headerHandle!=NULL) {
++                    fclose(curlData->headerHandle);
++                    curlData->headerHandle=NULL;
++                }
++                curl_easy_setopt(curlHandle,CURLOPT_HEADERDATA,NULL);
++            }
+             if ((strcmp(curlData->headerFile,""))&&(strcmp(curlData->headerFile,"stdout"))
+                     &&(strcmp(curlData->headerFile,"stderr"))) {
+                 curlData->headerFlag=1;
+@@ -1035,6 +1048,14 @@ curlSetOpts(Tcl_Interp *interp, struct c
+             }
+             break;
+         case 61:
++            if (curlData->headerFlag) {
++                if (curlData->headerHandle!=NULL) {
++                    fclose(curlData->headerHandle);
++                    curlData->headerHandle=NULL;
++                }
++                curl_easy_setopt(curlHandle,CURLOPT_HEADERDATA,NULL);
++                curlData->headerFlag=0;
++            }
+             if (curl_easy_setopt(curlHandle,CURLOPT_HEADERFUNCTION,
+                     curlHeaderReader)) {
+                 return TCL_ERROR;
+@@ -1114,6 +1135,13 @@ curlSetOpts(Tcl_Interp *interp, struct c
+             break;
+         case 66:
+             curlData->readProc=curlstrdup(Tcl_GetString(objv));
++            if (curlData->inFlag) {
++                if (curlData->inHandle!=NULL) {
++                    fclose(curlData->inHandle);
++                    curlData->inHandle=NULL;
++                }
++                curl_easy_setopt(curlHandle,CURLOPT_READDATA,NULL);
++            }
+             curlData->inFlag=0;
+             if (strcmp(curlData->readProc,"")) {
+                 if (curl_easy_setopt(curlHandle,CURLOPT_READFUNCTION,
+@@ -2439,12 +2467,14 @@ curlHeaderReader(void *ptr,size_t size,s
+         headerContent[charLength]=0;
+         /* There may be multiple 'Set-Cookie' headers, so we use a list */
+         if (Tcl_StringCaseMatch(headerName,"Set-Cookie",1)) {
+-            Tcl_SetVar2(curlData->interp,curlData->headerVar,headerName, \
++            Tcl_SetVar2(curlData->interp,curlData->headerVar,headerName,
+                     headerContent,TCL_LIST_ELEMENT|TCL_APPEND_VALUE);
+         } else {
+             Tcl_SetVar2(curlData->interp,curlData->headerVar,headerName,
+                     headerContent,0);
+         }
++        Tcl_Free(headerContent);
++        Tcl_Free(headerName);
+     }
+     regExp=Tcl_RegExpCompile(curlData->interp,"(^(HTTP|http)[^\r]+)(\r*)(\n)");
+     match=Tcl_RegExpExec(curlData->interp,regExp,header,header);
+@@ -2457,6 +2487,7 @@ curlHeaderReader(void *ptr,size_t size,s
+
+         Tcl_SetVar2(curlData->interp,curlData->headerVar,"http",
+                 httpStatus,0);
++                Tcl_Free(httpStatus);
+     }
+     return size*nmemb;
+ }
+@@ -4159,7 +4190,7 @@ curlCreateShareObjCmd (Tcl_Interp *inter
+     Tcl_Command         cmdToken;
+
+     /* We try with scurl1, if it already exists with scurl2...*/
+-    shandleName=(char *)Tcl_Alloc(10);
++    shandleName=(char *)Tcl_Alloc(32);
+     for (i=1;;i++) {
+         sprintf(shandleName,"scurl%d",i);
+         if (!Tcl_GetCommandInfo(interp,shandleName,&info)) {

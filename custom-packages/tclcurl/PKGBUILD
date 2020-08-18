@@ -1,0 +1,49 @@
+pkgbase="TclCurl"
+pkgname="tclcurl"
+pkgver=7.22.0
+pkgrel=1
+pkgdesc="Tcl bindings to libcurl. (msys)"
+arch=('any')
+url="http://http://mirror.yellow5.com/tclcurl/"
+license=('BSD')
+depends=('tcl')
+makedepends=('libcurl-devel')
+source=("${pkgname}-${pkgver}.tar.gz::http://ftp.debian.org/debian/pool/main/t/${pkgname}/${pkgname}_${pkgver}.orig.tar.gz"
+	'hg20151017-update.patch'
+	'bts801734.patch'
+	'bts719441.patch'
+	'hg20160822-update.patch'
+        'tcl.m4')
+sha256sums=('208693a0d6a5fa99ba0afc4e93cad2a628ebd6c6eca66629525cc2ad17326b40'
+            '9c8da1c7fa2ad64215c21f1d75219c5fa8d4191156d0272d4f891144cc149232'
+            'eca11e6f2050a47fd75d0d64f566b2c039f7317e2460d6daaa4faddb20aa1268'
+            'fa097a742e3500af567f2c66ba44607fbcafe43af1628ad74e2d9eae7ebf8072'
+            '65cac92b893b5f96a7f26869fd8c9b239209772fc57eced4e9e16e47dd1e9da0'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+options=('!emptydirs')
+
+prepare() {
+  cd $srcdir/${pkgbase}-${pkgver}
+  patch -Np1 -i ${srcdir}/hg20151017-update.patch
+  patch -Np1 -i ${srcdir}/bts801734.patch
+  patch -Np1 -i ${srcdir}/bts719441.patch
+  patch -Np1 -i ${srcdir}/hg20160822-update.patch
+  cp -a ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/${pkgbase}-${pkgver} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr \
+    --enable-shared
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 "${srcdir}"/${pkgbase}-${pkgver}/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
+}

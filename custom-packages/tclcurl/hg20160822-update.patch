@@ -1,0 +1,59 @@
+diff -pur tclcurl-7.22.0+hg20151017/doc/tclcurl.html tclcurl-7.22.0+hg20160822/doc/tclcurl.html
+--- tclcurl-7.22.0+hg20151017/doc/tclcurl.html	2020-08-18 09:49:51.403454900 +0200
++++ tclcurl-7.22.0+hg20160822/doc/tclcurl.html	2016-08-14 16:01:31.000000000 +0200
+@@ -1244,6 +1244,18 @@ Enforce HTTP 1.0 requests.
+ 
+ <DD>
+ Enforce HTTP 1.1 requests.
++<DT><B>2.0</B>
++
++<DD>
++Enforce HTTP version 2 requests.
++<DT><B>2TLS</B>
++
++<DD>
++Enforce version 2 requests for HTTPS, version 1.1 for HTTP.
++<DT><B>2_PRIOR_KNOWLEDGE</B>
++
++<DD>
++Enforce HTTP 2 requests without performing HTTP/1.1 Upgrade first.
+ </DL>
+ </DL>
+ 
+diff -pur tclcurl-7.22.0+hg20151017/doc/tclcurl.n tclcurl-7.22.0+hg20160822/doc/tclcurl.n
+--- tclcurl-7.22.0+hg20151017/doc/tclcurl.n	2020-08-18 09:49:51.419083200 +0200
++++ tclcurl-7.22.0+hg20160822/doc/tclcurl.n	2016-08-14 16:01:31.000000000 +0200
+@@ -1047,6 +1047,15 @@ Enforce HTTP 1.0 requests.
+ .TP
+ .B 1.1
+ Enforce HTTP 1.1 requests.
++.TP
++.B 2.0
++Enforce HTTP version 2 requests.
++.TP
++.B 2TLS
++Enforce version 2 requests for HTTPS, version 1.1 for HTTP.
++.TP
++.B 2_PRIOR_KNOWLEDGE
++Enforce HTTP 2 requests without performing HTTP/1.1 Upgrade first.
+ .RE
+ 
+ .TP
+diff -pur tclcurl-7.22.0+hg20151017/generic/tclcurl.h tclcurl-7.22.0+hg20160822/generic/tclcurl.h
+--- tclcurl-7.22.0+hg20151017/generic/tclcurl.h	2020-08-18 09:49:51.582217800 +0200
++++ tclcurl-7.22.0+hg20160822/generic/tclcurl.h	2016-08-14 16:01:31.000000000 +0200
+@@ -294,7 +294,13 @@ CONST static char   *curlFormTable[]={
+ };
+ 
+ CONST static char   *httpVersionTable[] = {
+-    "none", "1.0", "1.1", (char *)NULL
++    "none",  /* CURL_HTTP_VERSION_NONE */
++    "1.0",  /* CURL_HTTP_VERSION_1_0 */
++    "1.1",  /* CURL_HTTP_VERSION_1_1 */
++    "2.0",  /* CURL_HTTP_VERSION_2_0 */
++    "2TLS",  /* CURL_HTTP_VERSION_2TLS */
++    "2_PRIOR_KNOWLEDGE",  /* CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE */
++    (char *)NULL
+ };
+ 
+ CONST static char *netrcTable[] = {
