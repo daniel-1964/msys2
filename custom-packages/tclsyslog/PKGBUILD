@@ -1,0 +1,36 @@
+pkgbase=tcl-syslog
+pkgname="tclsyslog"
+pkgver=1.1
+pkgrel=1
+pkgdesc="A Tcl interface to the *nix syslog service. (msys)"
+arch=('any')
+url="http://tcl-syslog.sourceforge.net"
+license=('BSD')
+depends=('tcl')
+source=("https://download.sourceforge.net/${pkgbase}/${pkgbase}-${pkgver}.tgz"
+        'tcl.m4')
+sha256sums=('63a364eecb5bfbc90b08cdd0acf95ef6bc4473ce6c22db3ce8ef8db12156caa4'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+options=('!emptydirs')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+  cp -a ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/${pkgbase}-${pkgver} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr \
+    --enable-shared
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 "${srcdir}"/${pkgbase}-${pkgver}/license.terms ${pkgdir}/usr/share/licenses/${pkgname}/license.terms
+}
