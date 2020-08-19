@@ -1,0 +1,613 @@
+.TH "tls" n 1\&.7\&.21 tcltls "Binding to OpenSSL toolkit"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.BS
+.SH NAME
+tls \- binding to OpenSSL toolkit.
+.SH SYNOPSIS
+package require \fBTcl  8\&.4\fR
+.sp
+package require \fBtls  ?1\&.7\&.21?\fR
+.sp
+\fBtls::init\fR \fI?options?\fR
+.sp
+\fBtls::socket\fR \fI?options? host port\fR
+.sp
+\fBtls::socket\fR \fI?\-server command? ?options? port\fR
+.sp
+\fBtls::handshake\fR \fIchannel\fR
+.sp
+\fBtls::status\fR \fI?\-local? channel\fR
+.sp
+\fBtls::import\fR \fIchannel ?options?\fR
+.sp
+\fBtls::unimport\fR \fIchannel\fR
+.sp
+\fBtls::ciphers\fR \fIprotocol ?verbose?\fR
+.sp
+\fBtls::version\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+This extension provides a generic binding to
+OpenSSL (http://www.openssl.org/), utilizing the
+\fBTcl_StackChannel\fR API for Tcl 8.2 and higher.
+The sockets behave exactly the same as channels created using Tcl\[aq]s
+built\-in \fBsocket\fR command with additional options for
+controlling the SSL session.
+To use TLS with an earlier version of Tcl than 8.4, please obtain TLS
+1.3.
+.SH COMMANDS
+.PP
+Typically one would use the \fBtls::socket\fR command which provides
+compatibility with the native Tcl \fBsocket\fR command.
+In such cases \fBtls::import\fR should not be used directly.
+.TP
+.B \fBtls::init\fR \fI?options?\fR
+.sp
+This routine sets the default options used by \fBtls::socket\fR and
+is \fIoptional\fR.
+If you call \fBtls::import\fR directly this routine has no effect.
+Any of the options that \fBtls::socket\fR accepts can be set using
+this command, though you should limit your options to only TLS related
+ones.
+.TP
+.B \fBtls::socket\fR \fI?options? host port\fR
+.sp
+.B \fBtls::socket\fR \fI?\-server command? ?options? port\fR
+.sp
+This is a helper function that utilizes the underlying commands
+(\fBtls::import\fR).
+It behaves exactly the same as the native Tcl \fBsocket\fR command
+except that the options can include any of the applicable
+\fBtls:import\fR options with one additional option:
+.sp
+.B \fB\-autoservername\fR \fIbool\fR
+Automatically send the \-servername as the \fIhost\fR argument (\fBdefault\fR: \fIfalse\fR)
+.TP
+.B \fBtls::handshake\fR \fIchannel\fR
+.sp
+Forces handshake to take place, and returns 0 if handshake is still in
+progress (non\-blocking), or 1 if the handshake was successful.
+If the handshake failed this routine will throw an error.
+.TP
+.B \fBtls::status\fR \fI?\-local? channel\fR
+.sp
+Returns the current security status of an SSL channel.
+The result is a list of key\-value pairs describing the connected peer.
+If the result is an empty list then the SSL handshake has not yet
+completed.
+If \fI\-local\fR is given, then the certificate information is the
+one used locally.
+.TP
+.B \fBissuer\fR \fIdn\fR
+The distinguished name (DN) of the certificate issuer.
+.TP
+.B \fBsubject\fR \fIdn\fR
+The distinguished name (DN) of the certificate subject.
+.TP
+.B \fBnotBefore\fR \fIdate\fR
+The begin date for the validity of the certificate.
+.TP
+.B \fBnotAfter\fR \fIdate\fR
+The expiry date for the certificate.
+.TP
+.B \fBserial\fR \fIn\fR
+The serial number of the certificate.
+.TP
+.B \fBcipher\fR \fIcipher\fR
+The current cipher in use between the client and server channels.
+.TP
+.B \fBsbits\fR \fIn\fR
+The number of bits used for the session key.
+.TP
+.B \fBcertificate\fR \fIn\fR
+The PEM encoded certificate.
+.TP
+.B \fBtls::import\fR \fIchannel ?options?\fR
+.sp
+SSL\-enable a regular Tcl channel \- it need not be a socket, but must
+provide bi\-directional flow.
+Also setting session parameters for SSL handshake.
+.TP
+.B \fB\-cadir\fR \fIdir\fR
+Provide the directory containing the CA certificates.
+.TP
+.B \fB\-cafile\fR \fIfilename\fR
+Provide the CA file.
+.TP
+.B \fB\-certfile\fR \fIfilename\fR
+Provide the name of a file containing certificate to use.
+.TP
+.B \fB\-cert\fR \fIfilename\fR
+Provide the contents of a certificate to use, as a DER encoded binary
+value (X.509 DER).
+.TP
+.B \fB\-cipher\fR \fIstring\fR
+Provide the cipher suites to use.
+Syntax is as per OpenSSL.
+.TP
+.B \fB\-command\fR \fIcallback\fR
+If specified, this callback will be invoked at several points during the
+OpenSSL handshake.
+It can pass errors and tracing information, and it can allow Tcl scripts
+to perform their own validation of the certificate in place of the
+default validation provided by OpenSSL.
+.PD
+See CALLBACK OPTIONS for further discussion.
+.TP
+.B \fB\-dhparams\fR \fIfilename\fR
+Provide a Diffie\-Hellman parameters file.
+.TP
+.B \fB\-keyfile\fR \fIfilename\fR
+Provide the private key file. (\fBdefault\fR: value of \-certfile)
+.TP
+.B \fB\-key\fR \fIfilename\fR
+Provide the private key to use as a DER encoded value (PKCS#1 DER)
+.TP
+.B \fB\-model\fR \fIchannel\fR
+This will force this channel to share the same
+\f[BI]SSL_CTX\fR structure as the specified \fIchannel\fR
+and therefore share callbacks etc.
+.TP
+.B \fB\-password\fR \fIcallback\fR
+If supplied, this callback will be invoked when OpenSSL needs to obtain
+a password, typically to unlock the private key of a certificate.
+The callback should return a string which represents the password to be
+used.
+.PD
+See CALLBACK OPTIONS for further discussion.
+.TP
+.B \fB\-request\fR \fIbool\fR
+Request a certificate from peer during SSL handshake. (\fBdefault\fR: \fItrue\fR)
+.TP
+.B \fB\-require\fR \fIbool\fR
+Require a valid certificate from peer during SSL handshake.
+If this is set to true then \fB\-request\fR must also be set to true. (\fBdefault\fR: \fIfalse\fR)
+.TP
+.B \fB\-server\fR \fIbool\fR
+Handshake as server if true, else handshake as client.(\f[B]default\f[]:
+\fIfalse\fR)
+.TP
+.B \fB\-servername\fR \fIhost\fR
+Only available if the OpenSSL library the package is linked against
+supports the TLS hostname extension for \[aq]Server Name Indication\[aq]
+(SNI).
+Use to name the logical host we are talking to and expecting a
+certificate for
+.TP
+.B \fB\-ssl2\fR \fIbool\fR
+Enable use of SSL v2. (\fBdefault\fR: \fIfalse\fR)
+.TP
+.B \fB\-ssl3\fR \fIbool\fR
+Enable use of SSL v3. (\fBdefault\fR: \fIfalse\fR)
+.TP
+.B \-\fBtls1\fR \fIbool\fR
+Enable use of TLS v1. (\fBdefault\fR: \fItrue\fR)
+.TP
+.B \-\fBtls1.1\fR \fIbool\fR
+Enable use of TLS v1.1 (\fBdefault\fR: \fItrue\fR)
+.TP
+.B \-\fBtls1.2\fR \fIbool\fR
+Enable use of TLS v1.2 (\fBdefault\fR: \fItrue\f)
+.TP
+.B \-\fBtls1.3\fR \fIbool\fR
+Enable use of TLS v1.3 (\fBdefault\fR: \fItrue\fR)
+.TP
+.B \fBtls::unimport\fR \fIchannel\fR
+.sp
+Provided for symmetry to \fBtls::import\fR, this unstacks the
+SSL\-enabling of a regular Tcl channel.
+An error is thrown if TLS is not the top stacked channel type.
+.TP
+.B \fBtls::ciphers\fR \fIprotocol ?verbose?\fR
+.sp
+Returns list of supported ciphers based on the \fIprotocol\fR you
+supply, which must be one of \fIssl2, ssl3, or tls1\fR.
+If \fIverbose\fR is specified as true then a verbose, semi\-human
+readable list is returned providing additional information on the nature
+of the cipher support.
+In each case the result is a Tcl list.
+.TP
+.B \fBtls::version\fR
+.sp
+Returns the version string defined by OpenSSL.
+.BE
+.SH "CALLBACK OPTIONS"
+.TP
+As indicated above, individual channels can be given their own callbacks
+to handle intermediate processing by the OpenSSL library, using the
+\fI\-command\fR and \fI\-password\fR options passed to either of
+\fBtls::socket\fR or \fBtls::import\fR.
+.TP
+.B \fB\-command\fR \fIcallback\fR
+.sp
+Invokes the specified \fIcallback\fR script at several points during
+the OpenSSL handshake.
+Except as indicated below, values returned from the callback are
+ignored.
+Arguments appended to the script upon callback take one of the following
+forms:
+.PD
+.B  \fBinfo\fR \fIchannel major minor message\fR
+.sp
+This form of callback is invoked by the OpenSSL function
+\fCSSL_CTX_set_info_callback()\fR.
+.PD
+The \fImajor\fR and \fIminor\fR arguments are used to represent
+the state information bitmask.
+.TP
+.B Possible values for \fImajor\fR are:
+\fChandshake,\ alert,\ connect,\ accept\fR.
+.TP
+.B Possible values for \fIminor\fR are:
+\fCstart,\ done,\ read,\ write,\ loop,\ exit\fR.
+.PD
+The \fImessage\fR argument is a descriptive string which may be
+generated either by \fCSSL_state_string_long()\fR or by
+\fCSSL_alert_desc_string_long()\fR, depending on context.
+.TP
+.B  \fBverify\fR \fIchannel depth cert status error\fR
+.sp
+This form of callback is invoked by the OpenSSL function
+\fCSSL_set_verify()\f.
+.PD
+The \fIdepth\fR argument is an integer representing the current depth
+on the certificate chain, with \fC0\fR as the subject certificate and
+higher values denoting progressively more indirect issuer certificates.
+.PD
+The \fIcert\fR argument is a list of key\-value pairs similar to
+those returned by \fBtls::status\fR.
+.PD
+The \fIstatus\fR argument is an integer representing the current
+validity of the certificate.
+A value of \fC0\fR means the certificate is deemed invalid.
+A value of \fC1\fR means the certificate is deemed valid.
+.PD
+The \fIerror\fR argument supplies the message, if any, generated by
+\fCX509_STORE_CTX_get_error()\fR.
+.PD
+The callback may override normal validation processing by explicitly
+returning one of the above \fIstatus\fR values.
+.TP
+.B \fB\-password\fR \fIcallback\fR
+.sp
+Invokes the specified \fIcallback\fR script when OpenSSL needs to
+obtain a password.
+The callback should return a string which represents the password to be
+used.
+No arguments are appended to the script upon callback.
+.sp
+Reference implementations of these callbacks are provided in the
+distribution as \fBtls::callback\fR and \fBtls::password\fR
+respectively.
+Note that these are \fIsample\fR implementations only.
+In a more realistic deployment you would specify your own callback
+scripts on each TLS channel using the \fI\-command\fR and
+\fI\-password\fR options.
+.sp
+The default behavior when the \fI\-command\fR option is not specified
+is for TLS to process the associated library callbacks internally.
+The default behavior when the \fI\-password\fR option is not
+specified is for TLS to process the associated library callbacks by
+attempting to call \fBtls::password\fR.
+The difference between these two behaviors is a consequence of
+maintaining compatibility with earlier implementations.
+.sp
+The \fBtls::debug\fR variable provides some additional control over
+these reference callbacks.
+Its value is zero by default.
+Higher values produce more diagnostic output, and will also force the
+verify method in \fBtls::callback\fR to accept the certificate, even
+when it is invalid.
+.sp
+\fIThe use of the reference callbacks \f[BI]tls::callback\fI and
+\f[BI]tls::password\fI is not recommended. They may be removed from
+future releases.\fR
+.sp
+\fIThe use of the variable \f[BI]tls::debug\f[I] is not recommended.
+It may be removed from future releases.\fR
+.BE
+.SH "HTTPS EXAMPLE"
+.sp
+This example uses a sample server.pem provided with the TLS release,
+courtesy of the \fBOpenSSL\fR project.
+.IP
+.nf
+\fCpackage\ require\ http
+package\ require\ tls
+
+http::register\ https\ 443\ [list\ ::tls::socket\ \-autoservername\ true\ \-require\ true\ \-cadir\ /etc/ssl/certs]
+
+set\ tok\ [http::geturl\ https://www.tcl.tk/]\fR
+.fi
+.BE
+.Sh "SPECIAL CONSIDERATIONS"
+.sp
+The capabilities of this package can vary enormously based upon how your
+OpenSSL library was configured and built.
+At the most macro\-level OpenSSL supports a "no patents" build, which
+disables RSA, IDEA, RC(2,4,5) and SSL2 \- if your OpenSSL is configured
+this way then you will need to build TLS with the \-DNO_PATENTS option
+\- and the resultant module will function correctly and also support ADH
+certificate\-less encryption, however you will be unable to utilize this
+to speak to normal Web Servers, which typically require RSA support.
+Please see <http://www.openssl.org/> for more information on the whole
+issue of patents and US export restrictions.
+.BE
+.SH "SEE ALSO"
+.sp
+\fBsocket\fR, \fBfileevent\fR,
+\fBOpenSSL\fR (http://www.openssl.org/)
+.BE
+.SH COPYRIGHT
+\fCCopyright\ ©\ 1999\ Matt\ Newman.
+.nf
+Copyright\ ©\ 2004\ Starfish\ Systems.\fR
+.fi

@@ -1,0 +1,56 @@
+pkgbase="tls"
+pkgname="tcltls"
+pkgver=1.7.21
+pkgrel=1
+pkgdesc="Tcl extension for TLS OpenSSL. (msys)"
+arch=('any')
+utl="https://github.com/rkeene/TclTLS"
+license=('BSD')
+depends=('tcllib'
+         'libopenssl'
+         'tcl')
+makedepends=('openssl-devel')
+source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/rkeene/TclTLS/archive/${pkgbase}-${pkgver//./-}.tar.gz"
+        'hostname-tests.patch'
+        'cipher-tests.patch'
+        'certs-tests.patch.gz'
+        'fall-through.patch'
+        'tls.n')
+sha256sums=('2e6ba601a66c89792563792f5f466b48c1da6415d0274fdb88a42c0beeaa1254'
+            '50b2b9ab3943256f30686a7582dfd171f7616fc4d16b0c946d0e5feef8292e86'
+            '89fc54b180db5bf360f05084c5a131498ba954440ba6217f928be4b447e61c97'
+            '708bbed7c7bf8a460874c469cf11317bb081e2e19604d753ac3df0e77407adc5'
+            '49204f4dd5c5a9664014bf0a69b45de1e4df905ace7f4f8c20ca781f36692271'
+            '90192cbf1ed007b55a82e44813d9cd852b7dc317d21f397fece66cfc869625ab')
+options=('!emptydirs')
+
+prepare() {
+  cd $srcdir/TclTLS-${pkgbase}-${pkgver//./-}
+  patch -Np1 -i ${srcdir}/hostname-tests.patch
+  patch -Np1 -i ${srcdir}/cipher-tests.patch
+  patch -Np1 -i ${srcdir}/certs-tests.patch
+  patch -Np1 -i ${srcdir}/fall-through.patch
+  sed -i 's/cygwin\*/&|msys*/g' aclocal/*.m4
+  ./autogen.sh
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/TclTLS-${pkgbase}-${pkgver//./-} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 "$srcdir/TclTLS-${pkgbase}-${pkgver//./-}/license.terms" ${pkgdir}/usr/share/licenses/${pkgname}/license.terms
+  install -Dm644 "${srcdir}"/tls.n -t ${pkgdir}/usr/share/man/mann
+}
+
+check() {
+  cd "${srcdir}/build"
+  make test
+}
