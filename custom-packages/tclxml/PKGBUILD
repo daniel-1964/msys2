@@ -1,0 +1,53 @@
+pkgname="tclxml"
+pkgver=3.2
+pkgrel=1
+pkgdesc="Tcl library for XML parsing (msys)"
+arch=('any')
+url="https://tclxml.sourceforge.net/"
+license=('custom:BSD')
+depends=('tcl'
+         'tcllib'
+         'libxml2'
+         'libxslt')
+makedepends=('libxml2-devel'
+             'libxslt-devel')
+source=("${pkgname}-${pkgver}.tar.gz::https://download.sourceforge.net/${pkgname}/${pkgname}-${pkgver}.tar.gz"
+        'tcl.m4')
+sha256sums=('f4116b6680b249ce74b856a121762361ca09e6256f0c8ad578d1c661b822cb39'
+            '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
+options=('!emptydirs')
+
+prepare() {
+  cd ${srcdir}/${pkgname}-${pkgver}
+  cp -a ${srcdir}/tcl.m4 tclconfig/tcl.m4
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
+  cp -a ${srcdir}/${pkgname}-${pkgver} ${srcdir}/build
+  cd "${srcdir}/build"
+  ./configure \
+    --prefix=/usr \
+    --enable-shared \
+    --enable-64bit
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}" install
+  make doc TCLLIBPATH=${pkgdir}/usr/lib
+  sed -i '12d' doc/tcldom.n
+  sed -i '12r doc/man.macros' doc/tcldom.n
+  sed -i '14d' doc/tclxml.n
+  sed -i '14r doc/man.macros' doc/tclxml.n
+  sed -i '9d' doc/tclxslt.n
+  sed -i '9r doc/man.macros' doc/tclxslt.n
+  sed -i "6s/^/'\\\\\" /" doc/tcldom.n
+  sed -i "7s/^/'\\\\\" /" doc/tcldom.n
+  sed -i "8s/^/'\\\\\" /" doc/tclxml.n
+  sed -i "9s/^/'\\\\\" /" doc/tclxml.n
+  install -Dm644 "${srcdir}"/${pkgname}-${pkgver}/license ${pkgdir}/usr/share/licenses/${pkgname}/license
+  install -Dm644 "${srcdir}"/build/doc/*.n -t ${pkgdir}/usr/share/man/mann
+}
