@@ -1,0 +1,359 @@
+--- origsrc/openldap-2.4.35/build/top.mk	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/build/top.mk	2013-06-06 22:00:09.000000000 -0500
+@@ -91,6 +91,8 @@ NT_LTFLAGS_LIB = -no-undefined -avoid-ve
+ NT_LTFLAGS_MOD = -no-undefined -avoid-version -rpath $(moduledir)
+ UNIX_LTFLAGS_LIB = $(LTVERSION) -rpath $(libdir)
+ UNIX_LTFLAGS_MOD = $(LTVERSION) -rpath $(moduledir)
++CYGWIN_LTFLAGS_LIB = -no-undefined $(LTVERSION) -rpath $(libdir)
++CYGWIN_LTFLAGS_MOD = -no-undefined -avoid-version -rpath $(moduledir)
+ 
+ # libtool flags
+ LTFLAGS     = $(@PLAT@_LTFLAGS)
+--- origsrc/openldap-2.4.35/configure.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/configure.in	2013-06-06 22:00:09.000000000 -0500
+@@ -3072,7 +3072,10 @@ dnl
+ 
+ if test "$ac_cv_mingw32" = yes -o $ol_cv_msvc = yes ; then
+ 	PLAT=NT
+-	SLAPD_MODULES_LDFLAGS=
++	SLAPD_MODULES_LDFLAGS="-Wl,--export-all-symbols,--out-implib,libslapd.a"
++elif test "$ac_cv_cygwin" = yes ; then
++	PLAT=CYGWIN
++	SLAPD_MODULES_LDFLAGS="-Wl,--export-all-symbols,--out-implib,libslapd.a"
+ else
+ 	PLAT=UNIX
+ fi
+--- origsrc/openldap-2.4.35/libraries/liblber/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/libraries/liblber/Makefile.in	2013-06-06 22:00:09.000000000 -0500
+@@ -21,6 +21,9 @@ NT_OBJS = nt_err.lo
+ UNIX_SRCS = stdio.c
+ UNIX_OBJS = stdio.lo
+ 
++CYGWIN_SRCS = $(UNIX_SRCS)
++CYGWIN_OBJS = $(UNIX_OBJS)
++
+ LIB_DEFS = -DLBER_LIBRARY
+ 
+ SRCS= assert.c decode.c encode.c io.c bprint.c debug.c \
+@@ -38,6 +41,7 @@ XLIBS = $(LIBRARY) $(LDAP_LIBLUTIL_A)
+ XXLIBS = 
+ NT_LINK_LIBS = $(AC_LIBS)
+ UNIX_LINK_LIBS = $(AC_LIBS)
++CYGWIN_LINK_LIBS = $(UNIX_LINK_LIBS)
+ 
+ dtest:    $(XLIBS) dtest.o
+ 	$(LTLINK) -o $@ dtest.o $(LIBS)
+--- origsrc/openldap-2.4.35/libraries/libldap/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/libraries/libldap/Makefile.in	2013-06-06 22:00:09.000000000 -0500
+@@ -52,6 +52,7 @@ XLIBS = $(LIBRARY) $(LDAP_LIBLBER_LA) $(
+ XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS)
+ NT_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+ UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
++CYGWIN_LINK_LIBS = $(UNIX_LINK_LIBS)
+ 
+ apitest:	$(XLIBS) apitest.o
+ 	$(LTLINK) -o $@ apitest.o $(LIBS)
+--- origsrc/openldap-2.4.35/libraries/libldap_r/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/libraries/libldap_r/Makefile.in	2013-06-06 22:11:36.572973200 -0500
+@@ -61,6 +61,7 @@ XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS)
+ NT_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+ UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS) $(LTHREAD_LIBS)
++CYGWIN_LINK_LIBS = $(UNIX_LINK_LIBS)
+ 
+ .links : Makefile
+ 	@for i in $(XXSRCS); do \
+--- origsrc/openldap-2.4.35/libraries/liblutil/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/libraries/liblutil/Makefile.in	2013-06-06 22:00:09.000000000 -0500
+@@ -25,6 +25,9 @@ NT_OBJS = ntservice.o slapdmsg.res
+ UNIX_SRCS = detach.c
+ UNIX_OBJS = detach.o
+ 
++CYGWIN_SRCS = $(UNIX_SRCS)
++CYGWIN_OBJS = $(UNIX_OBJS)
++
+ XLIBS = $(LIBRARY) $(LDAP_LIBLBER_LA)
+ 
+ SRCS	= base64.c entropy.c sasl.c signal.c hash.c passfile.c \
+--- origsrc/openldap-2.4.35/servers/slapd/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/Makefile.in	2013-06-06 22:26:11.811034000 -0500
+@@ -81,14 +81,8 @@ BUILD_SRV = @BUILD_SLAPD@
+ 
+ all-local-srv: all-cffiles
+ 
+-NT_SLAPD_DEPENDS = slapd.exp
+-NT_SLAPD_OBJECTS = slapd.exp symdummy.o $(OBJS) version.o
+-
+-UNIX_SLAPD_DEPENDS = $(SLAPD_STATIC_DEPENDS) version.o $(SLAPD_L)
+-UNIX_SLAPD_OBJECTS = $(OBJS) version.o
+-
+-SLAPD_DEPENDS = $(@PLAT@_SLAPD_DEPENDS)
+-SLAPD_OBJECTS = $(@PLAT@_SLAPD_OBJECTS)
++SLAPD_DEPENDS = $(SLAPD_STATIC_DEPENDS) version.o $(SLAPD_L)
++SLAPD_OBJECTS = $(OBJS) version.o
+ 
+ # Notes about slapd for Windows
+ # =============================
+@@ -236,8 +230,7 @@ symdummy.c: slapd.def
+ 	cat $@.tmp >> $@; \
+ 	$(RM) $@.tmp
+ 
+-libslapd.a: symdummy.o
+-	dlltool --dllname slapd.exe --input-def slapd.def --output-lib $@
++libslapd.a: slapd$(EXEEXT)
+ 
+ slapd.exp: libslapd.a
+ 	@echo $(LTLINK) -Wl,--base-file,slapd.base -o slapd \
+@@ -262,7 +255,7 @@ slapd.exp: libslapd.a
+ slapi/libslapi.la: FORCE
+ 	(cd slapi; $(MAKE) $(MFLAGS) all)
+ 
+-slapd: $(SLAPD_DEPENDS) @LIBSLAPI@
++slapd$(EXEEXT): $(SLAPD_DEPENDS) @LIBSLAPI@
+ 	$(LTLINK) -o $@ $(SLAPD_OBJECTS) $(LIBS) \
+ 		$(WRAP_LIBS)
+ 	$(RM) $(SLAPTOOLS)
+@@ -273,11 +266,11 @@ slapd: $(SLAPD_DEPENDS) @LIBSLAPI@
+ sslapd: version.o
+ 	$(LTLINK) -static -o $@ $(OBJS) version.o $(LIBS) $(WRAP_LIBS)
+ 
+-dummy $(SLAPD_DYNAMIC_BACKENDS): slapd
++dummy $(SLAPD_DYNAMIC_BACKENDS): slapd$(EXEEXT)
+ 	cd $@; $(MAKE) $(MFLAGS) all
+ 	@touch $@
+ 
+-dynamic_overlays: slapd
++dynamic_overlays: slapd$(EXEEXT)
+ 	cd overlays; $(MAKE) $(MFLAGS) dynamic
+ 
+ #
+@@ -388,7 +381,7 @@ install-slapd: FORCE
+ 	    fi; \
+ 	done
+ 
+-all-cffiles: slapd $(SLAPD_DYNAMIC_BACKENDS) dynamic_overlays
++all-cffiles: slapd$(EXEEXT) $(SLAPD_DYNAMIC_BACKENDS) dynamic_overlays
+ 	@if test $(PLAT) = NT; then \
+ 	    sysconfdir=`cygpath -w $(sysconfdir) | \
+ 		$(SED) -e 's/\\\\/\\\\\\\\\\\\\\\\/g'`; \
+--- origsrc/openldap-2.4.35/servers/slapd/back-bdb/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-bdb/Makefile.in	2013-06-06 22:00:09.000000000 -0500
+@@ -38,8 +38,9 @@ MOD_DEFS = $(@BUILD_BDB@_DEFS)
+ MOD_LIBS = $(BDB_LIBS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_bdb
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-dnssrv/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-dnssrv/Makefile.in	2013-06-06 22:00:09.000000000 -0500
+@@ -31,8 +31,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_DNSSRV@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_dnssrv
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-hdb/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-hdb/Makefile.in	2013-06-06 22:00:10.842751700 -0500
+@@ -42,8 +42,9 @@ MOD_DEFS = $(@BUILD_HDB@_DEFS)
+ MOD_LIBS = $(BDB_LIBS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ .links : Makefile
+ 	@for i in $(XXSRCS); do \
+--- origsrc/openldap-2.4.35/servers/slapd/back-ldap/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-ldap/Makefile.in	2013-06-06 22:00:10.846751900 -0500
+@@ -30,8 +30,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_LDAP@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_ldap
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-ldif/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-ldif/Makefile.in	2013-06-06 22:00:10.851752200 -0500
+@@ -26,8 +26,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(yes_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_ldif
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-mdb/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-mdb/Makefile.in	2013-06-06 22:00:10.856752500 -0500
+@@ -39,8 +39,9 @@ MOD_DEFS = $(@BUILD_MDB@_DEFS)
+ MOD_LIBS = $(MDB_LIBS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_mdb
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-meta/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-meta/Makefile.in	2013-06-06 22:00:10.860752700 -0500
+@@ -30,8 +30,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_META@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_meta
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-monitor/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-monitor/Makefile.in	2013-06-06 22:00:10.865753000 -0500
+@@ -34,8 +34,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_MONITOR@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_monitor
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-ndb/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-ndb/Makefile.in	2013-06-06 22:00:10.871753300 -0500
+@@ -34,8 +34,9 @@ MOD_DEFS = $(@BUILD_NDB@_DEFS)
+ MOD_LIBS = $(SLAPD_NDB_LIBS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_ndb
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-null/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-null/Makefile.in	2013-06-06 22:00:10.888754300 -0500
+@@ -26,8 +26,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_NULL@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_null
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-passwd/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-passwd/Makefile.in	2013-06-06 22:00:10.904755200 -0500
+@@ -26,8 +26,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_PASSWD@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_passwd
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-perl/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-perl/Makefile.in	2013-06-06 22:00:10.921756200 -0500
+@@ -31,8 +31,9 @@ MOD_DEFS = $(@BUILD_PERL@_DEFS)
+ MOD_LIBS = @MOD_PERL_LDFLAGS@
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_perl
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-relay/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-relay/Makefile.in	2013-06-06 22:00:10.937757100 -0500
+@@ -26,8 +26,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_RELAY@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS) $(REWRITE)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS) $(REWRITE)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS) $(REWRITE)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_relay
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-shell/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-shell/Makefile.in	2013-06-06 22:00:10.954758100 -0500
+@@ -28,8 +28,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_SHELL@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_shell
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-sock/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-sock/Makefile.in	2013-06-06 22:00:10.970759000 -0500
+@@ -32,8 +32,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_SOCK@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBBASE = back_sock
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/back-sql/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/back-sql/Makefile.in	2013-06-06 22:00:10.987760000 -0500
+@@ -30,8 +30,9 @@ mod_DEFS = -DSLAPD_IMPORT
+ MOD_DEFS = $(@BUILD_SQL@_DEFS)
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS) $(SLAPD_SQL_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS) $(SLAPD_SQL_LIBS)
+ 
+ LIBBASE = back_sql
+ 
+--- origsrc/openldap-2.4.35/servers/slapd/overlays/Makefile.in	2013-03-28 10:41:51.000000000 -0500
++++ src/openldap-2.4.35/servers/slapd/overlays/Makefile.in	2013-06-06 23:42:11.477832000 -0500
+@@ -49,8 +49,9 @@ LDAP_LIBDIR= ../../../libraries
+ MOD_DEFS = -DSLAPD_IMPORT
+ 
+ shared_LDAP_LIBS = $(LDAP_LIBLDAP_R_LA) $(LDAP_LIBLBER_LA)
+-NT_LINK_LIBS = -L.. -lslapd $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++NT_LINK_LIBS = -Wl,../libslapd.a $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
+ UNIX_LINK_LIBS = $(@BUILD_LIBS_DYNAMIC@_LDAP_LIBS)
++CYGWIN_LINK_LIBS = $(NT_LINK_LIBS)
+ 
+ LIBRARY = ../liboverlays.a
+ PROGRAMS = @SLAPD_DYNAMIC_OVERLAYS@

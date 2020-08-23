@@ -1,0 +1,91 @@
+# Maintainer: Andrea Zagli <andrea.zagli.free@gmail.com>
+
+pkgbase=openldap
+pkgname=("${pkgbase}" "${pkgbase}-devel" "lib${pkgbase}2_4_2")
+pkgver=2.4.51
+pkgrel=1
+arch=('any')
+pkgdesc="OpenLDAP Software is an open source implementation of the Lightweight Directory Access Protocol (only client) (msys)"
+depends=("libsasl"
+         "libopenssl")
+makedepends=("gcc"
+             "libtool"
+             "groff"
+             "libsasl-devel"
+             "make")
+options=('strip' 'staticlibs' '!makeflags' '!emptydirs')
+license=("The OpenLDAP Public License")
+url="https://www.openldap.org/"
+source=(https://www.openldap.org/software/download/OpenLDAP/openldap-release/${pkgbase}-${pkgver}.tgz
+        001-backmdb.patch
+        003-symdummy-error.patch
+        openldap-cygwin.patch)
+sha256sums=('f490775ea4c6506b7210ee55a102c8f4aacfe9d1c8eaa633c7316d33a714be62'
+            'b462bfab9362cf5cab61d67cd24902a1800fb498a152b681ee182c713b79146c'
+            'd697fe51361a5129a5af3ca317031ff6f4ca5ddd247ff53043880660154a4708'
+            '109eef39fa149421a4f13cac5e8c5063c066cb73d6cd1a8883404996d25581e3')
+
+prepare() {
+  cd ${pkgbase}-${pkgver}
+
+  patch -Np1 -i ${srcdir}/001-backmdb.patch
+  patch -Np1 -i ${srcdir}/003-symdummy-error.patch
+  patch -Np2 -i ${srcdir}/openldap-cygwin.patch
+  sed -i 's/\*cygwin\*/& | *msys*/' configure.in
+  #libtoolize --force --copy
+  AUTOMAKE=/usr/bin/true autoreconf -fi
+}
+
+build() {
+  [[ -d "${srcdir}/build" ]] && rm -rf "${srcdir}/build"
+  mkdir -p build && cd build
+  unset CPPFLAGS
+  export lt_cv_deplibs_check_method='pass_all'
+  ../${pkgbase}-${pkgver}/configure \
+    --build=x86_64-pc-msys \
+    --prefix=/usr \
+    --libexecdir=/usr/lib \
+    --sbindir=/usr/bin \
+    --sysconfdir=/etc \
+    --with-tls=openssl \
+    --with-cyrus-sasl \
+    --disable-slapd \
+    --enable-dynamic \
+    --enable-shared
+  make depend
+  make
+
+  msg2 "Install to dest"
+  cd "${srcdir}/build"
+  make DESTDIR=${srcdir}/dest LN_S="cp -a" install
+  install -Dm644 "${srcdir}/${pkgbase}-${pkgver}/LICENSE" "${srcdir}/dest/usr/share/licenses/${pkgbase}/LICENSE"
+}
+
+package_openldap() {
+  depends=("lib${pkgbase}2_4_2=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{bin,share/{licenses,man/man{1,5}}}
+  cp -a ${srcdir}/dest/etc ${pkgdir}/
+  cp -a ${srcdir}/dest/usr/bin/*.exe ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/share/licenses ${pkgdir}/usr/share
+  cp -a ${srcdir}/dest/usr/share/man/man1 ${pkgdir}/usr/share/man
+  cp -a ${srcdir}/dest/usr/share/man/man5/ld*.5 ${pkgdir}/usr/share/man/man5
+}
+
+package_libopenldap2_4_2() {
+  groups=('libraries')
+  depends=('gcc-libs' 'libopenssl' 'libsasl')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+}
+
+package_openldap-devel() {
+  pkgdesc="Openldap headers and libraries"
+  groups=('development')
+  depends=('libopenssl-devel' 'libsasl-devel')
+  options=('staticlibs')
+  depends=("lib${pkgbase}2_4_2=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib,share/man/man3}
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/share/man/man3 ${pkgdir}/usr/share/man
+}
