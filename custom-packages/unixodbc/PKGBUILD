@@ -1,0 +1,77 @@
+# Maintainer: Andrew Sun <adsun701@gmail.com>
+
+pkgbase=unixODBC
+pkgname=("${pkgbase}" "${pkgbase}-devel" libODBC2)
+pkgver=2.3.7
+pkgrel=2
+pkgdesc="ODBC is an open specification for providing application developers with a predictable API with which to access Data Sources (msys)"
+arch=('any')
+url="http://www.unixodbc.org/"
+depends=('gcc-libs'
+         'libreadline'
+         'libtool')
+makedepends=('gcc'
+             'libreadline-devel')
+conflicts=('firebird2-git')
+license=('GPL2' 'LGPL2.1')
+source=("ftp://ftp.unixodbc.org/pub/${pkgbase}/${pkgbase}-${pkgver}.tar.gz")
+sha256sums=('45f169ba1f454a72b8fcbb82abd832630a3bf93baa84731cf2949f449e1e3e77')
+
+src_compile()
+{
+  [[ -d "${_B}" ]] && rm -rf "${_B}"
+  mkdir -p "${_B}" && cd "${_B}"
+  ${_S}/configure \
+    --prefix=/usr \
+    --build=x86_64-pc-msys \
+    --enable-static \
+    --enable-shared
+  make
+}
+
+src_install() {
+  [[ -d "${_D}" ]] && rm -rf "${_D}"
+  mkdir -p "${_D}"
+  cd "${_B}"
+  make install DESTDIR="${_D}"
+}
+
+prepare() {
+  _B="${srcdir}/build"
+  _D="${srcdir}/dest"
+  _S="${srcdir}/${pkgbase}-${pkgver}"
+  cd "${_S}"
+  autoreconf -fi
+}
+
+build() {
+  msg2 "Compile to build"
+  src_compile
+  msg2 "Install to dest"
+  src_install
+}
+
+package_unixODBC() {
+  depends=("libODBC2=${pkgver}" 'libreadline')
+  mkdir -p ${pkgdir}/usr/{bin,share}
+  cp -a ${_D}/usr/etc ${pkgdir}/usr
+  cp -a ${_D}/usr/bin/*.exe ${pkgdir}/usr/bin/
+  cp -a ${_D}/usr/share ${pkgdir}/usr/
+}
+
+package_libODBC2() {
+  groups=('libraries')
+  depends=('gcc-libs')
+  mkdir -p ${pkgdir}/usr/bin
+  cp -a ${_D}/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+}
+
+package_unixODBC-devel() {
+  pkgdesc="LibODBC headers and libraries"
+  groups=('development')
+  options=('staticlibs')
+  depends=("libODBC2=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{include,lib}
+  cp -a ${_D}/usr/include ${pkgdir}/usr/
+  cp -a ${_D}/usr/lib ${pkgdir}/usr/
+}
