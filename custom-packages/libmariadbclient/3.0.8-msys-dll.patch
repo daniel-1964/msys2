@@ -1,0 +1,41 @@
+--- origsrc/mariadb-connector-c-3.0.8-src/include/ma_global.h	2018-12-18 10:34:42.000000000 -0600
++++ src/mariadb-connector-c-3.0.8-src/include/ma_global.h	2019-01-22 00:33:36.348242200 -0600
+@@ -1070,7 +1070,7 @@ do { doubleget_union _tmp; \
+ #define statistic_add(V,C,L)       (V)+=(C)
+ #endif
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__MSYS__)
+ #define SO_EXT ".dll"
+ #else
+ #define SO_EXT ".so"
+--- origsrc/mariadb-connector-c-3.0.8-src/libmariadb/CMakeLists.txt	2018-12-18 10:34:42.000000000 -0600
++++ src/mariadb-connector-c-3.0.8-src/libmariadb/CMakeLists.txt	2019-01-22 00:45:54.736914100 -0600
+@@ -389,6 +389,7 @@ TARGET_LINK_LIBRARIES(mariadbclient ${SY
+ IF(UNIX)
+   ADD_LIBRARY(libmariadb SHARED ${libmariadb_RC} ${MARIADB_OBJECTS} ${EMPTY_FILE})
+   SET_TARGET_PROPERTIES(libmariadb PROPERTIES COMPILE_FLAGS "${CMAKE_SHARED_LIBRARY_C_FLAGS}")
++  SET_TARGET_PROPERTIES(libmariadb PROPERTIES OUTPUT_NAME "mariadb")
+ ELSE()
+   ADD_LIBRARY(libmariadb SHARED ${libmariadb_RC} mariadbclient.def)
+   TARGET_LINK_LIBRARIES(libmariadb  mariadbclient)
+@@ -413,8 +414,6 @@ ENDIF()
+ SET_TARGET_PROPERTIES(mariadbclient PROPERTIES IMPORTED_INTERFACE_LINK_LIBRARIES "${SYSTEM_LIBS}")
+ SET_TARGET_PROPERTIES(libmariadb PROPERTIES IMPORTED_INTERFACE_LINK_LIBRARIES "${SYSTEM_LIBS}")
+ 
+-SET_TARGET_PROPERTIES(libmariadb PROPERTIES PREFIX "")
+-
+ #
+ # Installation
+ #
+--- origsrc/mariadb-connector-c-3.0.8-src/mariadb_config/CMakeLists.txt	2018-12-18 10:34:42.000000000 -0600
++++ src/mariadb-connector-c-3.0.8-src/mariadb_config/CMakeLists.txt	2019-01-22 00:30:24.938085900 -0600
+@@ -5,6 +5,8 @@ INCLUDE_DIRECTORIES(${CC_SOURCE_DIR}/inc
+ FUNCTION(GET_LIB_NAME LIB_NAME LIB_OUT)
+   IF(APPLE)
+     STRING(FIND ${LIB_NAME} ".dylib" IS_SO)
++  ELSEIF(MSYS)
++    STRING(FIND ${LIB_NAME} ".dll.a" IS_SO)
+   ELSE()
+     STRING(FIND ${LIB_NAME} ".so" IS_SO)
+   ENDIF()

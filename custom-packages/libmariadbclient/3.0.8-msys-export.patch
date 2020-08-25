@@ -1,0 +1,32 @@
+--- origsrc/mariadb-connector-c-3.0.8-src/cmake/export.cmake	2018-12-18 10:34:42.000000000 -0600
++++ src/mariadb-connector-c-3.0.8-src/cmake/export.cmake	2019-01-22 00:42:58.953710900 -0600
+@@ -6,7 +6,7 @@
+ #  For details see the COPYING-CMAKE-SCRIPTS file.
+ #
+ MACRO(CREATE_EXPORT_FILE op outfile version symbols alias_version)
+-  IF(WIN32)
++  IF(WIN32 OR MSYS)
+     SET(EXPORT_CONTENT "EXPORTS\n")
+     FOREACH(exp_symbol ${symbols})
+       SET(EXPORT_CONTENT ${EXPORT_CONTENT} "${exp_symbol}\n")
+--- origsrc/mariadb-connector-c-3.0.8-src/libmariadb/CMakeLists.txt	2018-12-18 10:34:42.000000000 -0600
++++ src/mariadb-connector-c-3.0.8-src/libmariadb/CMakeLists.txt	2019-01-22 00:45:54.736914100 -0600
+@@ -340,7 +340,7 @@ SET(LIBMARIADB_SOURCES ${LIBMARIADB_SOUR
+ SET(MARIADB_LIB_SYMBOLS ${MARIADB_LIB_SYMBOLS} ${MARIADB_NONBLOCK_SYMBOLS})
+ 
+ INCLUDE(${CC_SOURCE_DIR}/cmake/export.cmake)
+-IF(NOT WIN32)
++IF(NOT WIN32 AND NOT MSYS)
+   CREATE_EXPORT_FILE(WRITE mariadbclient.def
+                    "libmysqlclient_18"
+                    "${MYSQL_LIB_SYMBOLS}"
+@@ -404,7 +404,8 @@ IF(CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC)
+ ENDIF()
+ 
+ IF(CMAKE_SYSTEM_NAME MATCHES "Linux" OR
+-   CMAKE_SYSTEM_NAME MATCHES "GNU")
++   CMAKE_SYSTEM_NAME MATCHES "GNU" OR
++   CMAKE_SYSTEM_NAME MATCHES "MSYS")
+   IF (NOT WITH_ASAN AND NOT WITH_TSAN AND NOT WITH_UBSAN AND NOT WITH_MSAN)
+     TARGET_LINK_LIBRARIES (libmariadb "-Wl,--no-undefined")
+   ENDIF()

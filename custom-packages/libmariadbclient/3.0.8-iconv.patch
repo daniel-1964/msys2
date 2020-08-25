@@ -1,0 +1,10 @@
+--- origsrc/mariadb-connector-c-3.0.8-src/libmariadb/CMakeLists.txt	2018-12-18 10:34:42.000000000 -0600
++++ src/mariadb-connector-c-3.0.8-src/libmariadb/CMakeLists.txt	2019-01-22 00:45:54.736914100 -0600
+@@ -303,7 +303,6 @@ ELSE()
+   IF(ICONV_INCLUDE_DIR)
+      INCLUDE_DIRECTORIES(BEFORE ${ICONV_INCLUDE_DIR}) 
+   ENDIF()
+-  ADD_DEFINITIONS(-DLIBICONV_PLUG)
+ ENDIF()
+ 
+ IF(ZLIB_FOUND AND WITH_EXTERNAL_ZLIB)

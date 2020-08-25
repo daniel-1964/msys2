@@ -1,0 +1,96 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgbase=libmariadbclient
+pkgname=("${pkgbase}" "${pkgbase}-devel")
+pkgver=3.1.7
+pkgrel=2
+pkgdesc="MariaDB client libraries (mingw-w64)"
+arch=('any')
+url="https://mariadb.org/"
+license=('LGPL')
+makedepends=('gcc'
+             'cmake'
+             'libcurl-devel'
+             'libiconv-devel' \
+             'openssl-devel'
+             'zlib-devel')
+depends=('gcc-libs'
+         'libcurl'
+         'libiconv' \
+         'libopenssl'
+         'zlib')
+#optdepends=('curl')
+options=('!strip' 'staticlibs')
+source=(#"https://downloads.mariadb.org/interstitial/connector-c-${pkgver}/source-tgz/mariadb-connector-c-${pkgver}-src.tar.gz"
+        http://mirror.mephi.ru/mariadb/connector-c-${pkgver}/mariadb-connector-c-${pkgver}-src.tar.gz{,.asc}
+        001-mingw-build.patch
+        002-fix-prototype.patch
+        003-gcc-fix-use_VA_ARGS.patch
+        3.0.8-msys-dll.patch
+        3.0.8-msys-export.patch
+        3.0.8-iconv.patch)
+validpgpkeys=("199369E5404BD5FC7D2FE43BCBCB082A1BB943DB") #MariaDB Package Signing Key <package-signing-key@mariadb.org>
+sha256sums=('64f7bc8f5df3200ba6e3080f68ee4942382a33e8371baea8ca4b9242746df59a'
+            'SKIP'
+            '9c6381c522fca4bda4bbe9e3b16e929bd215ded7f4263801da739856d3d109f1'
+            '7f2231363c2b21bfd578c4600ca0fad33fb8ebf2a463bc3b42f202c9ff7ef366'
+            '18d3bd0b06906e7ac295b024f1d94d9852ede0a28f06da0d51b452c2d896b432'
+            '7610d135a709cf173a12d571a1bd1a285e032f6037488eed4144629027761bac'
+            'c1a0733a4317670cb19bac9c3597cc2b2b391851547690acf4f3c66a7ddd73c9'
+            '2f4fb5bb61141bdc64d482d45072b37c964e99e3f154b9a178be0682a9e18e54')
+
+prepare() {
+  cd ${srcdir}/mariadb-connector-c-${pkgver}-src
+  patch -Np1 -i ${srcdir}/001-mingw-build.patch
+  patch -Np1 -i ${srcdir}/002-fix-prototype.patch
+  patch -Np1 -i ${srcdir}/003-gcc-fix-use_VA_ARGS.patch
+  patch -Np2 -i ${srcdir}/3.0.8-msys-dll.patch
+  patch -Np2 -i ${srcdir}/3.0.8-msys-export.patch
+  patch -Np2 -i ${srcdir}/3.0.8-iconv.patch
+}
+
+build() {
+  [[ -d ${srcdir}/build ]] && rm -rf ${srcdir}/build
+  mkdir -p ${srcdir}/build && cd ${srcdir}/build
+  /usr/bin/cmake \
+    -G "Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=RELEASE \
+    -DWITH_EXTERNAL_ZLIB=ON \
+    -DWITH_MYSQLCOMPAT=OFF \
+    -DWITH_SSL=OPENSSL \
+    -DWITH_EXTERNAL_ICONV=ON \
+    ../mariadb-connector-c-${pkgver}-src
+  make
+
+  msg2 "Install to dest"
+  cd "${srcdir}/build"
+  [[ -d ${srcdir}/dest ]] && rm -rf ${srcdir}/dest
+  make DESTDIR=${srcdir}/dest install
+  cp -a "${srcdir}/dest/usr/include/mariadb" "${srcdir}/dest/usr/include/mysql"
+  cp -a "${srcdir}/dest/usr/lib/libmariadb.dll.a" "${srcdir}/dest/usr/lib/libmysqlclient.dll.a"
+  cp -a "${srcdir}/dest/usr/lib/libmariadb.dll.a" "${srcdir}/dest/usr/lib/libmysqlclient_r.dll.a"
+  cp -a "${srcdir}/dest/usr/lib/libmariadbclient.a" "${srcdir}/dest/usr/lib/libmysqlclient.a"
+  cp -a "${srcdir}/dest/usr/lib/libmariadbclient.a" "${srcdir}/dest/usr/lib/libmysqlclient_r.a"
+}
+
+package_libmariadbclient() {
+  groups=('libraries')
+  depends=('gcc-libs' 'libopenssl' 'libiconv' 'libcurl' 'zlib')
+  mkdir -p ${pkgdir}/usr/{bin,lib}
+  cp -a ${srcdir}/dest/usr/bin/msys-*.dll ${pkgdir}/usr/bin/
+  cp -a ${srcdir}/dest/usr/lib/mariadb ${pkgdir}/usr/lib/
+}
+
+package_libmariadbclient-devel() {
+  pkgdesc="Libmariadbclient headers and libraries"
+  groups=('development')
+  depends=('libopenssl-devel' 'libcurl-devel')
+  options=('staticlibs')
+  depends=("${pkgbase}=${pkgver}")
+  mkdir -p ${pkgdir}/usr/{bin,include,lib}
+  cp -a ${srcdir}/dest/usr/bin/*config* ${pkgdir}/usr/bin
+  cp -a ${srcdir}/dest/usr/include ${pkgdir}/usr/
+  cp -a ${srcdir}/dest/usr/lib/*.a ${pkgdir}/usr/lib
+  cp -a ${srcdir}/dest/usr/lib/pkgconfig ${pkgdir}/usr/lib
+}

@@ -1,3 +1,4 @@
+*.asc
 *.bz2
 *.gz
 *.sig
