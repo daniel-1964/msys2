@@ -1,0 +1,433 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgbase=postgresql
+pkgname=(#"${pkgbase}-server"
+         #"${pkgbase}-devel"
+         "${pkgbase}-client"
+         #"${pkgbase}-contrib"
+         "${pkgbase}-doc"
+         #"${pkgbase}-plperl"
+         #"${pkgbase}-plpython"
+         #"${pkgbase}-pltcl"
+         'libpq5'
+         'libpq-devel'
+         'libpgtypes3'
+         'libecpg6'
+         'libecpg-compat3'
+         'libecpg-devel')
+pkgver=12.4
+pkgrel=1
+pkgdesc="Libraries for use with PostgreSQL (msys)"
+arch=('any')
+url="https://www.postgresql.org/"
+license=('custom:PostgreSQL')
+makedepends=('gcc'
+             'gettext-devel'
+             'libxml2-devel'
+             'libxslt-devel'
+             'openldap-devel'
+             'openssl-devel'
+             'libreadline-devel'
+             'zlib-devel')
+depends=('gcc-libs'
+         'gettext'
+         'libxml2'
+         'libxslt'
+         'openssl'
+         #'perl'
+         #'python'
+         #'tcl'
+         'libreadline'
+         'zlib')
+options=('staticlibs' 'strip')
+_B="${startdir}/src/build"
+_D="${startdir}/src/dest"
+_S="${startdir}/src/${pkgbase}-${pkgver}"
+set -o pipefail
+source=("https://ftp.postgresql.org/pub/source/v${pkgver}/postgresql-${pkgver}.tar.bz2"
+        postgresql-12.0-mingw-link.patch
+        postgresql-9.5.1-pl-perl.patch
+        postgresql-9.5.1-pl-python.patch
+        postgresql-9.4.1-pl-tcl.patch
+        postgresql-9.4.1-mingw-enable-readline.patch
+        msys-soversion.diff)
+sha256sums=('bee93fbe2c32f59419cb162bcc0145c58da9a8644ee154a30b9a5ce47de606cc'
+            '607217b422349770d25af20f88e4a7925e68bb934232dff368c2ee59f24249a4'
+            '57c1e9b75c042af591b05b9dda60e6327b5c364bb5adc2675da8a48b47e11b81'
+            '1afbe207b0fe8c4178cc3f8cb4e3923c7c000207d22ec4f3875d6358b312a1d5'
+            'ab9c42374b4e8a01b598810b19b583d9ee7bf5c43c39c019f66b62aacac38926'
+            '51c72fbd380d23cf944165405221912a277b9be99e285479772b39cacbbf384f'
+            'f737a655315768e9d574b6cca46876a815ae394c5e0db459999ee89fe91fa772')
+
+src_compile() {
+  cd "${_B}"
+  export PYTHON=/usr/bin/python
+  ${_S}/configure \
+    --build=x86_64-pc-msys \
+    --prefix=/usr \
+    --with-openssl \
+    --enable-thread-safety \
+    --enable-integer-datetimes \
+    --enable-nls \
+    --disable-rpath \
+    --with-ldap \
+    --with-libxml \
+    --with-libxslt \
+    --without-python \
+    --without-perl \
+    --with-readline \
+    --without-tcl \
+    --with-tclconfig=/usr/lib \
+    --with-system-tzdata=/usr/share/zoneinfo \
+    --with-template=cygwin \
+    LDFLAGS=-Wl,-no-undefined \
+    CPPFLAGS="${CPPFLAGS} -I/usr/include/python3.8 -I/usr/lib/perl5/core_perl/CORE"
+  make
+  #  make -C contrib
+}
+
+src_install() {
+  cd "${_B}"
+  # defining MAKE_DLL to install also libpostgres.a
+  # if somemone want to link on internals
+  make install DESTDIR=${_D} MAKE_DLL=true docdir=/usr/share/doc/${pkgbase}/
+  mv ${_D}/usr/lib/*.dll ${_D}/usr/bin/
+  mkdir -p ${_D}/usr/share/doc/${pkgbase}
+  cp -a ${_S}/doc/src/sgml/html ${_D}/usr/share/doc/${pkgbase}
+  mkdir -p ${_D}/usr/share/man/man{1,3,7}
+  cp -a ${_S}/doc/src/sgml/man1/*.1  ${_D}/usr/share/man/man1
+  cp -a ${_S}/doc/src/sgml/man3/*.3  ${_D}/usr/share/man/man3
+  cp -a ${_S}/doc/src/sgml/man7/*.7  ${_D}/usr/share/man/man7
+  mkdir -p ${_D}/usr/sbin
+  for admin in createlang createuser droplang dropuser initdb \
+               pg_ctl pg_controldata pg_resetxlog pg_restore postgres \
+               postmaster vacuumdb; do
+     [ -e ${_D}/usr/bin/$admin.exe ] && mv ${_D}/usr/bin/$admin.exe ${_D}/usr/sbin/;
+  done
+
+  # disabled
+  #  mkdir ${_D}/etc/rc.d/init.d
+  #  cp ${_C}/postgresql.initd ${_D}/etc/rc.d/init.d/postgresql
+  #  chmod +x ${_D}/etc/rc.d/init.d/postgresql
+  #  make -j1 -C contrib install DESTDIR=${_D} bindir=/usr/lib/postgresql/bin/ docdir=/usr/share/doc/${pkgbase}/contrib
+
+  # these headers are needed by the not-so-public headers of the interfaces
+  #  mkdir -p "${pkgdir}/usr"/include/{libpq,postgresql/internal/libpq}
+  #  install -Dpm644 ${srcdir}/postgresql-${pkgver}/src/include/c.h           -t "${pkgdir}/usr/include/postgresql/internal/"
+  #  install -Dpm644 ${srcdir}/postgresql-${pkgver}/src/include/port.h        -t "${pkgdir}/usr/include/postgresql/internal/"
+  #  install -Dpm644 ${srcdir}/postgresql-${pkgver}/src/include/postgres_fe.h -t "${pkgdir}/usr/include/postgresql/internal/"
+  #  install -Dpm644 ${srcdir}/postgresql-${pkgver}/src/include/libpq/pqcomm.h -t "${pkgdir}/usr/include/postgresql/internal/libpq/"
+
+  # these headers are needed by the public headers of the interfaces
+  #  install -Dpm644 pg_config.h        -t "${pkgdir}/usr/include/"
+  #  install -Dpm644 pg_config_os.h     -t "${pkgdir}/usr/include/"
+  #  install -Dpm644 pg_config_ext.h    -t "${pkgdir}/usr/include/"
+  #  cd "${srcdir}/postgresql-$pkgver/src/include"
+  #  install -Dpm644 postgres_ext.h     -t "${pkgdir}/usr/include/"
+  #  install -Dpm644 libpq/libpq-fs.h   -t "${pkgdir}/usr/include/libpq/"
+  #  install -Dpm644 pg_config_manual.h -t "${pkgdir}/usr/include/"
+}
+
+prepare() {
+  cd ${_S}
+  patch -Np1 -i ${srcdir}/postgresql-12.0-mingw-link.patch
+  patch -Np1 -i ${srcdir}/postgresql-9.5.1-pl-perl.patch
+  patch -Np1 -i ${srcdir}/postgresql-9.5.1-pl-python.patch
+  patch -Np1 -i ${srcdir}/postgresql-9.4.1-pl-tcl.patch
+  patch -Np1 -i ${srcdir}/postgresql-9.4.1-mingw-enable-readline.patch
+  patch -Np2 -i ${srcdir}/msys-soversion.diff
+  sed -i 's/cygwin\*/&|msys*/g' configure.in
+  autoreconf -fiv
+}
+
+build() {
+  msg2 "Compile to build"
+  [[ -d "${_B}" ]] && rm -rf "${_B}"
+  mkdir -p "${_B}"
+  src_compile
+  msg2 "Install to dest"
+  [[ -d "${_D}" ]] && rm -rf "${_D}"
+  mkdir -p "${_D}"
+  src_install
+}
+
+_disabled_check() {
+  cd ${_B}
+  make -j1 -i  MAX_CONNECTIONS=10 check
+  cd contrib
+  make -j1 -i  MAX_CONNECTIONS=10 check
+}
+
+_disabled_package_postgresql-server() {
+  cd ${_D}
+  local CONTENTS="--exclude=usr/share/postgresql/contrib
+        --exclude=usr/share/postgresql/psqlrc.sample
+        etc
+        usr/sbin/initdb.exe
+        usr/sbin/pg_controldata.exe
+        usr/sbin/pg_ctl.exe
+        usr/bin/pg_waldump.exe
+        usr/sbin/postgres.exe
+        usr/sbin/postmaster
+        usr/lib/postgresql/*_and_*.dll
+        usr/lib/postgresql/dict_snowball.dll
+        usr/lib/postgresql/euc2004_sjis2004.dll
+        usr/lib/postgresql/libpqwalreceiver.dll
+        usr/lib/postgresql/plpgsql.dll
+        usr/share/locale/*/LC_MESSAGES/initdb-12.mo
+        usr/share/locale/*/LC_MESSAGES/pg_controldata-12.mo
+        usr/share/locale/*/LC_MESSAGES/pg_ctl-12.mo
+        usr/share/locale/*/LC_MESSAGES/pg_waldump-12.mo
+        usr/share/locale/*/LC_MESSAGES/postgres-12.mo
+        usr/share/man/man1/initdb.1
+        usr/share/man/man1/pg_controldata.1
+        usr/share/man/man1/pg_ctl.1
+        usr/share/man/man1/pg_waldump.1
+        usr/share/man/man1/postgres.1
+        usr/share/man/man1/postmaster.1
+        usr/share/doc/Cygwin/${pkgbase}.README
+        usr/share/postgresql"
+  pkgdesc="PostgreSQL Data Base Management System (msys)"
+  depends=('postgresql-client'
+           'libcrypt'
+           'libopenssl'
+           'libintl'
+           'libopenldap2_4_2'
+           "libpq5=${pkgver}")
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+_disabled_package_postgresql-devel() {
+  cd ${_D}
+  local CONTENTS="usr/include/postgresql/server
+        usr/lib/postgresql/pgxs
+        usr/lib/libpostgres.a
+        usr/share/man/man3"
+  # TODO: usr/lib/pkgconfig/
+  pkgdesc="development files for PostgreSQL server-side programming"
+  depends=('libintl')
+  groups=('development')
+  options=('staticlibs')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_postgresql-client() {
+  cd ${_D}
+  local CONTENTS="--exclude=usr/share/locale/*/LC_MESSAGES/initdb-12.mo
+        --exclude=usr/share/locale/*/LC_MESSAGES/pg_controldata-12.mo
+        --exclude=usr/share/locale/*/LC_MESSAGES/pg_ctl-12.mo
+        --exclude=usr/share/locale/*/LC_MESSAGES/pg_waldump-12.mo
+        --exclude=usr/share/locale/*/LC_MESSAGES/postgres-12.mo
+        --exclude=usr/share/locale/*/LC_MESSAGES/pg_config-12.mo
+        usr/bin/clusterdb.exe
+        usr/bin/createdb.exe
+        usr/bin/dropdb.exe
+        usr/bin/pg_archivecleanup.exe
+        usr/bin/pg_basebackup.exe
+        usr/bin/pg_checksums.exe
+        usr/bin/pg_dump.exe
+        usr/bin/pg_dumpall.exe
+        usr/bin/pg_isready.exe
+        usr/bin/pg_receivewal.exe
+        usr/bin/pg_recvlogical.exe
+        usr/bin/pg_resetwal.exe
+        usr/bin/pg_rewind.exe
+        usr/bin/pg_test_fsync.exe
+        usr/bin/pg_test_timing.exe
+        usr/bin/pg_upgrade.exe
+        usr/bin/pgbench.exe
+        usr/bin/psql.exe
+        usr/bin/reindexdb.exe
+        usr/sbin/createuser.exe
+        usr/sbin/dropuser.exe
+        usr/sbin/pg_restore.exe
+        usr/sbin/vacuumdb.exe
+        usr/share/man/man1/clusterdb.1
+        usr/share/man/man1/createdb.1
+        usr/share/man/man1/createuser.1
+        usr/share/man/man1/dropdb.1
+        usr/share/man/man1/dropuser.1
+        usr/share/man/man1/pg_checksums.1
+        usr/share/man/man1/pg_dump.1
+        usr/share/man/man1/pg_dumpall.1
+        usr/share/man/man1/pg_basebackup.1
+        usr/share/man/man1/pg_isready.1
+        usr/share/man/man1/pg_receivewal.1
+        usr/share/man/man1/pg_recvlogical.1
+        usr/share/man/man1/pg_resetwal.1
+        usr/share/man/man1/pg_restore.1
+        usr/share/man/man1/pg_rewind.1
+        usr/share/man/man1/psql.1
+        usr/share/man/man1/reindexdb.1
+        usr/share/man/man1/vacuumdb.1
+        usr/share/man/man1/vacuumlo.1
+        usr/share/man/man7
+        usr/share/postgresql/psqlrc.sample
+        usr/share/locale/*/LC_MESSAGES/"
+  pkgdesc="front-end programs for PostgreSQL"
+  depends=('libcrypt'
+           'libopenssl'
+           'libintl'
+           "libpq5=${pkgver}"
+           'libreadline'
+           'zlib')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+_disabled_package_postgresql-contrib() {
+  cd ${_D}
+  local CONTENTS="--exclude=usr/lib/postgresql/*_and_*.dll
+        --exclude=usr/lib/postgresql/dict_snowball.dll
+        --exclude=usr/lib/postgresql/euc2004_sjis2004.dll
+        --exclude=usr/lib/postgresql/libpqwalreceiver.dll
+        --exclude=usr/lib/postgresql/pgxs
+        --exclude=usr/lib/postgresql/pl*.dll
+        usr/lib/postgresql
+        usr/share/doc/${pkgbase}/contrib
+        usr/share/man/man1/oid2name.1
+        usr/share/man/man1/pg_archivecleanup.1
+        usr/share/man/man1/pg_standby.1
+        usr/share/man/man1/pg_test_fsync.1
+        usr/share/man/man1/pg_test_timing.1
+        usr/share/man/man1/pg_upgrade.1
+        usr/share/man/man1/pgbench.1"
+  pkgdesc="additional facilities for PostgreSQL"
+  depends=('libintl'
+           "libpq5=${pkgbase}"
+           'libopenssl'
+           'postgresql-server'
+           'zlib')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_postgresql-doc() {
+  cd ${_D}
+  local CONTENTS="--exclude=usr/share/doc/${pkgbase}/contrib
+        usr/share/doc/${pkgbase}"
+  pkgdesc="documentation for PostgreSQL"
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+disabled_package_postgresql-plperl() {
+  cd ${_D}
+  local CONTENTS="usr/lib/postgresql/plperl.dll"
+  pkgdesc="PL/Perl procedural language for PostgreSQL"
+  depends=("postgresql-server=${pkger}" 'perl')
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+_disabled_package_postgresql-plpython() {
+  cd ${_D}
+  local CONTENTS="usr/lib/postgresql/plpython2.dll"
+  pkgdesc="PL/Python procedural language for PostgreSQL"
+  depends=("postgresql-server=${pkgver}" 'python')
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+_disabled_package_postgresql-pltcl() {
+  cd ${_D}
+  local CONTENTS="usr/lib/postgresql/pltcl.dll"
+  pkgdesc="PL/Tcl procedural language for PostgreSQL"
+  depends=("postgresql-server=${pkgver}" 'tcl')
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libpq5() {
+  cd ${_D}
+  local CONTENTS="usr/bin/msys-pq-5.dll"
+  pkgdesc="PostgreSQL C client library"
+  depends=('libcrypt'
+           'libopenssl'
+           'libintl8'
+           'libopenldap2_4_2')
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libpq-devel() {
+  cd ${_D}
+  local CONTENTS="usr/bin/pg_config.exe
+        usr/include/libpq-fe.h
+        usr/include/libpq-events.h
+        usr/include/libpq/libpq-fs.h
+        usr/include/pg_config*.h
+        usr/include/pgtypes.h
+        usr/include/postgres_ext.h
+        usr/include/postgresql/internal
+        usr/lib/libpgport.a
+        usr/lib/libpgport_shlib.a
+        usr/lib/libpq.dll.a
+        usr/lib/libpgcommon.a
+        usr/lib/libpgcommon_shlib.a
+        usr/lib/libpgfeutils.a
+        usr/lib/pkgconfig/libpq.pc
+        usr/share/man/man1/pg_config.1
+        usr/share/locale/*/LC_MESSAGES/pg_config-12.mo"
+  pkgdesc="header files for libpq5 (PostgreSQL C client library)"
+  depends=('libintl'
+           "libpq5=${pkgver}"
+           'openssl-devel'
+           'pkgconfig')
+  groups=('development')
+  options=('staticlibs')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libpgtypes3() {
+  cd ${_D}
+  local CONTENTS="usr/bin/msys-pgtypes-3.dll"
+  pkgdesc="shared library pgtypes for PostgreSQL"
+  depends=('libintl')
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libecpg6() {
+  cd ${_D}
+  local CONTENTS="usr/bin/ecpg.exe
+        usr/bin/msys-ecpg-6.dll
+        usr/share/man/man1/ecpg.1"
+  pkgdesc="run-time library for ECPG (Embedded PostgreSQL for C)"
+  depends=('libintl'
+           "libpgtypes3=${pkgver}"
+           "libpq5=${pkgver}")
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libecpg-compat3() {
+  cd ${_D}
+  local CONTENTS="usr/bin/msys-ecpg_compat-3.dll"
+  pkgdesc="run-time library for ECPG compat (Embedded PostgreSQL for C)"
+  depends=("libecpg6=${pkgver}" "libpgtypes3=${pkgver}")
+  groups=('libraries')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libecpg-devel() {
+  cd ${_D}
+  local CONTENTS="usr/include/ecpg*.h
+        usr/include/postgresql/informix
+        usr/include/pgtypes_*.h
+        usr/include/sql3types.h
+        usr/include/sqlca.h
+        usr/include/sqlda*.h
+        usr/lib/libecpg.dll.a
+        usr/lib/libecpg_compat.dll.a
+        usr/lib/libpgtypes.dll.a
+        usr/lib/pkgconfig/libecpg.pc
+        usr/lib/pkgconfig/libecpg_compat.pc
+        usr/lib/pkgconfig/libpgtypes.pc"
+  pkgdesc="development files for ECPG (Embedded PostgreSQL for C)"
+  depends=("libpq-devel=${pkger}"
+           "libecpg-compat3=${pkgver}"
+           "libecpg6=${pkgver}"
+           "libpgtypes3=${pkgver}"
+           'pkg-config')
+  groups=('development')
+  options=('staticlibs')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
