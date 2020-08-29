@@ -1,0 +1,150 @@
+pkgbase="calc"
+pkgname=("${pkgbase}" "lib${pkgbase}" "lib${pkgbase}-devel")
+pkgver=2.12.7.2
+pkgrel=1
+pkgdesc="C-style arbitrary precision calculator (Msys)"
+arch=('any')
+url="http://www.isthe.com/chongo/tech/comp/calc/"
+source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/lcn2/${pkgbase}/archive/${pkgver}.tar.gz"
+	'manpage-fixes.patch'
+	'restore-2.12.1.5-filepos2z-ftbfs-414893.patch'
+	'support-kfreebsd-hurd-build-ftbfs-490552.patch'
+	'warning-fixes.patch'
+	'fix-z2filepos-buffoverflow.patch'
+	'fix-makefile-ildflags.patch'
+	'makefile-msys.patch')
+license=('LGPL', 'GPL')
+depends=('ncurses'
+         'libreadline'
+         'less')
+makedepends=('ncurses-devel'
+             'libreadline-devel')
+options=('staticlibs' 'strip')
+_B="${startdir}/src/build"
+_D="${startdir}/src/dest"
+_S="${startdir}/src/${pkgbase}-${pkgver}"
+set -o pipefail
+source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/lcn2/${pkgbase}/archive/${pkgver}.tar.gz"
+	'manpage-fixes.patch'
+	'restore-2.12.1.5-filepos2z-ftbfs-414893.patch'
+	'support-kfreebsd-hurd-build-ftbfs-490552.patch'
+	'warning-fixes.patch'
+	'fix-z2filepos-buffoverflow.patch'
+	'fix-makefile-ildflags.patch'
+	'makefile-msys.patch')
+sha256sums=('f2516a3d54941ba88ed877138bece9b1daba13a863f7c1de0d6e0962647aa8cf'
+            'c00f80a16f94b74af84097880d9fca56fc3944b75dea3a82cc4329fa87fd287c'
+            '4f497338a239fc196852e041e5ac4f218a6dba8129aea2adee4e2fc9e843e399'
+            '57b8b86311400c946b38efc5f52a1d3c08f4b7cfa413d41bd39d1ceae112f0fd'
+            '8e3b6b1d5576f755e5973ec53d752571704c2bfc3c8051b55511cfb72fa27641'
+            '04393fdd4f04295d988814e86a6cf7af61b79759df84408e6b9d0b38e79372fa'
+            '048d20bda54fc21fbec805415d0574618996977561124b1990fa7b6dfbee4e35'
+            '90c89ebdd4a8d6fdd253cc85e3825ad9ffbe55435e77d44b249993bcf63a54ce')
+
+src_compile() {
+  cp -a ${_S}/. ${_B}/
+  cd ${_B}
+  local OPT="target=Msys CALCPAGER=less T="
+  make -j1 $OPT clobber
+  make -j1 calc-static-only $OPT BLD_TYPE=calc-static-only
+  mkdir .staticlibs
+  cp -a libcalc.a custom/libcustcalc.a .staticlibs
+  make -j1 $OPT clobber
+  make -j1 EXTRA_CFLAGS="${CFLAGS}" calc-dynamic-only $OPT BLD_TYPE=calc-dynamic-only
+}
+
+src_install() {
+  local DOCS="BUGS
+	CHANGES
+	HOWTO.INSTALL
+	README.*
+	sample.README
+	LIBRARY"
+  local OPT="target=Msys CALCPAGER=less T=${_D}"
+  cd ${_B}
+  make -j1 install $OPT
+  install -Dpm644 .staticlibs/*.a -t ${_D}/usr/lib/
+  install -Dpm644 sample_*.{c,exe} -t ${_D}//usr/share/doc/${pkgbase}/examples/
+  for d in ${DOCS}
+  do
+    install -Dpm644 ${_S}/$d -t ${_D}//usr/share/doc/${pkgbase}/
+  done
+  install -Dpm644 ${_S}/COPYING ${_S}/COPYING-LGPL -t ${_D}//usr/share/licenses/${pkgbase}/
+
+  cd ${_D}
+  mv usr/bin/cscript usr/share/doc/${pkgbase}/examples
+  rename sample_rand test_random usr/share/doc/${pkgbase}/examples/sample_rand.*
+  rename sample_many many_random usr/share/doc/${pkgbase}/examples/sample_many.*
+}
+
+prepare() {
+  cd ${_S}
+  cp -a Makefile.ship Makefile
+  patch -Np1 -i ${srcdir}/manpage-fixes.patch
+  patch -Np1 -i ${srcdir}/restore-2.12.1.5-filepos2z-ftbfs-414893.patch
+  patch -Np1 -i ${srcdir}/support-kfreebsd-hurd-build-ftbfs-490552.patch
+  patch -Np1 -i ${srcdir}/warning-fixes.patch
+  patch -Np1 -i ${srcdir}/fix-z2filepos-buffoverflow.patch
+  patch -Np1 -i ${srcdir}/fix-makefile-ildflags.patch
+  patch -Np1 -i ${srcdir}/makefile-msys.patch
+}
+
+build() {
+  msg2 "Compile to build"
+  [[ -d "${_B}" ]] && rm -rf "${_B}"
+  mkdir ${_B}
+  src_compile
+  msg2 "Install to dest"
+  [[ -d "${_D}" ]] && rm -rf "${_D}"
+  mkdir -p "${_D}"
+  src_install
+}
+
+check() {
+  local OPT="target=Msys CALCPAGER=less T="
+  cd ${_B}
+  make ${OPT} check
+}
+
+package_calc() {
+  cd ${_D}
+  local CONTENTS="usr/bin/calc.exe
+	usr/share/calc
+	usr/share/man
+	usr/share/doc/${pkgbase}/BUGS
+	usr/share/doc/${pkgbase}/CHANGES
+	usr/share/doc/${pkgbase}/HOWTO.INSTALL
+	usr/share/doc/${pkgbase}/README.*
+	usr/share/licenses/${pkgbase}/COPYING
+	usr/share/licenses/${pkgbase}/COPYING-LGPL"
+  depends=('libreadline'
+           'ncurses'
+           "libcalc=${pkgver}")
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libcalc() {
+  cd ${_D}
+  local CONTENTS="usr/bin/msys-calc.dll"
+  pkgdesc="C-style arbitrary precision calculator (runtime library)"
+  groups=('libraries')
+  depends=('libreadline'
+           'ncurses')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}
+
+package_libcalc-devel() {
+  cd ${_D}
+  local CONTENTS="usr/include
+        usr/lib/
+	usr/share/doc/${pkgbase}/LIBRARY
+	usr/share/doc/${pkgbase}/sample.README
+	usr/share/doc/${pkgbase}/examples"
+  pkgdesc="C-style arbitrary precision calculator (devel)"
+  depends=('libreadline-devel'
+           'ncurses-devel'
+           "libcalc=${pkgver}")
+  groups=('development')
+  options=('staticlibs')
+  tar -c ${CONTENTS} | tar -xC ${pkgdir}
+}

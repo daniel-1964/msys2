@@ -1,0 +1,26 @@
+Description: Fix Makefile to properly honor ILDFLAGS 
+ Without this, some intermediate binaries are compiled without using
+ ILDFLAGS which causes Debian's hardening flags to be ignored which in turn
+ causes blhc https://ruderich.org/simon/blhc/ to complain.
+Forwarded: no
+Author: Martin Buck <mbuck@debian.org>
+---
+--- a/Makefile
++++ b/Makefile
+@@ -3688,14 +3688,14 @@
+ 
+ endian${EXT}: endian.o
+ 	${RM} -f $@
+-	${LCC} ${ICFLAGS} endian.o -o $@
++	${LCC} ${ILDFLAGS} endian.o -o $@
+ 
+ longbits.o: longbits.c have_unistd.h
+ 	${LCC} ${ICFLAGS} longbits.c -c
+ 
+ longbits${EXT}: longbits.o
+ 	${RM} -f $@
+-	${LCC} ${ICFLAGS} longbits.o -o $@
++	${LCC} ${ILDFLAGS} longbits.o -o $@
+ 
+ ###
+ #

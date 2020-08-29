@@ -1,0 +1,263 @@
+diff -purN calc-2.12.4.13.orig/Makefile calc-2.12.4.13/Makefile
+--- calc-2.12.4.13.orig/Makefile	2013-09-27 10:55:28.000000000 +0200
++++ calc-2.12.4.13/Makefile	2013-12-13 11:47:10.283162800 +0100
+@@ -1336,20 +1336,34 @@ endif
+ endif
+
+ #################
+-# Cygwin target #
++# Msys target #
+ #################
+
+-ifeq ($(target),Cygwin)
++ifeq ($(target),Msys)
++CP= cp -p
++USE_READLINE= -DUSE_READLINE
++READLINE_LIB= -lreadline
++READLINE_EXTRAS= -lhistory -lncursesw
++EXT= .exe
++LIB_EXT= .dll
++LIB_EXT_VERSION= ${LIB_EXT}
++LIB_EXT_VERS= ${LIB_EXT}
++LIB_EXT_VER= ${LIB_EXT}
++LIB_EXT_VE= ${LIB_EXT}
+ #
+-BLD_TYPE= calc-static-only
++BLD_TYPE= calc-dynamic-only
+ #
+ CC_SHARE= -fPIC
+ DEFAULT_LIB_INSTALL_PATH= ${PWD}:/lib:/usr/lib:${LIBDIR}:/usr/local/lib
+ LD_SHARE= "-Wl,-rpath,${DEFAULT_LIB_INSTALL_PATH}" \
+-    "-Wl,-rpath-link,${DEFAULT_LIB_INSTALL_PATH}"
+-LIBCALC_SHLIB= -shared "-Wl,-soname,libcalc${LIB_EXT_VERSION}"
++    "-Wl,-rpath-link,${DEFAULT_LIB_INSTALL_PATH}"
++LIBCALC_SHLIB= -shared \
++    "-Wl,-out-implib,libcalc${LIB_EXT}.a" \
++    "-Wl,-dll-search-prefix,msys-"
+ ifdef ALLOW_CUSTOM
+-LIBCUSTCALC_SHLIB= -shared "-Wl,-soname,libcustcalc${LIB_EXT_VERSION}"
++LIBCUSTCALC_SHLIB= -shared \
++    "-Wl,-out-implib,$@.a" \
++    "-Wl,-dll-search-prefix,msys-"
+ else
+ LIBCUSTCALC_SHLIB=
+ endif
+@@ -1679,6 +1693,9 @@ SAMPLE_OBJ= sample_many.o sample_rand.o
+
+ # The complete list of Makefile vars passed down to custom/Makefile.
+ #
++#if 0	/* start of skip for non-Gnu makefiles */
++ifneq ($(target),Msys)
++#endif	/* end of skip for non-Gnu makefiles */
+ CUSTOM_PASSDOWN=  \
+     ALLOW_CUSTOM="${ALLOW_CUSTOM}" \
+     AR=${AR} \
+@@ -1739,6 +1756,70 @@ CUSTOM_PASSDOWN=  \
+     TRUE=${TRUE} \
+     VERSION=${VERSION} \
+     target=${target}
++#if 0	/* start of skip for non-Gnu makefiles */
++else
++CUSTOM_PASSDOWN=  \
++    ALLOW_CUSTOM="${ALLOW_CUSTOM}" \
++    AR=${AR} \
++    AWK=${AWK} \
++    BINDIR="${BINDIR}" \
++    BLD_TYPE="calc-static-only" \
++    CALC_INCDIR="${CALC_INCDIR}" \
++    CALC_SHAREDIR="${CALC_SHAREDIR}" \
++    CAT=${CAT} \
++    CC="${CC}" \
++    CCERR="${CCERR}" \
++    CCMISC="${CCMISC}" \
++    CCOPT="${CCOPT}" \
++    CCWARN="${CCWARN}" \
++    CC_SHARE="${CC_SHARE}" \
++    CFLAGS="${CFLAGS} -I.." \
++    CHMOD=${CHMOD} \
++    CMP=${CMP} \
++    CO=${CO} \
++    COMMON_CFLAGS="${COMMON_CFLAGS} -I.." \
++    COMMON_LDFLAGS="${COMMON_LDFLAGS}" \
++    CP="${CP}" \
++    CUSTOMCALDIR="${CUSTOMCALDIR}" \
++    CUSTOMHELPDIR="${CUSTOMHELPDIR}" \
++    CUSTOMINCDIR="${CUSTOMINCDIR}" \
++    DEBUG="${DEBUG}" \
++    DEFAULT_LIB_INSTALL_PATH="${DEFAULT_LIB_INSTALL_PATH}" \
++    FMT=${FMT} \
++    GREP=${GREP} \
++    HELPDIR="${HELPDIR}" \
++    ICFLAGS="${ICFLAGS} -I.." \
++    ILDFLAGS="${ILDFLAGS}" \
++    INCDIR="${INCDIR}" \
++    LANG=${LANG} \
++    LCC="${LCC}" \
++    LDCONFIG=${LDCONFIG} \
++    LDFLAGS="${LDFLAGS}" \
++    LD_SHARE="${LD_SHARE}" \
++    LIBCUSTCALC_SHLIB="${LIBCUSTCALC_SHLIB}" \
++    LIBDIR="${LIBDIR}" \
++    LN=${LN} \
++    MAKE=${MAKE} \
++    MAKEDEPEND=${MAKEDEPEND} \
++    MAKE_FILE=Makefile \
++    MKDIR=${MKDIR} \
++    MV=${MV} \
++    PURIFY="${PURIFY}" \
++    Q="${Q}" \
++    RANLIB="${RANLIB}" \
++    RM=${RM} \
++    RMDIR=${RMDIR} \
++    SCRIPTDIR="${SCRIPTDIR}" \
++    SED=${SED} \
++    SORT=${SORT} \
++    T=${T} \
++    TOP_MAKE_FILE=${MAKE_FILE} \
++    TOUCH=${TOUCH} \
++    TRUE=${TRUE} \
++    VERSION=${VERSION} \
++    target=${target}
++endif
++#endif	/* end of skip for non-Gnu makefiles */
+
+ # The complete list of Makefile vars passed down to help/Makefile.
+ #
+@@ -1878,6 +1959,13 @@ endif
+ # Libraries created and used to build calc
+ #
+ #if 0	/* start of skip for non-Gnu makefiles */
++ifeq ($(target),Msys)
++ifdef ALLOW_CUSTOM
++CALC_DYNAMIC_LIBS= msys-calc${LIB_EXT} libcustcalc.a
++else
++CALC_DYNAMIC_LIBS= msys-calc${LIB_EXT}
++endif
++else
+ ifdef ALLOW_CUSTOM
+ #endif	/* end of skip for non-Gnu makefiles */
+ CALC_DYNAMIC_LIBS= libcalc${LIB_EXT_VERSION} libcustcalc${LIB_EXT_VERSION}
+@@ -1885,11 +1973,13 @@ CALC_DYNAMIC_LIBS= libcalc${LIB_EXT_VERS
+ else
+ CALC_DYNAMIC_LIBS= libcalc${LIB_EXT_VERSION}
+ endif
++endif
+ #endif	/* end of skip for non-Gnu makefiles */
+
+ # Symlinks of dynamic shared libraries
+ #
+ #if 0	/* start of skip for non-Gnu makefiles */
++ifneq ($(target),Msys)
+ ifdef ALLOW_CUSTOM
+ #endif	/* end of skip for non-Gnu makefiles */
+ SYM_DYNAMIC_LIBS= libcalc${LIB_EXT_VER} libcalc${LIB_EXT_VE} libcalc${LIB_EXT} \
+@@ -1901,6 +1991,9 @@ else
+ SYM_DYNAMIC_LIBS= libcalc${LIB_EXT_VER} libcalc${LIB_EXT_VE} libcalc${LIB_EXT} \
+ 	libcalc${LIB_EXT_VERS}
+ endif
++else
++SYM_DYNAMIC_LIBS=
++endif
+ #endif	/* end of skip for non-Gnu makefiles */
+
+ # list of sample programs that need to be built to satisfy sample rule
+@@ -2004,12 +2097,12 @@ calc-dynamic-only: ${DYNAMIC_FIRST_TARGE
+ calc-static-only: ${STATIC_FIRST_TARGETS} ${EARLY_TARGETS} \
+ 		  ${CALC_STATIC_LIBS} calc-static${EXT} \
+ 		  ${SAMPLE_STATIC_TARGETS} ${LATE_TARGETS}
+-	${Q} for i in calc${EXT} ${SAMPLE_TARGETS}; do \
+-	    if ${CMP} -s "$$i-static" "$$i"; then \
++	${Q} for i in calc sample_rand sample_many; do \
++	    if ${CMP} -s "$$i-static"${EXT} "$$i"${EXT}; then \
+ 		${TRUE}; \
+ 	    else \
+-		${RM} -f "$$i"; \
+-		${LN} "$$i-static" "$$i"; \
++		${RM} -f "$$i"${EXT}; \
++		${LN} "$$i-static"${EXT} "$$i"${EXT}; \
+ 	    fi; \
+ 	done
+
+@@ -2052,6 +2145,9 @@ calc${EXT}: .hsrc ${CALCOBJS} ${CALC_DYN
+ 	${CC} ${CALCOBJS} ${LDFLAGS} ${LD_SHARE} ${CALC_DYNAMIC_LIBS} \
+ 	      ${READLINE_LIB} ${READLINE_EXTRAS} -o $@
+
++#if 0	/* start of skip for non-Gnu makefiles */
++ifneq ($(target),Msys)
++#endif	/* end of skip for non-Gnu makefiles */
+ libcalc${LIB_EXT_VERSION}: ${LIBOBJS} ver_calc${EXT} ${MAKE_FILE}
+ 	${CC} ${LIBCALC_SHLIB} ${LIBOBJS} \
+ 	      ${READLINE_LIB} ${READLINE_EXTRAS} -o libcalc${LIB_EXT_VERSION}
+@@ -2071,7 +2167,13 @@ libcalc${LIB_EXT_VE}: libcalc${LIB_EXT_V
+ libcalc${LIB_EXT}: libcalc${LIB_EXT_VERSION}
+ 	${Q} ${RM} -f $@
+ 	${LN} -s $? $@
+-
++#if 0	/* start of skip for non-Gnu makefiles */
++else
++msys-calc${LIB_EXT}: ${LIBOBJS} ver_calc${EXT} ${MAKE_FILE}
++	${CC} ${LIBCALC_SHLIB} ${LIBOBJS} custom/libcustcalc.a \
++	      ${READLINE_LIB} ${READLINE_EXTRAS} -o msys-calc${LIB_EXT}
++endif
++#endif	/* end of skip for non-Gnu makefiles */
+ ###
+ #
+ # calc documentation
+@@ -3560,6 +3662,9 @@ custom/.all: custom/Makefile
+ 	${V} echo '=-=-=-=-= Back to the main Makefile for $@ rule =-=-=-=-='
+ 	${V} echo '=-=-=-=-= ${MAKE_FILE} end of $@ rule =-=-=-=-='
+
++#if 0	/* start of skip for non-Gnu makefiles */
++ifneq ($(target),Msys)
++#endif	/* end of skip for non-Gnu makefiles */
+ custom/libcustcalc${LIB_EXT_VERSION}: custom/Makefile
+ 	${V} echo '=-=-=-=-= ${MAKE_FILE} start of $@ rule =-=-=-=-='
+ 	${V} echo '=-=-=-=-= Invoking all rule for custom =-=-=-=-='
+@@ -3588,6 +3693,7 @@ libcustcalc${LIB_EXT}: libcustcalc${LIB_
+ 	${LN} -s $? $@
+ #if 0	/* start of skip for non-Gnu makefiles */
+ endif
++endif
+ #endif	/* end of skip for non-Gnu makefiles */
+
+ ###
+@@ -4511,6 +4617,9 @@ endif
+ 	${Q}# NOTE: The this makefile installs libcustcalc${LIB_EXT_VERSION}
+ 	${Q}#       because we only want to perform one ${LDCONFIG} for both
+ 	${Q}#       libcalc${LIB_EXT_VERSION} and libcustcalc${LIB_EXT_VERSION}.
++#if 0	/* start of skip for non-Gnu makefiles */
++ifneq ($(target),Msys)
++#endif	/* end of skip for non-Gnu makefiles */
+ 	-${Q} if ${CMP} -s libcalc${LIB_EXT_VERSION} \
+ 		     ${T}${LIBDIR}/libcalc${LIB_EXT_VERSION} && \
+ 	   ${CMP} -s custom/libcustcalc${LIB_EXT_VERSION} \
+@@ -4563,6 +4672,29 @@ endif
+ 		fi; \
+ 	    fi; \
+ 	fi
++#if 0	/* start of skip for non-Gnu makefiles */
++else
++	-${Q} if ${CMP} -s msys-calc${LIB_EXT} \
++		     ${T}${BINDIR}/msys-calc${LIB_EXT} && \
++	   ${CMP} -s libcalc${LIB_EXT}.a \
++		     ${T}${LIBDIR}/libcalc${LIB_EXT}.a; then \
++	    ${TRUE}; \
++	else \
++	    ${RM} -f ${T}${BINDIR}/msys-calc${LIB_EXT}.new; \
++	    ${CP} -f msys-calc${LIB_EXT} \
++	    	     ${T}${BINDIR}/msys-calc${LIB_EXT}.new; \
++	    ${MV} -f ${T}${BINDIR}/msys-calc${LIB_EXT}.new \
++	    	     ${T}${BINDIR}/msys-calc${LIB_EXT}; \
++	    echo "installed ${T}${BINDIR}/msys-calc${LIB_EXT}"; \
++	    ${RM} -f ${T}${LIBDIR}/libcalc${LIB_EXT}.a.new; \
++	    ${CP} -f libcalc${LIB_EXT}.a \
++	    	     ${T}${LIBDIR}/libcalc${LIB_EXT}.a.new; \
++	    ${MV} -f ${T}${LIBDIR}/libcalc${LIB_EXT}.a.new \
++	    	     ${T}${LIBDIR}/libcalc${LIB_EXT}.a; \
++	    echo "installed ${T}${LIBDIR}/libcustcalc${LIB_EXT}.a"; \
++	fi
++endif
++#endif	/* end of skip for non-Gnu makefiles */
+ 	-${Q} for i in ${LIB_H_SRC} ${BUILD_H_SRC} /dev/null; do \
+ 	    if [ "$$i" = "/dev/null" ]; then \
+ 		continue; \

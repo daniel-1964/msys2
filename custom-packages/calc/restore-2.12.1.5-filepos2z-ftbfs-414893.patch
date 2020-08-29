@@ -1,0 +1,18 @@
+Description: Restore filepos2z() implementation from apcalc 2.12.1.5
+ Fixes a FTBFS bug on big endian machines.
+ This is probably not the right solution, but at least it works.
+Bug-Debian: http://bugs.debian.org/414893
+Forwarded: yes
+Author: Martin Buck <mbuck@debian.org>
+---
+--- a/file.c
++++ b/file.c
+@@ -1364,7 +1364,7 @@
+ 	ret.len = FILEPOS_BITS/BASEB;
+ 	ret.v = alloc(ret.len);
+ 	zclearval(ret);
+-	SWAP_HALF_IN_FILEPOS(ret.v, &pos);
++	SWAP_HALF_IN_FILEPOS(ret.v, (HALF *)&pos);
+ 	ret.sign = 0;
+ 	ztrim(&ret);
+ 

@@ -1,0 +1,23 @@
+Description: Fix buffer overflow in z2filepos
+ Original code resulted in the following warning on amd64:
+ gcc  -DCALC_SRC -DCUSTOM -Wall  -g -O2 -fdebug-prefix-map=/home/mbuck/apcalc-2.12.7.2=. -fstack-protector-strong -Wformat -Werror=format-security   -O3 -g3 -Wno-error=long-long -Wno-long-long -c file.c
+ file.c: In function 'z2filepos':
+ file.c:1418:2: warning: 'memcpy' forming offset [9, 16] is out of the bounds [0, 8] of object 'pos' with type 'FULL' {aka 'long unsigned int'} [-Warray-bounds]
+   memcpy((void *)&ret, (void *)&pos, sizeof(FILEPOS));
+   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ file.c:1402:7: note: 'pos' declared here
+   FULL pos;  /* zpos as a FULL */
+        ^~~
+Forwarded: no
+Author: Martin Buck <mbuck@debian.org>
+--- a/file.c
++++ b/file.c
+@@ -1415,7 +1415,7 @@
+ 	pos = ztofull(zpos);
+ 	/* on some hosts, FILEPOS is not a scalar */
+ 	memset(&ret, 0, sizeof(FILEPOS));
+-	memcpy((void *)&ret, (void *)&pos, sizeof(FILEPOS));
++	memcpy((void *)&ret, (void *)&pos, sizeof(pos));
+ 	return ret;
+ #elif FILEPOS_BITS < FULL_BITS
+ 	/* ztofull puts the value into native byte order */

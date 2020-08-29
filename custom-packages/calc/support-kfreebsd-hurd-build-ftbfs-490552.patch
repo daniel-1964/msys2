@@ -1,0 +1,24 @@
+Description: Support building on kFreeBSD & Hurd
+Bug-Debian: http://bugs.debian.org/490552
+Forwarded: no
+Author: Petr Salinger <Petr.Salinger@seznam.cz>
+Author: Martin Buck <mbuck@debian.org>
+---
+--- a/Makefile
++++ b/Makefile
+@@ -1197,11 +1197,11 @@
+ ##########################################################################
+ 
+ #if 0	/* start of skip for non-Gnu makefiles */
+-################
+-# Linux target #
+-################
++######################################################
++# Linux, Debian GNU/kFreeBSD, Debian GNU/Hurd target #
++######################################################
+ 
+-ifeq ($(target),Linux)
++ifneq (,$(filter Linux GNU/kFreeBSD GNU,$(target)))
+ #
+ BLD_TYPE= calc-dynamic-only
+ #

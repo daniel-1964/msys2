@@ -1,0 +1,65 @@
+Description: Manpage spelling & line wrap fixes
+Bug-Debian: http://bugs.debian.org/602081
+Forwarded: yes
+Author: Francesco Poli <invernomuto@paranoici.org>
+Author: Martin Buck <mbuck@debian.org>
+---
+--- a/calc.man
++++ b/calc.man
+@@ -468,7 +468,7 @@
+ 
+ .TP
+ .B \-\-
+-The double dash indicates to calc that no more option follow.
++The double dash indicates to calc that no more options follow.
+ Thus calc will ignore a later argument on the command line
+ even if it starts with a dash.
+ This is useful when entering negative values on the command line as in:
+@@ -510,7 +510,7 @@
+ arguments but instead make them available
+ as strings to the argv() builtin function.
+ 
+-Sufficiently simple commands with no no characters like
++Sufficiently simple commands with no characters like
+ parentheses, brackets, semicolons, '*', which have special
+ interpretations in UNIX shells may be entered, possibly with
+ spaces, until the terminating newline.
+@@ -767,7 +767,7 @@
+ .BR "shell script mode" .
+ Note that
+ .B \-f
+-must at the end of the initial ``#!'' line.
++must be at the end of the initial ``#!'' line.
+ Any other optional
+ .B "other_flags"
+ must come before
+@@ -908,7 +908,7 @@
+ .PP
+ The scope of a variable may be global, local to a file, or local to a
+ procedure.
+-Values may be grouped together in a matrix, or into a
++Values may be grouped together in a matrix, or into
+ a list that permits stack and queue style operations.
+ .PP
+ For more information use the following
+--- a/Makefile
++++ b/Makefile
+@@ -2300,6 +2300,8 @@
+ #
+ ###
+ 
++# Note: The :\(...-sed pattern below allows word wrapping at the separators
++# of long path names (typically CALCPATH and CALCRC).
+ calc.1: calc.man ${MAKE_FILE}
+ 	${RM} -f $@
+ 	${Q} echo forming calc.1 from calc.man
+@@ -2312,7 +2314,8 @@
+ 	        -e 's,$${CUSTOMCALDIR},${CUSTOMCALDIR},g' \
+ 	        -e 's,$${CUSTOMINCDIR},${CUSTOMINCDIR},g' \
+ 	        -e 's,$${CUSTOMHELPDIR},${CUSTOMHELPDIR},g' \
+-	        -e 's,$${CALCRC},${CALCRC},g' < calc.man > calc.1
++	        -e 's,$${CALCRC},${CALCRC},g' \
++	        -e 's,:\([/.~]\),:\\:\1,g' < calc.man > calc.1
+ 	${Q} echo calc.1 formed
+ 
+ calc.usage: calc.1 ${MAKE_FILE}
