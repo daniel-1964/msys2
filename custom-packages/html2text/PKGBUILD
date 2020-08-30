@@ -1,0 +1,126 @@
+pkgbase='html2text'
+pkgname=("${pkgbase}")
+pkgver=1.3.2a
+pkgrel=1
+pkgdesc="Advanced HTML to text converter: Debian version. (msys)"
+arch=('any')
+url="http://www.mbayer.de/html2text/"
+license=('GPLV2')
+depends=('libiconv')
+makedepends=('libiconv-devel')
+options=('staticlibs' 'strip')
+_B="${startdir}/src/build"
+_D="${startdir}/src/dest"
+_S="${startdir}/src/${pkgbase}-${pkgver}"
+set -o pipefail
+source=('http://www.mbayer.de/html2text/downloads/html2text-1.3.2a.tar.gz'
+        'html2text.1'
+        'README.Debian'
+        'NEWS.Debian'
+        'copyright'
+        '200-close-files-inside-main-loop.patch'
+        '400-remove-builtin-http-support.patch'
+        '500-utf8-support.patch'
+        '510-disable-backspaces.patch'
+        '550-skip-numbers-in-html-tag-attributes.patch'
+        '600-multiple-meta-tags.patch'
+        '611-recognize-input-encoding.patch'
+        '630-recode-output-to-locale-charset.patch'
+        '800-replace-zeroes-with-null.patch'
+        '810-fix-deprecated-conversion-warnings.patch'
+        '900-complete-utf8-entities-table.patch'
+        '950-validate-width-parameter.patch'
+        '960-fix-utf8-mode-quadratic-runtime.patch'
+        '970-fix-arg-parsing.patch'
+        '980-catch-alloc-err.patch'
+        'Makefile.in.patch')
+sha256sums=('000b39d5d910b867ff7e087177b470a1e26e2819920dcffd5991c33f6d480392'
+            '49f85ccdfdada5aea71adfab61dc2a62ee14ed1c594f8bf7062cfc7aaba4a430'
+            '654fcce4a9a2dff21857b1cea770a8d0b77a9a932925313d88e1e003fba52409'
+            'ee9a908e1606cdfc0b753c73652d0c6232f11059e61ff05bff8741775356252a'
+            '05734d6a81fedeb1993e171f3c43ab5a2d137ab928455de51762327a38329bdd'
+            '682dcb3afc91cceac8a1b5b1e5bf94daeeb598f45eb9c106a2d3524588e6a61c'
+            'f33e99a947b6f9e49ee176db3937fc82765cbc34ed7a2c54f150f9d5e9cc0d1e'
+            'f64a3433a3daf8867b2cd535fcf4d38469b6e5beff77256d6feda93786a93d77'
+            'c1d8cf155cdb079a097467d5010c4dad66b0f4e4ade64df342bda3813c6864fc'
+            '8566f9a08fac71509a63ccbb7ff6e9807631c80867087dce6741ed09b9b4f84e'
+            'd348be0f39e59dce88e47a6453585f0763805486df36f04f67159bb88b075342'
+            '979fdcaf99e8b1c50721eb261d538104cd26fdff39bae4a65b7bb75955e4fcfe'
+            '310e53ecd2d8e69d9af62d1ce103415976e5e03aad95515d4581fe0e35baeb72'
+            'deffd0d2f8956632091851f70b56505d0e5af340c6d791ed054e61ba658c4d03'
+            '4624e9658905c11cf048b183805de0a11c7ccdd8a1fffd233d37017336a3fb20'
+            '10d9b51d165a2c147b597cd94c094768c6e81fa6bad9aeb0b44d32af4a8cee1b'
+            'd5c3183802432dcb7aa3147011396d39831a9f344236e2ecbf53e1fcebdbe1f9'
+            'a659a8a1f2452e4fc2942676addca3a6924e8ce0df6074891befeede94437a17'
+            '2eb7af051a97569135bdc6acaeb9b7a6969b2b9daf04b0e3a4bc97a2ca8a477f'
+            'f1f05b3535b712eeb109065e7804459bff4eeb96b2cd861dbd1281c37ef13515'
+            '80cd6865e2c98bfabc6a0d779e40040a22191e80e7e362be68504cbbf4a2c3f5')
+
+src_compile() {
+  cp -a ${_S}/. ${_B}/
+  cp -a ${startdir}/tests ${_B}/
+  cd ${_B}
+  ./configure \
+      --prefix=/usr
+  LDLIBS=-liconv make
+}
+
+src_install() {
+  cd ${_B}
+  make install DESTDIR=${_D}
+  rm -f ${_D}/usr/share/man/man1/html2text.1.gz
+  gzip -d ${_D}/usr/share/man/man5/html2textrc.5.gz
+  install -Dpm644 ${srcdir}/html2text.1 -t ${_D}/usr/share/man/man1
+  sed -i "s/specifiy/specify/; s/elemet/element/; s/who's/whose/" ${_D}/usr/share/man/man5/html2textrc.5
+  install -Dpm644 ${srcdir}/README.Debian -t ${_D}/usr/share/doc/${pkgbase}/
+  install -Dpm644 ${srcdir}/NEWS.Debian -t ${_D}/usr/share/doc/${pkgbase}/
+  install -Dpm644 ${_S}/ascii.substitutes -t ${_D}/usr/share/doc/${pkgbase}/
+  install -Dpm644 ${_S}/pretty.style -t ${_D}/usr/share/doc/${pkgbase}/
+  install -Dpm644 ${srcdir}/copyright ${_D}/usr/share/licenses/${pkgbase}/COPYRIGHT.Debian
+  mv ${_D}/usr/share/doc/${pkgbase}/COPYING ${_D}/usr/share/licenses/${pkgbase}/
+}
+
+src_test() {
+  cd ${_B}/tests
+  ./runtests
+}
+
+prepare() {
+  cd ${_S}
+  patch -Np1 -i ${srcdir}/200-close-files-inside-main-loop.patch
+  patch -Np1 -i ${srcdir}/400-remove-builtin-http-support.patch
+  patch -Np1 -i ${srcdir}/500-utf8-support.patch
+  patch -Np1 -i ${srcdir}/510-disable-backspaces.patch
+  patch -Np1 -i ${srcdir}/550-skip-numbers-in-html-tag-attributes.patch
+  patch -Np1 -i ${srcdir}/600-multiple-meta-tags.patch
+  patch -Np1 -i ${srcdir}/611-recognize-input-encoding.patch
+  patch -Np1 -i ${srcdir}/630-recode-output-to-locale-charset.patch
+  patch -Np1 -i ${srcdir}/800-replace-zeroes-with-null.patch
+  patch -Np1 -i ${srcdir}/810-fix-deprecated-conversion-warnings.patch
+  patch -Np1 -i ${srcdir}/900-complete-utf8-entities-table.patch
+  patch -Np1 -i ${srcdir}/950-validate-width-parameter.patch
+  patch -Np1 -i ${srcdir}/960-fix-utf8-mode-quadratic-runtime.patch
+  patch -Np1 -i ${srcdir}/970-fix-arg-parsing.patch
+  patch -Np1 -i ${srcdir}/980-catch-alloc-err.patch
+  patch -Np1 -i ${srcdir}/Makefile.in.patch
+}
+
+build() {
+  msg2 "Compile to build"
+  [[ -d "${_B}" ]] && rm -rf "${_B}"
+  mkdir -p "${_B}"
+  src_compile
+  msg2 "Install to dest"
+  [[ -d "${_D}" ]] && rm -rf "${_D}"
+  mkdir -p "${_D}"
+  src_install
+}
+
+check() {
+  src_test
+}
+
+package() {
+  cd ${_D}
+  tar -c . | tar -xC ${pkgdir}
+}
