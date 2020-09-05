@@ -1,0 +1,42 @@
+# Maintainer: Frederic Wang <fred.wang@free.fr>
+
+pkgbase=idna
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=2.9
+pkgrel=1
+pkgdesc='Internationalized Domain Names in Applications (msys)'
+url='https://github.com/kjd/idna'
+license=('BSD-like')
+arch=('any')
+depends=("python")
+makedepends=("python-setuptools")
+_dtoken="d8/82/28a51052215014efc07feac7330ed758702fc0581347098a81699b5281cb"
+source=("https://pypi.io/packages/source/${pkgbase::1}/${pkgbase}/${pkgbase}-${pkgver}.tar.gz")
+sha256sums=('7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb')
+
+prepare() {
+  cd ${srcdir}
+  rm -rf python-build
+  cp -a ${pkgbase}-${pkgver} python-build
+}
+
+build() {
+  msg "Python build for msys2"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for Msys2"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py test
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}"  --optimize=1 --skip-build
+  install -Dm644 "${srcdir}/${pkgbase}-${pkgver}/LICENSE.rst" "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+}
