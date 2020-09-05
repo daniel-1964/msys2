@@ -1,0 +1,40 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgbase=cffi
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=1.14.2
+pkgrel=2
+_revision=694e7139131f
+pkgdesc="Foreign Function Interface for Python calling C code (msys)"
+url='https://cffi.readthedocs.io/'
+license=('MIT')
+arch=('any')
+depends=('libffi'
+         'python-pycparser')
+makedepends=('python-setuptools'
+             'libffi-devel')
+checkdepends=('python-pytest-runner')
+source=("https://files.pythonhosted.org/packages/f7/09/88bbe20b76ca76be052c366fe77aa5e3cd6e5f932766e5597fecdd95b2a8/${pkgbase}-${pkgver}.tar.gz")
+sha256sums=('ae8f34d50af2c2154035984b8b5fc5d9ed63f32fe615646ab435b05b132ca91b')
+
+prepare() {
+  cd ${srcdir}
+  cp -a ${pkgbase}-${pkgver} python-build
+}
+
+build() {
+  cd "${srcdir}"
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd ${srcdir}/python-build
+  /usr/bin/python setup.py build
+  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}" --skip-build
+  install -D -m644 LICENSE "${pkgdir}/usr"/share/licenses/python-${pkgbase}/LICENSE
+}
