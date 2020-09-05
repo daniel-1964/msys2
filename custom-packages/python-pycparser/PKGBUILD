@@ -1,0 +1,40 @@
+# Contributor: Frederic Wang <fred.wang@free.fr>
+
+pkgbase=pycparser
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=2.20
+pkgrel=1
+pkgdesc='Complete parser of the C language, written in pure Python (msys)'
+arch=('any')
+url='https://github.com/eliben/pycparser'
+license=('BSD')
+depends=('python'
+         'python-ply')
+makedepends=('python-setuptools')
+#_dtoken="be/64/1bb257ffb17d01f4a38d7ce686809a736837ad4371bcc5c42ba7a715c3ac"
+source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/eliben/pycparser/archive/release_v${pkgver}.tar.gz")
+sha256sums=('1b895b4f6fb5195ce9c516ca7e28c9bd2f9ecd0f02755302b8a717454abea806')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${pkgbase}-release_v${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+  cd pycparser
+  /usr/bin/python _build_tables.py
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+}
