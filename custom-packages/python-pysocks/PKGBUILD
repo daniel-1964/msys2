@@ -1,0 +1,37 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+pkgbase=pysocks
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=1.7.0
+pkgrel=1
+pkgdesc="SOCKS4, SOCKS5 or HTTP proxy (Anorov fork PySocks replaces socksipy) (msys)"
+arch=('any')
+url='https://github.com/Anorov/PySocks'
+license=('BSD')
+depends=('python')
+makedepends=('python-setuptools')
+options=('staticlibs' 'strip' '!debug')
+source=("${pkgbase}-${pkgver}.tar.gz"::"https://github.com/Anorov/PySocks/archive/${pkgver}.tar.gz")
+sha512sums=('280c9d1f147cd665a9989dc143e0b1f43bbc0575dc0b6b92472bc4b8cf2315f37dba74c5e77ff0b3c3ede49ee5c1e53d6a330bcb3c8d822023378c1cfb8cac0f')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${pkgbase}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+}
