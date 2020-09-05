@@ -1,0 +1,44 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgbase=cryptography
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=2.9.2
+pkgrel=1
+pkgdesc="A package designed to expose cryptographic recipes and primitives to Python developers (msys)"
+url='https://pypi.org/project/cryptography/'
+license=('Apache')
+arch=('any')
+depends=('python-cffi'
+         'python-pyasn1'
+         'python-idna'
+         'python-asn1crypto')
+makedepends=('python-setuptools'
+             'python-six')
+checkdepends=('python-pytest-runner'
+              'python-iso8601'
+              'python-pretend'
+              #'python-cryptography-vectors'
+              'python-hypothesis'
+              'python-pytz')
+source=(https://pypi.io/packages/source/c/cryptography/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('a0c30272fb4ddda5f5ffc1089d7405b7a71b0b0f51993cb4e5dbb4590b2fc229')
+
+prepare() {
+  cd ${srcdir}
+  cp -a ${pkgbase}-${pkgver} python-build
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd ${srcdir}/python-build
+  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 "${srcdir}/${pkgbase}-${pkgver}/LICENSE" "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+}
