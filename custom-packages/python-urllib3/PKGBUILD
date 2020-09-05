@@ -1,0 +1,47 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+pkgbase=urllib3
+pkgname=("python-${pkgbase}")
+provides=("python3-${pkgbase}")
+conflicts=("python3-${pkgbase}")
+replaces=("python3-${pkgbase}")
+pkgver=1.25.9
+pkgrel=1
+pkgdesc="HTTP library with thread-safe connection pooling and file post support (msys)"
+url='https://github.com/urllib3/urllib3'
+license=('MIT')
+arch=('any')
+depends=("python"
+         "python-certifi"
+         "python-idna")
+makedepends=("python-setuptools"
+             "python-ndg-httpsclient"
+             "python-pyasn1"
+             "python-pyopenssl"
+             #"python-pysocks"
+             "python-mock")
+checkdepends=("python-nose"
+              "python-tornado"
+              "python-coverage"
+              "python-psutil")
+source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/urllib3/urllib3/archive/${pkgver}.tar.gz")
+sha256sums=('1f1bef30176d8361ba8ae0728316e76f5ec8fc1f336c5352165211b2cb0a53f7')
+
+prepare() {
+  cd ${srcdir}
+  cp -a ${pkgbase}-${pkgver} python-build
+}
+
+build() {
+  cd "${srcdir}"
+  msg "Python build for msys2"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd ${srcdir}/python-build
+  /usr/bin/python setup.py build
+  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}"
+  install -D -m644 LICENSE.txt "${pkgdir}/usr"/share/licenses/python-${pkgbase}/LICENSE.txt
+}
