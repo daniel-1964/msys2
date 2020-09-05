@@ -1,0 +1,53 @@
+pkgbase="units"
+pkgname=${pkgbase}
+pkgver=2.19
+pkgrel=1
+arch=('any')
+pkgdesc="Console unit converter (msys)"
+url="http://www.gnu.org/software/${pkgbase}/"
+license=('GPLV3')
+depends=('libreadline')
+makedepends=('libreadline-devel'
+             'python-requests')
+optdepends=('python-requests: Update currency units')
+options=('strip' 'staticlibs' '!makeflags' '!emptydirs')
+_B="${startdir}/src/build"
+_D="${startdir}/src/dest"
+_S="${startdir}/src/${pkgbase}-${pkgver}"
+set -o pipefail
+source=("ftp://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.gz")
+sha256sums=('4262136bdfc152b63ff5a9b93a7d80ce18b5e8bebdcffddc932dda769e306556')
+
+src_compile() {
+  cp -a ${_S}/. ${_B}/
+  cd "${_B}"
+  ./configure \
+    --prefix=/usr \
+    sharedstatedir=/usr/share \
+    PYTHON=/usr/bin/python
+  make
+}
+
+src_install() {
+  mkdir -p ${_D}/var/lib/${pkgbase}
+  cd ${_B}
+  # mkinstalldirs calls are not parallel-safe
+  make install DESTDIR=${_D}  -j1
+  install -Dpm644 ${_S}/COPYING -t ${_D}/usr/share/licenses/${pkgbase}/
+}
+
+build() {
+  msg2 "Compile to build"
+  [[ -d "${_B}" ]] && rm -rf "${_B}"
+  mkdir -p "${_B}"
+  src_compile
+  msg2 "Install to dest"
+  [[ -d "${_D}" ]] && rm -rf "${_D}"
+  mkdir -p "${_D}"
+  src_install
+}
+
+package() {
+  cd ${_D}
+  tar -c . | tar -xC ${pkgdir}
+}

@@ -1,0 +1,44 @@
+NAME="units"
+VERSION=2.19
+RELEASE=1
+CATEGORY="Math"
+SUMMARY="Console unit converter"
+DESCRIPTION="The Units program converts quantities expressed in various scales
+to their equivalents in other scales. The units program can handle
+multiplicative scale changes as well as nonlinear conversions such as
+Fahrenheit to Celsius or wire gauge. Units comes with an annotated, extendable
+database defining over two thousand units."
+HOMEPAGE="http://www.gnu.org/software/${NAME}/"
+CYGWIN_MAINTAINER="Brian Inglis"
+CYGWIN_MAINTAINER_EMAIL="Brian.Inglis@SystematicSW.ab.ca"
+GNU_MAINTAINER="Adrian Mariano"
+GNU_MAINTAINER_EMAIL="AdrianM@GNU.org"
+
+# mirror_gnu="ftp://alpha.gnu.org/gnu"
+
+SRC_URI="mirror://gnu/${NAME}/${NAME}-${VERSION}.tar.gz"
+
+# PATCH_URI="fix_bad_currency_feed_entry.patch  fix_units_cur_inst.patch"
+
+inherit python3
+
+DEPEND="python3-devel python3-requests"
+
+sharedstatedir=/var/lib
+
+CYGCONF_ARGS="PYTHON=${PYTHON3} sharedstatedir=$sharedstatedir"
+
+src_install() {
+	dodir $sharedstatedir/${NAME}
+
+	ln -s ${S}/units.info ${B}
+
+	cd ${B}
+	# mkinstalldirs calls are not parallel-safe
+	cyginstall -j1
+
+	dodir /etc/postinstall
+	cat > ${D}/etc/postinstall/units_cur.sh << _EOF
+/usr/bin/find /var/lib/${NAME}/currency.units -mtime +0 -exec /usr/bin/units_cur \;
+_EOF
+}
