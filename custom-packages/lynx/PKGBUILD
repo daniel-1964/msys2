@@ -1,0 +1,115 @@
+# Maintainer: Pierre Schmitz <pierre@archlinux.de>
+# Contributor: Douglas Soares de Andrade <douglas@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=lynx
+pkgver=2.8.9
+_relver=${pkgver}rel.1
+pkgrel=1
+pkgdesc="A text browser for the World Wide Web (msys)"
+url="https://lynx.browser.org/"
+arch=('any')
+license=('GPL')
+depends=('libopenssl'
+         'libidn'
+         'libiconv'
+         'libintl'
+         'ncurses'
+         'libbz2'
+         'zlib')
+makedepends=('openssl-devel'
+             'libidn-devel'
+             'libiconv-devel'
+             'gettext-devel'
+             'ncurses-devel'
+             'libbz2-devel'
+             'zlib-devel')
+backup=('etc/lynx.cfg')
+source=(https://invisible-mirror.net/archives/lynx/tarballs/${pkgname}${_relver}.tar.bz2{,.asc}
+        'lynxcfg.patch'
+        'aboutlynx.patch'
+        '21_do_not_strip_-g.diff'
+        'nested_tables.patch'
+        'fix-tls-1.3.patch')
+sha256sums=('387f193d7792f9cfada14c60b0e5c0bff18f227d9257a39483e14fa1aaf79595'
+            'SKIP'
+            '0268155a5648701018f7549822d4e5d260eda75f24676f82e836c76ff5a9404f'
+            '644a0c06af3f0ff05db10678ab497df6d08a2315bfc9441dc382f0eb67cadd6c'
+            '3cdbe0b3d05b6a6ce53e05ba52db29009dbfd26cb9abc660ba85a9bd77d0096c'
+            'b36aa8472411c3bfcaceff116f62dc7e8209ba9f72bf9ed603211959c12a31f0'
+            'ad999b0d526b52cd760bab5e6c6aebcfb61584308c42f0e6663265d29f734313')
+validpgpkeys=('C52048C0C0748FEE227D47A2702353E0F7E48EDB')
+
+prepare() {
+  cd ${srcdir}/${pkgname}${_relver}
+  patch -Np1 -i ${srcdir}/lynxcfg.patch
+  patch -Np1 -i ${srcdir}/aboutlynx.patch
+  patch -Np1 -i ${srcdir}/21_do_not_strip_-g.diff
+  patch -Np1 -i ${srcdir}/nested_tables.patch
+  patch -Np1 -i ${srcdir}/fix-tls-1.3.patch
+  sed -i 's/LYmsec_delay/Sleep/g' src/LYMainLoop.c
+}
+
+build() {
+  cd ${srcdir}/${pkgname}${_relver}
+  COMPRESS=/usr/bin/compress \
+  BZIP2=/bin/bzip2 \
+  UNZIP=/usr/bin/unzip \
+  ZIP=/usr/bin/zip \
+  ./configure --prefix=/usr \
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    --disable-font-switch           \
+    --enable-8bit-toupper \
+    --enable-addrlist-page          \
+    --enable-charset-choice         \
+    --enable-cgi-links              \
+    --enable-cjk                    \
+    --enable-default-colors         \
+    --enable-externs                \
+    --enable-exec-links \
+    --enable-exec-scripts \
+    --enable-file-upload            \
+    --enable-forms-options \
+    --enable-gzip-help \
+    --enable-htmlized-cfg \
+    --enable-internal-links         \
+    --enable-ipv6 \
+    --enable-japanese-utf8          \
+    --enable-justify-elts           \
+    --enable-kbd-layout             \
+    --enable-libjs                  \
+    --enable-locale-charset         \
+    --enable-nested-tables \
+    --enable-nls                    \
+    --enable-nsl-fork               \
+    --enable-partial \
+    --enable-persistent-cookies     \
+    --enable-prettysrc              \
+    --enable-read-eta               \
+    --enable-scrollbar              \
+    --enable-source-cache           \
+    --disable-syslog \
+    --enable-warnings               \
+    --with-bzlib \
+    --without-included-gettext \
+    --with-screen=ncursesw          \
+    --with-ssl=/usr \
+    --with-zlib
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgname}${_relver}
+  make DESTDIR=${pkgdir} install
+  make install-doc install-help DESTDIR=${pkgdir} \
+       docdir=/usr/share/doc/lynx \
+       helpdir=/usr/share/doc/lynx/lynx_help
+  SITECONF="/etc/lynx-site.cfg"
+  echo "# Place any local lynx configuration options (proxies etc.) here." > ${pkgdir}${SITECONF}
+  # FS#20404 - points to local help
+  sed -i -e "s|^HELPFILE.*$|HELPFILE:file:///usr/share/doc/lynx/lynx_help/lynx_help_main.html.gz|" ${pkgdir}/etc/lynx.cfg
+
+  #install -d ${pkgdir}/usr/share/doc/lynx
+  #cp -a lynx_help ${pkgdir}/usr/share/doc/lynx
+}

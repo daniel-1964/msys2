@@ -1,0 +1,15 @@
+Description: turn off nested-tables option
+Author: Denis Briand <debian@denis-briand.fr>
+Bug-Debian: https://bugs.debian.org/387555
+
+--- a/lynx.cfg
++++ b/lynx.cfg
+@@ -3033,7 +3033,7 @@
+ # It is enabled by default when the COLOR_STYLE configuration is used,
+ # and false otherwise.
+ #
+-#NESTED_TABLES: true
++NESTED_TABLES: false
+ 
+ .h2 ASSUMED_COLOR
+ # If built with a library that recognizes default colors (usually ncurses or

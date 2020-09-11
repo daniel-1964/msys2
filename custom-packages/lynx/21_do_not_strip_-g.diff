@@ -1,0 +1,17 @@
+Description: Stop ./configure from stripping out -g from CFLAGS
+Author: Andreas Metzler <ametzler@debian.org>,
+ Simon Ruderich <simon@ruderich.org>
+Origin: vendor
+Last-Update: 2015-05-08
+
+--- a/configure
++++ b/configure
+@@ -3475,7 +3475,7 @@
+ 		test -z "$ORIGINAL_CFLAGS" && CFLAGS=`echo ${CFLAGS} | sed -e 's%-g %%' -e 's%-g$%%'`
+ 		;;
+ 	(*)
+-		test -z "$ORIGINAL_CFLAGS" && CFLAGS=`echo ${CFLAGS} | sed -e 's%-g %%' -e 's%-g$%%'`
++		:
+ 		;;
+ 	esac
+ fi
