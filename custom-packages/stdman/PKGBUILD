@@ -1,0 +1,379 @@
+# Maintainer: Aleksandar Trifunović <akstrfn at gmail dot com>
+# Contributor: Marcel Krüger <zauguin at gmail dot com>
+
+pkgbase=stdman
+pkgname=${pkgbase}
+pkgver=2018.03.11
+pkgrel=1
+pkgdesc="Formatted C++11/14 stdlib man pages (cppreference)."
+arch=(any)
+url="https://github.com/jeaye/stdman"
+license=('MIT')
+source=("${pkgbase}-${pkgver}.tar.gz::$url/archive/$pkgver.tar.gz")
+sha256sums=('d29e6b34cb5ba9905360cee6adcdf8c49e7f11272521bf2e10b42917486840e8')
+noextract=("${pkgbase}-${pkgver}.tar.gz")
+
+# Link a file with his depedencies
+old_link_file() {
+    orig="$1"
+    file="$2"
+    shift 2
+    if [ -e "${file}" ]
+    then
+        echo File ${file} cannot be created
+        file="${orig}"
+    else
+        mv -- "$orig" "$file"
+    fi
+    for link in $*
+    do
+        if [ -e "${link}" ]
+        then
+            echo File ${link} cannot be created
+        else
+            ln -s -- "${file}" "${link}"
+        fi
+    done
+}
+
+# Link a file with his depedencies
+link_file() {
+    orig="$1"
+    file="$2"
+    shift 2
+    if [ "${orig}" != "${file}" ]
+    then
+        if [ -e "${file}" ]
+        then
+            echo File ${file} cannot be created
+            file="${orig}"
+        else
+           mv -- "$orig" "$file"
+           orig=${orig/[/\\[}
+           sed -i "1s#${orig/.3/}#${file/.3/}#g" ${file}
+        fi
+    fi
+    names="${file/.3/}"
+    desc="${file/.3/} \\\\- ${file/.3/}"
+    for link in $*
+    do
+        names="${names},${link/.3/}"
+        desc="${desc}\\n.br\\n${link/.3/} \\\\- ${link/.3/}"
+    done
+    #sed -i "1s#${orig/.3/}#${names}#g" ${file}
+    sed -i "3d" ${file}
+    sed -i "3i\\\\${desc}" ${file}
+}
+
+# fix some misformed files
+fix_files() {
+    link_file "std::atomic::compare_exchange_weak,std::atomic::compare_exchange_strong.3" \
+        "std::atomic::compare_exchange_weak.3" \
+        "std::atomic::compare_exchange_strong.3" \
+        "std::atomic::compare_exchange_weak_explicit.3" \
+        "std::atomic::compare_exchange_strong_explicit.3"
+
+    link_file "std::atomic_compare_exchange_weak,std::atomic_compare_exchange_strong,.3" \
+        "std::atomic_compare_exchange_weak.3" \
+        "std::atomic_compare_exchange_strong.3" \
+        "std::atomic_compare_exchange_weak_explicit.3" \
+        "std::atomic_compare_exchange_strong_explicit.3"
+
+    link_file "std::equal_to,not_equal_to,less,greater,less_equal,.3" \
+        "std::equal_to<std::experimental::propagate_const>.3" \
+        "std::not_equal_to<std::experimental::propagate_const>.3" \
+        "std::less<std::experimental::propagate_const>.3" \
+        "std::greater<std::experimental::propagate_const>.3" \
+        "std::less_equal<std::experimental::propagate_const>.3" \
+        "std::greater_equal<std::experimental::propagate_const>.3"
+
+    link_file "std::experimental::basic_string_view::rbegin,.3" \
+        "std::experimental::basic_string_view::rbegin.3" \
+        "std::experimental::basic_string_view::crbegin.3"
+
+    link_file "std::experimental::basic_string_view::to_string,.3" \
+        "std::experimental::basic_string_view::to_string.3" \
+        "std::experimental::basic_string_view::basic_string.3"
+
+    link_file "std::experimental::boyer_moore_horspool_searcher,.3" \
+        "std::experimental::boyer_moore_horspool_searcher.3" \
+        "std::experimental::make_boyer_moore_horspool_searcher.3"
+
+    link_file "std::experimental::filesystem::begin(directory_iterator),.3" \
+        "std::experimental::filesystem::begin(directory_iterator).3" \
+        "std::experimental::filesystem::end(directory_iterator).3"
+
+    link_file "std::experimental::filesystem::begin(recursive_directory_iterator),.3" \
+        "std::experimental::filesystem::begin(recursive_directory_iterator).3" \
+        "std::experimental::filesystem::end(recursive_directory_iterator).3"
+
+    link_file "std::experimental::filesystem::create_directory,.3" \
+        "std::experimental::filesystem::create_directory.3" \
+        "std::experimental::filesystem::create_directories.3"
+
+    link_file "std::experimental::filesystem::create_symlink,.3" \
+        "std::experimental::filesystem::create_symlink.3" \
+        "std::experimental::filesystem::create_directory_symlink.3"
+
+    link_file "std::experimental::filesystem::directory_entry::status,.3" \
+        "std::experimental::filesystem::directory_entry::status.3" \
+        "std::experimental::filesystem::directory_entry::symlink_status.3"
+
+    link_file "std::experimental::filesystem::path::append,.3" \
+        "std::experimental::filesystem::path::append.3" \
+        "std::experimental::filesystem::path::operators=.3"
+
+    link_file "std::experimental::filesystem::path::c_str,std::experimental::filesystem::path::native,.3" \
+        "std::experimental::filesystem::path::c_str.3" \
+        "std::experimental::filesystem::path::native.3" \
+        "std::experimental::filesystem::path::operatorstring_type.3"
+
+    link_file "std::experimental::filesystem::path::concat,.3" \
+        "std::experimental::filesystem::path::concat.3" \
+        "std::experimental::filesystem::path::operator+=.3"
+
+    link_file "std::experimental::filesystem::path::string,wstring,u8string,....3" \
+        "std::experimental::filesystem::path::string.3" \
+        "std::experimental::filesystem::path::wstring.3" \
+        "std::experimental::filesystem::path::u8string.3" \
+        "std::experimental::filesystem::path::u16string.3" \
+        "std::experimental::filesystem::path::u32string.3"
+
+    link_file "std::experimental::filesystem::recursive_directory_iterator::operator*,.3" \
+        "std::experimental::filesystem::recursive_directory_iterator::operator*.3" \
+        "std::experimental::filesystem::recursive_directory_iterator::operator->.3"
+
+    link_file "std::experimental::filesystem::recursive_directory_iterator::operator++,increment.3" \
+        "std::experimental::filesystem::recursive_directory_iterator::operator++.3" \
+        "std::experimental::filesystem::recursive_directory_iterator::increment.3"
+
+    link_file "std::experimental::is_detected,std::experimental::detected_t,.3" \
+        "std::experimental::is_detected.3" \
+        "std::experimental::detected_t.3" \
+        "std::experimental::detected_or.3"
+
+    link_file "std::experimental::parallel::seq,std::experimental::parallel::par,.3" \
+        "std::experimental::parallel::seq.3" \
+        "std::experimental::parallel::par.3" \
+        "std::experimental::parallel::par_vec.3"
+
+    link_file "std::experimental::parallel::sequential_execution_policy,.3" \
+        "std::experimental::parallel::sequential_execution_policy.3" \
+        "std::experimental::parallel::parallel_execution_policy.3" \
+        "std::experimental::parallel::parallel_vector_execution_policy.3"
+
+    link_file "std::experimental::propagate_const::operator*,.3" \
+        "std::experimental::propagate_const::operator*.3" \
+        "std::experimental::propagate_const::operator->.3"
+
+    link_file "std::experimental::propagate_const::operatorelement_type*,.3" \
+        "std::experimental::propagate_const::operatorelement_type*.3" \
+        "std::experimental::propagate_const::operatorconstelement_type*.3"
+
+    link_file "std::hash(std::string,std::wstring,std::u16string,std::u32string).3" \
+        "std::hash(std::string).3" \
+        "std::hash(std::wstring).3" \
+        "std::hash(std::u16string).3" \
+        "std::hash(std::u32string).3"
+
+    link_file "std::hash(std::experimental::string_view,std::experimental::wstring_view,.3" \
+        "std::hash(std::experimental::string_view).3" \
+        "std::hash(std::experimental::wstring_view).3" \
+        "std::hash(std::experimental::u16string_view).3" \
+        "std::hash(std::experimental::u32string_view).3"
+
+    link_file "std::input_iterator_tag,std::output_iterator_tag,std::forward_iterator_tag,.3" \
+        "std::input_iterator_tag.3" \
+        "std::output_iterator_tag.3" \
+        "std::forward_iterator_tag.3" \
+        "std::bidirectional_iterator_tag.3" \
+        "std::random_access_iterator_tag.3"
+
+    link_file "std::is_copy_assignable,std::is_trivially_copy_assignable,.3" \
+        "std::is_copy_assignable.3" \
+        "std::is_trivially_copy_assignable.3" \
+        "std::is_nothrow_copy_assignable.3"
+
+    link_file "std::is_copy_constructible,std::is_trivially_copy_constructible,.3" \
+        "std::is_copy_constructible.3" \
+         "std::is_trivially_copy_constructible.3" \
+        "std::is_nothrow_copy_constructible.3"
+
+    link_file "std::is_default_constructible,std::is_trivially_default_constructible,.3" \
+        "std::is_default_constructible.3" \
+        "std::is_trivially_default_constructible.3" \
+        "std::is_nothrow_default_constructible.3"
+
+    link_file "std::is_move_assignable,std::is_trivially_move_assignable,.3" \
+        "std::is_move_assignable.3" \
+        "std::is_trivially_move_assignable.3" \
+        "std::is_nothrow_move_assignable.3"
+
+    link_file "std::is_move_constructible,std::is_trivially_move_constructible,.3" \
+        "std::is_move_constructible.3" \
+        "std::is_trivially_move_constructible.3" \
+        "std::is_nothrow_move_constructible.3"
+
+    link_file "std::mem_fun_ref_t,std::mem_fun1_ref_t,std::const_mem_fun_ref_t,.3" \
+        "std::mem_fun_ref_t.3" \
+        "std::mem_fun1_ref_t.3" \
+        "std::const_mem_fun_ref_t.3" \
+        "std::const_mem_fun1_ref_t.3"
+
+    link_file "std::operator==,!=,<(std::error_code).3" \
+        "std::operator==(std::error_code).3" \
+        "std::operator!=(std::error_code).3" \
+        "std::operator<(std::error_code).3"
+    link_file "std::remove,std::remove_if.3" \
+        "std::remove_if.3" \
+        "std::remove.3"
+}
+
+do_link() {
+    declare -a typedefs=('basic_string'\
+                         'basic_istringstream' 'basic_ostringstream' 'basic_stringstream'\
+                         'basic_istream' 'basic_ostream' 'basic_iostream'\
+                         'basic_ifstream' 'basic_ofstream' 'basic_fstream'\
+                         'basic_stringbuf' 'basic_streambuf' 'basic_ios'\
+                         'basic_filebuf' 'basic_regex'\
+                         'basic_string_view'
+                        )
+    declare -a alias_basic_string=('string' 'wstring' 'u16string' 'u32string')
+    declare -a alias_basic_stringstream=('stringstream' 'wstringstream')
+    declare -a alias_basic_istringstream=('istringstream' 'wistringstream')
+    declare -a alias_basic_ostringstream=('ostringstream' 'wostringstream')
+    declare -a alias_basic_istream=('istream' 'wistream')
+    declare -a alias_basic_ostream=('ostream' 'wostream')
+    declare -a alias_basic_iostream=('iostream' 'wiostream')
+    declare -a alias_basic_ifstream=('ifstream' 'wifstream')
+    declare -a alias_basic_ofstream=('ofstream' 'wofstream')
+    declare -a alias_basic_fstream=('fstream' 'wfstream')
+    declare -a alias_basic_stringbuf=('stringbuf' 'wstringbuf')
+    declare -a alias_basic_streambuf=('streambuf' 'wstreambuf')
+    declare -a alias_basic_ios=('ios' 'wios')
+    declare -a alias_basic_filebuf=('filebuf' 'wfilebuf')
+    declare -a alias_basic_regex=('regex' 'wregex')
+    declare -a alias_basic_string_view=('string_view' 'wstring_view' 'u16string_view' 'u32string_view')
+
+    for td in ${typedefs[@]}
+    do
+        # Link class pages (eg. std::string.3)
+        tmp=alias_${td}[@]
+        td1=${td}
+        [ "${td1}" = "basic_string_view" ] && td1="experimental::${td1}"
+        names=""
+        # Class file
+        file="std::${td1}.3"
+        if [ -f "${file}" ]
+        then
+            for al in ${!tmp}
+            do
+                out="${file/${td}/${al}}"
+                names="${names} ${out}"
+            done
+            link_file "${file}" "${file}" ${names}
+        fi
+        # Link member pages (eg. std::string::erase.3)
+        for file in std::${td1}::*.3
+        do
+            names=""
+            file1=${file}
+            if [ "${file1}" = "std::experimental::basic_string_view::to_string,.3" ]
+            then
+                file1="std::experimental::basic_string_view::to_string.3"
+                names="std::experimental::basic_string_view::basic_string.3"
+            fi
+            for al in ${!tmp}
+            do
+                out="${file1//$td/$al}"
+                names="${names} ${out}"
+                [ "${file1}" = "std::experimental::basic_string_view::to_string.3" ] &&
+                    names="${names} std::experimental::${al}::${al/_view/}.3"
+            done
+            if [[ "${file1}" = *","* ]]
+            then
+                names="${file1#*,} ${names}"
+                file1="${file1%%,*}".3
+            fi
+            link_file "${file}" "${file1}" ${names//,/.3 }
+        done
+    done
+}
+
+rm_comas() {
+    for f in *,*
+    do
+        orig="${f}"
+        file="${f/.3/}"
+        list="${file#*,}"
+        file="${file%%,*}.3"
+        names=""
+        while [ -n "${list}" ]
+        do
+            item="${list%%,*}"
+            if [[ "${item}" != *"::"* ]]
+            then
+                if [[ ( "${file}" == *"operator"* ) && ( "${item}" != "operator"* ) ]]
+                then
+                    prefix="${file%operator*}operator"
+                else
+                    prefix="${file%::*}::"
+                fi
+            else
+                prefix=""
+            fi
+            link="${prefix}${item}.3"
+            names="${names} ${link}"
+            list="${list#*,}"
+            if [ "${item}" = "${list}" ]
+            then
+                break
+            fi
+        done
+        link_file "${orig}" "${file}" ${names}
+    done
+}
+
+prepare() {
+  cd ${srcdir}
+  tar -a -x -v -f "${pkgbase}-${pkgver}.tar.gz"
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    #./configure --prefix=/usr --mandir=/usr/share/man
+    [ -d ${srcdir}/build/man ] && rm -fr ${srcdir}/build/man
+    mkdir -p ${srcdir}/build/man
+    cp -a man/* ${srcdir}/build/man/
+    cd ${srcdir}/build/man
+    msg2 "Removing symlinks"
+    find . -type l -delete
+    msg2 "Fixing permissions"
+    chmod a-x *.3
+    msg2 "Fixing file names"
+    fix_files
+    msg2 "Linking manual pages"
+    do_link
+    msg2 "Removing comas"
+    rm_comas
+    # Since prior to 1.7, files could not ordinarly contain ':', man
+    # and perl were patched to substitute '.' for '::'. However,
+    # sometimes (e.g. gtk2-perl) man pages created with '::', and
+    # with 1.7 it works OOTB, but man is still patched and hence
+    # won't find these.
+    msg2 "Renaming *::* to *.* to suit Windows finalemes"
+    find . -name '*::*' -print0 | \
+         while read -d $'\0' man
+         do
+             mv "${man}" "${man//::/.}"
+         done
+}
+
+package() {
+    #cd "${pkgname}-${pkgver}"
+    #make DESTDIR="$pkgdir/" install
+    rm -fr ${pkgdir}/usr
+    mkdir -p ${pkgdir}/usr/share/man/man3
+    cp -a ${srcdir}/build/man/* ${pkgdir}/usr/share/man/man3/
+    install -Dpm644 ${srcdir}/${pkgbase}-${pkgver}/LICENSE -t "$pkgdir/usr/share/licenses/${pkgname}"
+}
