@@ -1,0 +1,23 @@
+# Maintainer:  Hyacinthe Cartiaux <hyacinthe.cartiaux at free.fr>
+# Contributor: Arkham <arkham at archlinux dot us>
+# Contributor: StaCk <proc.null at gmail dot com>
+
+pkgbase=funny-manpages
+pkgname=${pkgbase}
+pkgver=2.3
+pkgrel=1
+pkgdesc="A set of miscellaneous humorous manpages (don't take them too seriously!)."
+groups=('games')
+arch=('any')
+url="http://debian.org/"
+license=('custom')
+source=("https://github.com/ltworf/${pkgbase}/releases/download/${pkgver}/${pkgbase}_${pkgver}.orig.tar.gz")
+sha512sums=('7920e9a62972f8ea0649b50d0b108936a6e0a5d5b68baccadded4999d0219af3f4685349dd881aded9e762e0d1f00575f382d155db0969f7e51a4a1963f0519e')
+
+package() {
+  install -Dpm644 ${srcdir}/${pkgbase}/man/*.1fun -t ${pkgdir}/usr/share/man/man1/
+  install -Dpm644 ${srcdir}/${pkgbase}/man/*.3fun -t ${pkgdir}/usr/share/man/man3/
+  install -Dpm644 ${srcdir}/${pkgbase}/man/*.6fun -t ${pkgdir}/usr/share/man/man6/
+  # Install the license
+  install -Dpm644 $srcdir/${pkgbase}/LICENSE -t $pkgdir/usr/share/licenses/${pkgbase}/
+}
