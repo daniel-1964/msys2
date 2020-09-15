@@ -1,0 +1,32 @@
+pkgbase='filters'
+pkgname=${pkgbase}
+pkgver='2.55'
+pkgrel=1
+pkgdesc="Collected filters, including B1FF and the Swedish Chef"
+groups=('games')
+arch=('any')
+url="http://joeyh.name/code/filters/"
+license=('GPL' 'GPLV2+' 'GPLV3+')
+depends=('gcc-libs'
+         'perl')
+makedepends=('bison'
+             'flex'
+             'make'
+             'gcc')
+source=("http://ftp.debian.org/debian/pool/main/${pkgbase:0:1}/${pkgbase}/${pkgbase}_${pkgver}.orig.tar.gz")
+sha512sums=('8a064f9fb822168c17d2075d3aaf44ee884907ecfd2e95c711fe41f9f85f719157cc181da44436d00245cbe0670adc0b278caa9328235824c9b67a79e3d9d7ef')
+
+build() {
+  [[ -d ${srcdir}/build ]] && rm -fr ${srcdir}/build
+  mkdir -p ${srcdir}/build
+  cd ${srcdir}/build
+  cp -a ${srcdir}/filters/* .
+  sed -i 's#usr/games#usr/bin#' Makefile
+  sed -i 's#ln -s#cp -p#' Makefile
+  make
+}
+
+package() {
+  cd ${srcdir}/build
+  make install DESTDIR=${pkgdir}
+}
