@@ -1,0 +1,130 @@
+# Maintainer: Guillaume ALAUX <guillaume@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: Sarah Hay <sarahhay@mb.sympatico.ca>
+
+pkgname=cowsay
+pkgver=3.04
+pkgrel=2
+pkgdesc='Configurable talking cow (and a few other creatures)'
+groups=('games')
+arch=('any')
+url='http://www.nog.net/~tony/warez/'
+license=('PerlArtistic' 'GPL')
+depends=('perl'
+         'perl-Text-CharWidth')
+source=(https://github.com/tnalpgge/rank-amateur-cowsay/archive/cowsay-$pkgver.tar.gz
+        cowsay_random
+        00-fix_paths
+	01-empty_messages_fix
+	02-remove_trailing_spaces
+	03-ansi_code_width_color_widechar.patch
+	04-manpage.patch
+        05-cowsay.patch
+	06-utf8_width
+	07-elephants-in-snake_flip
+	08-luke-koala_typo
+	09-moofasa-tabs
+	apt_cow
+	calvin_cow
+	cock_cow
+	duck_cow
+	fox_cow
+	gnu_cow
+	kangaroo_cow
+	mech_cow
+	ponies_cow
+	snowman_cow
+	suse_cow)
+sha512sums=('99d21ef9a7c7c76056cb7acb2c771fbdabfedde4f6edb5d3035337c59f9e88944690d1b43282c32827ad79339199716366c8be73b0dea09063ec2d52220c1b51'
+            '95c97443083657064b7f7231b8ab94db9a83b80c55a0e3b345a020c9919af2484d0b1a4f79d3d14f5bf74ac7ad77f1e961024ee44adf087616362bb52f703642'
+            'c5b248ea122424be8e403d58e6080dac19c800c1a57392517b7b280f1579326385b950cb7ea3533081942fa78403df5f4b3f5b6eb5f341610639be1f6a5177c7'
+            '8d0bb0a4dc35453b9df2a83ef96d343da1465f3820c367bf7e9e1a182638f6145f25510f342ce394c2da19378369d28602f8f2772c616a82b06585ab7e767ab4'
+            '0b2d6c92f6d801a679f1b1a92ea7612956d6ba92f11c1399655203dbd8ee5e1c48f05fe412e0f04443d1492005a44aa3aa4d3c4c42ea426c7923d9d8bfb10020'
+            'b28fa1b9159ef979ad59cc0a268b55b38b89a0b2e1a59547ee7bd7f44ca9163cfd4c6fbb286b0ba6afab10f259b7c7af1ea846d46796cccd9540c5c856e4d79d'
+            '2bc711959d917752f02c437376661e853e56b712e046365a9eb11451895ae6184691db7bd9a583c98555080ff5bf023d5c224365d52f6bfe58665f8fa21298b0'
+            '4c70074fc88e741f2eb4daa04a55ef3ff0638bffda907fe451299aeb2271a3b09c4b73df4d3eb83f6ac91b9cb05530bb2a59df81c72602728441254624a05327'
+            'dcded5a8688cff789c8c239864420bf2e1923a5da2b748f58cc8e4b62e4eb063cda608e8da8d86079bb061b5116436b4c1e61d0a7978634abef968816354768b'
+            '161aac55f14331e44a0ff972c2ebd6bc758cb11f0d8c20b50d36e4f7ffce6e54de7d016f83b2c2ba89f052e87c27bad462e8a5608fe01f05cf316f945b7292cd'
+            'dff28be729c3360f5606b6110c84356204ecc97376d6063aa07b90d17230e3316f8ad17bd1220ca9001233ae1a42a6390a4faf40e6350457049d178abf10137c'
+            'df8045c3fe22597be12a2721deb1dc08d34d999b60a90d1a9b11833bc469ea5fd53004686a6460b0adecf0e4181e0aa1145957c5bcba69ae6bbfd40bd4a93531'
+            '59562f00d9abcd49e9d871be28012ee595d4c0d55b37355efd2f4eeb6472bbdac76ceaf72c476d8a1c5f0d01df4dddfdbeb60e206ec7162bb4aa2f9cd6356521'
+            '3762c896090cbafa32c1452c45bb7860c928624293b04866bc29b5014d5abbdf06c3099624ba00de15e46471eef88824a962fc7d81ee8efd73c86ea70a694aba'
+            '5b6acf548f5182a2026e20b008e613d422dc2fed0f10c4ad38c79c381a3475c51e84dc681b0df73c8df1b7047828f083629ac81fc335c7ce958386ac8e18bee7'
+            '833ad65ea40fbba65a66f732b015232cd19c96cbc6feb7069661a57216419bdbfe68ee06deef6d44da72e1ddff7dc46aede40fb8a756535b38e1a6b861aa9306'
+            '231cfcbb7dedf061f8ec4fa9304a4cb3a262bb768113b195bcf7e89f96c2419c442269edeb25989a6db68a2de3ec12b482e66b2715cd6111abed8ff2709efee1'
+            'fb116675b415b5d4813a8a1aa0803ade1de631a40b38dea4a741ccf11c7a90bdc84d37c43105d6b054227e375fc2383cebd0d28aeded0fc12f0246a4cae45ff0'
+            'a6ebbc2d7fb369ff4ca171d7fe9642c8185ea47e58b3ebb22f33caa2ae61d250c119d9eea705b62e82da59dd1ab7b172a87a71969f5b4cfa7a5ce10284d395df'
+            '7b2dd408707cc0be55f4a34f49e6c7e6307dba4a0742932921ff69129b222573ff420ddf4be2a7f17b4b5b3b463703b53af45a58325af860e5dc60a631c3410b'
+            'c346f74ab44761c58468f7f6bdc680d70bc0483603fbb3d07b64b8b2d9f8c83762c88e7e9ab120e90c5df121c1757254d78a2d6f9e85cdabc1580a54fe85cbae'
+            'e40c73de5c295cfc75c4ce910be6f2f93e651766a3a92d5c0916450945949a33013746b6aa11e6617553fc07e6cc4c26609f4d6eb168ee08ffb5c1e33dd05946'
+            '2bc4d02a4c18a583e9ae622877f41cd11f05c7736289c783780ae4ac5c02375912b5e487f9edc62ce49984caf75cecae803d618bc5d771e621e6845f6e798ae9')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+add_cow_with_msg() {
+  for _cow in "$@"
+  do
+    msg2 "Adding ${_cow}"
+    patch -Nbp0 -i "${srcdir}/$_cow"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]
+    then
+      rm -rf $_fname
+    fi
+  done
+}
+
+prepare() {
+  cd rank-amateur-cowsay-${pkgname}-${pkgver}
+  apply_patch_with_msg 00-fix_paths \
+	01-empty_messages_fix \
+	02-remove_trailing_spaces \
+	03-ansi_code_width_color_widechar.patch \
+	04-manpage.patch \
+        05-cowsay.patch \
+	06-utf8_width \
+	07-elephants-in-snake_flip \
+	08-luke-koala_typo \
+	09-moofasa-tabs
+  msg2 "Adding 11 extra cows"
+  add_cow_with_msg apt_cow \
+	calvin_cow \
+	cock_cow \
+	duck_cow \
+	fox_cow \
+	gnu_cow \
+	kangaroo_cow \
+	mech_cow \
+	ponies_cow \
+	snowman_cow \
+	suse_cow
+  sed -i 's|/man/|/share/man/|' install.sh
+  mv cowsay.1 cowsay.6
+}
+
+package() {
+  cd rank-amateur-cowsay-${pkgname}-${pkgver}
+  # echo "${pkgdir}/usr" | ./install.sh
+  ## This one is not a valid '.cow' file
+  # rm ${pkgdir}/usr/share/cows/mech-and-cow
+  install -Dpm644 ./cowsay ${srcdir}/cowsay_random -t ${pkgdir}/usr/bin
+  install -Dpm644 cowsay.6 -t ${pkgdir}/usr/share/man/man6
+  gzip -9 ${pkgdir}/usr/share/man/man6/cowsay.6
+  install -Dpm644 cows/*.cow -t ${pkgdir}/usr/share/cowsay/cows
+  install -Dpm644 ChangeLog README -t ${pkgdir}/usr/share/doc/${pkgbase}
+  install -Dpm644 LICENSE -t ${pkgdir}/usr/share/licenses/${pkgbase}
+  ln -s cowsay ${pkgdir}/usr/bin/cowthink
+  ln -s cowsay.6.gz ${pkgdir}/usr/share/man/man6/cowthink.6.gz
+}

@@ -1,0 +1,24 @@
+Description: Add a fox cow
+Origin: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=888229#5
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=888229
+--- cows/fox.cow
++++ cows/fox.cow
+@@ -0,0 +1,18 @@
++$the_cow = <<EOC;
++         $thoughts     ,-.      .-,
++          $thoughts    |-.\\ __ /.-|
++           $thoughts   \\  `    `  /
++                /_     _ \\
++              <  _`q  p _  >
++              <.._=/  \\=_. >
++                 {`\\()/`}`\\
++                 {      }  \\
++                 |{    }    \\
++                 \\ '--'   .- \\
++                 |-      /    \\
++                 | | | | |     ;
++                 | | |.;.,..__ |
++               .-"";`         `|
++              /    |           /
++              `-../____,..---'`
++EOC

@@ -1,0 +1,45 @@
+--- cowsay-3.03.orig/cowsay.1	2016-06-25 04:45:15.000000000 +0200
++++ cowsay-3.03/cowsay.1	2020-09-12 11:26:22.074050600 +0200
+@@ -1,14 +1,14 @@
+ .\" 
+-.\" cowsay.1
++.\" cowsay.6
+ .\"
+-.\" $Id$
++.\" $Id: cowsay.6,v 1.4 1999/11/04 19:50:40 tony Exp $
+ .\"
+ .\" This file is part of cowsay.  (c) 1999 Tony Monroe.
+ .\"
+ .ds Nm Cowsay
+ .ds nm cowsay
+-.ds Vn 3.02
+-.TH \*(nm 1 "$Date$"
++.ds Vn 3.03
++.TH \*(nm 6 "$Date: 1999/11/04 19:50:40 $"
+ .SH NAME
+ \*(nm/cowthink \- configurable speaking/thinking cow (and a bit more)
+ .SH SYNOPSIS
+@@ -44,7 +44,7 @@ after all the switches have been process
+ .PP
+ The
+ .B \-W
+-specifies roughly (where the message should be wrapped.  The default
++specifies roughly where the message should be wrapped.  The default
+ is equivalent to
+ .B \-W 40
+ i.e. wrap words at or before the 40th column.
+@@ -149,12 +149,12 @@ much like
+ .B PATH or
+ .BR MANPATH .
+ It should always contain the
+-.B /usr/local/share/cows
++.B /usr/share/cowsay/cows
+ directory, or at least a directory with a file called 
+ .B default.cow
+ in it.
+ .SH FILES
+-.B %PREFIX%/share/cows
++.B /usr/share/cowsay/cows
+ holds a sample set of cowfiles.  If your
+ .B COWPATH
+ is not explicitly set, it automatically contains this directory.

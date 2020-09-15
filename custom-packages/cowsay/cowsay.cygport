@@ -1,0 +1,52 @@
+NAME="cowsay"
+VERSION=3.03
+RELEASE=1
+HOMEPAGE="https://web.archive.org/web/20120527202447/http://www.nog.net/~tony/warez/cowsay.shtml"
+SRC_URI="https://web.archive.org/web/20120527202447/http://www.nog.net/~tony/warez/${PN}-${PV}.tar.gz
+cowsay_random"
+PATCH_URI="00-fix_paths
+	01-empty_messages_fix
+	02-remove_trailing_spaces
+	manpage
+	elephants-in-snake_flip
+	luke-koala_typo
+	apt_cow
+	calvin_cow
+	cock_cow
+	duck_cow
+	gnu_cow
+	mech-and-cow
+	ponies_cow
+	snowman_cow
+	suse_cow
+	utf8_width
+	moofasa-tabs
+	03-ansi_code_width_color_widechar.patch
+	kangaroo_cow
+	fox_cow"
+CATEGORY="Games Utils"
+SUMMARY="configurable talking cow"
+DESCRIPTION="Cowsay (or cowthink) will turn text into happy ASCII cows, with
+speech (or thought) balloons. If you don't like cows, ASCII art is
+available to replace it with some other creatures (Tux, the BSD
+daemon, dragons, and a plethora of animals, from a turkey to
+an elephant in a snake)."
+RESTRICT="diff debuginfo"
+
+# this package contains no compiled Cygwin binaries
+# REMOVE THE FOLLOWING LINE for packages which are to be compiled for each arch
+ARCH=noarch
+
+# We use the standard src_compile and src_test.
+src_compile() {
+    :
+}
+
+src_install() {
+	dobin ${S}/cowsay ${S}/cowsay_random
+	doman ${S}/cowsay.6
+	insinto /usr/share/cowsay/cows
+	doins ${S}/cows/*
+	ln -s cowsay ${D}/usr/bin/cowthink
+	ln -s cowsay.6 ${D}/usr/share/man/man6/cowthink.6
+}

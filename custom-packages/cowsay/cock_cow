@@ -1,0 +1,23 @@
+Description: Add a new cow
+Forwarded: no
+Origin: vendor, http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=404287#5
+Bug-Debian: http://bugs.debian.org/404287
+Author: Krishna Kumar <krish.kumar@gmail.com>
+Last-Update: 2014-03-21
+
+--- cows/cock.cow
++++ cows/cock.cow
+@@ -0,0 +1,13 @@
++$the_cow = <<"EOC";
++    $thoughts
++     $thoughts  /\\/\\
++       \\   /
++       |  0 >>
++       |___|
++ __((_<|   |
++(          |
++(__________)
++   |      |
++   |      |
++   /\\     /\\
++EOC

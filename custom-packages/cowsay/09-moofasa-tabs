@@ -1,0 +1,16 @@
+Description: Remove tab characters
+Forwarded: no
+Origin: vendor
+Bug-Debian: http://bugs.debian.org/742286
+Author: Ben Armstrong <synrg@sanctuary.nslug.ns.ca>
+Last-Update: 2014-03-21
+
+--- cowsay-3.03.orig/cows/moofasa.cow
++++ cowsay-3.03/cows/moofasa.cow
+@@ -10,5 +10,5 @@ $the_cow = <<EOC;
+            \\____/|----w |
+                 ||     ||
+ 
+-	         Moofasa
++                 Moofasa
+ EOC
