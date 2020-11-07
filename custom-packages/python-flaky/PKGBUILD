@@ -1,0 +1,36 @@
+# Maintainer: Andrew Sun <adsun701@gmail.com>
+
+_realname=flaky
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=3.6.1
+pkgrel=1
+pkgdesc="Plugin for nose or py.test that automatically reruns flaky tests (msys)"
+arch=('any')
+url="https://github.com/box/flaky"
+license=('APACHE')
+depends=('python')
+makedepends=('python-setuptools')
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/box/flaky/archive/v${pkgver}.tar.gz")
+sha256sums=('9a3dd0f33dc38c9aec1e82f16777857788ef595636004609b1bdcc14f497d1e7')
+
+prepare() {
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+}
