@@ -1,0 +1,48 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=ukpostcodeparser
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.1.2
+pkgrel=1
+pkgdesc="UK Postcode parser (msys)"
+arch=('any')
+url='https://github.com/hamstah/ukpostcodeparser'
+license=('MIT')
+depends=('python')
+makedepends=('python-setuptools')
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/hamstah/ukpostcodeparser/archive/v${pkgver}.tar.gz")
+sha512sums=('8113522b728c095f937a9f53f21c369130e3e63c4fc3546dbea4ad1c53648742fb0e766b1254c76ee65d69dec585f1a90caa7d39ca540de1765ff5f989a702de')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf "python-build" | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for "
+  cd "${srcdir}/python-build"
+  /usr/bin/python -m unittest discover -s ukpostcodeparser/test -p '*.py' || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+}
