@@ -1,0 +1,59 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=faker
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=4.0.3
+pkgrel=1
+pkgdesc="Faker generates fake data for you (msys)"
+arch=('any')
+url="https://faker.readthedocs.io/en/master/"
+license=('MIT')
+depends=('python'
+         'python-dateutil'
+         'python-six'
+         'python-text-unidecode')
+makedepends=('python-setuptools'
+             'python-devel')
+checkdepends=('python-ukpostcodeparser'
+              'python-mock'
+              'python-email-validator')
+#install=${_realname}3-${CARCH}.install
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/joke2k/faker/archive/v${pkgver}.tar.gz")
+sha512sums=('08d7a4fc3a65f4f31467e0aa91525ce92042ef7e471992a63c3fef2efa14ab894bda1f0fa1e6b651f78ceadee7c3683079001db904147739628457a44adef615')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf "python-build" | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py test || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE.txt "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE.txt"
+
+  #local PREFIX_WIN=$(cygpath -wm /usr)
+  ## fix python command in files
+  #for _f in "${pkgdir}/usr"/bin/*.py; do
+  #  sed -e "s|${PREFIX_WIN}|/usr|g" -i ${_f}
+  #done
+}
