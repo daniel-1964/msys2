@@ -1,0 +1,54 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=sqlparse
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=0.3.1
+pkgrel=1
+pkgdesc="Non-validating SQL parser for Python (msys)"
+arch=('any')
+url='https://github.com/andialbrecht/sqlparse'
+license=('BSD')
+depends=("python")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+#install=${_realname}3.install
+source=("${_realname}-$pkgver.tar.gz::https://github.com/andialbrecht/sqlparse/archive/${pkgver}.tar.gz")
+sha256sums=('344b539482b75c244ac69fbb160d0f4d63a288a392475c8418ca692c594561f9')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf "python-build" | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py test
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+
+  #local PREFIX_WIN=$(cygpath -wm /usr)
+  ## fix python command in files
+  #for _f in "${pkgdir}/usr"/bin/*.py; do
+  #  sed -e "s|/usr/bin/env |/usr|g" \
+  #      -e "s|${PREFIX_WIN}|/usr|g" -i ${_f}
+  #done
+}
