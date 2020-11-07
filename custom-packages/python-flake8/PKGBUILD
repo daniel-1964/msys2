@@ -1,0 +1,63 @@
+# $Id$
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=flake8
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=3.8.4
+pkgrel=2
+pkgdesc="The modular source code checker: pep8, pyflakes and co (msys)"
+arch=('any')
+url="http://flake8.pycqa.org"
+license=('MIT')
+depends=('python-pyflakes'
+         'python-mccabe'
+         'python-entrypoints'
+         'python-pycodestyle')
+makedepends=('python-setuptools'
+             'python-pytest-runner')
+checkdepends=('python-mock')
+#install=${_realname}3-${CARCH}.install
+source=("${_realname}-$pkgver.tar.gz"::"https://github.com/PyCQA/flake8/archive/${pkgver}.tar.gz")
+sha512sums=('de2e22c2fa759870efe877e70a28a7b831648c719fe0ec2df953667932c9ff191d9268094454d0c8d9ed00235dd75a17166efebe5b7417f71c1b38207a4c5962')
+
+prepare() {
+  # disable overly restrictive dependency pinning
+  sed -i -e 's/, *< *[0-9=.]*//' flake8-${pkgver}/setup.py
+
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py pytest
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  /usr/bin/python setup.py install --root="${pkgdir}" --prefix=/usr --optimize=1
+  install -D -m644 LICENSE "${pkgdir}/usr"/share/licenses/python-${_realname}/LICENSE
+
+  #local PREFIX_WIN=$(cygpath -wm /usr)
+  ## fix python command in files
+  #for _f in "${pkgdir}/usr"/bin/*.py; do
+  #  sed -e "s|${PREFIX_WIN}|/usr|g" -i ${_f}
+  #done
+}
