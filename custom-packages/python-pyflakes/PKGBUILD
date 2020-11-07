@@ -1,0 +1,72 @@
+# Maintainer: Some One <some.one@some.email.com>
+#This value is here because some python package names have capital letters
+#while there is a strong preference for lowercase letters in ArchLinux and
+#MSYS packages.
+
+_realname=pyflakes
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=2.2.0
+pkgrel=1
+pkgdesc="A lint-like tool for Python to identify common errors quickly without executing code (msys)"
+arch=('any')
+url='https://pypi.python.org/pypi/pyflakes'
+license=('MIT')
+depends=("python")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=("https://pypi.io/packages/source/p/pyflakes/pyflakes-${pkgver}.tar.gz")
+sha256sums=('35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 -i "${srcdir}/${_patch}"
+  done
+}
+
+del_file_exists() {
+  for {_fname} in "$@"
+  do
+    if [ -f ${_fname} ]; then
+      rm -rf ${_fname}
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py test
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+
+  #local PREFIX_WIN=$(cygpath -wm /usr)
+  ## fix python command in files
+  #for _f in "${pkgdir}/usr"/bin/*.py; do
+  #  sed -e "s|${PREFIX_WIN}/bin/|/usr/bin/env |g" -i ${_f}
+  #done
+}
