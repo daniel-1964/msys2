@@ -1,0 +1,67 @@
+# Maintainer: Smo <smo@xpra.org>
+
+_realname=bcrypt
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=3.1.7
+pkgrel=1
+pkgdesc="Modern password hashing for your software and your servers (msys)"
+arch=('any')
+url='https://github.com/pyca/bcrypt/'
+license=('Apache-2.0')
+depends=("python"
+         "python-cffi"
+         "python-six")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/pyca/bcrypt/archive/${pkgver}.tar.gz")
+sha512sums=('bfe487ac43aa5081a16c7f67787c2aec777a9c42f3f0f64d4dd238e6cf135e248e806a675ecdc5240066e2b5a31773f9c5dd939479e96ec25357e27bced01409')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py check
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+}
