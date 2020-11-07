@@ -1,0 +1,72 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=mccabe
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=0.6.1
+pkgrel=1
+pkgdesc="McCabe complexity checker for Python (msys)"
+arch=('any')
+url='https://github.com/flintwork/mccabe'
+license=('custom:Expat')
+validpgpkeys=('gpg_KEY')
+depends=("python")
+makedepends=("python-pytest-runner"
+             "python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/flintwork/mccabe/archive/${pkgver}.tar.gz"
+        fix-metadata.patch)
+sha256sums=('2748af6516175b94be318cd8226fa50b5339b9dc886bce378ac2afb37a157524'
+            'e2395fa0cf7acd786d6349f1306e5604db60d427aa1f65e3751517d96aa4a9d1')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+  pushd ${_realname}-${pkgver}
+  apply_patch_with_msg fix-metadata.patch
+  popd
+
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py test
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+}
