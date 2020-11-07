@@ -1,0 +1,47 @@
+# Contributor: Frederic Wang <fred.wang@free.fr>
+
+_realname=coverage
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=5.2.1
+pkgrel=1
+pkgdesc="Code coverage measurement for Python (msys)"
+arch=('any')
+url='https://coverage.readthedocs.io/'
+license=('Apache 2.0')
+depends=('python')
+makedepends=('python-setuptools'
+             'python-devel')
+#install=${_realname}3-${CARCH}.install
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/nedbat/coveragepy/archive/coverage-${pkgver}.tar.gz")
+sha256sums=('d4b1405f26b70021b28c50823e9345f203280ab104e65c01b52fe57b2dd96455')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "coveragepy-${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 "LICENSE.txt" "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+
+  #local PREFIX_WIN=$(cygpath -wm /usr)
+  # fix python command in files
+  #for _f in "${pkgdir}/usr"/bin/*.py; do
+  #  sed -e "s|/usr/bin/env |/usr|g" \
+  #      -e "s|${PREFIX_WIN}|/usr|g" -i ${_f}
+  #done
+}
