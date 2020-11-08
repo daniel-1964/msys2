@@ -1,0 +1,74 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>.
+
+_realname=execnet
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.7.1
+pkgrel=1
+pkgdesc="Rapid multi-Python deployment (msys)"
+arch=('any')
+url='https://execnet.readthedocs.io/en/latest'
+license=('MIT')
+depends=("python"
+         "python-apipkg")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/pytest-dev/execnet/archive/v${pkgver}.tar.gz")
+sha512sums=('65ec428ba1d1c1a67b9ed8ccbbde238d563edd6b79e5a1a824f2a74d34e303bf803a5eb2848a13bf77840d1203e09e450ca83fe5ce0a3ac8dab163553a07b069')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+  export PBR_VERSION=${pkgver}
+}
+
+# Note that build() is sometimes skipped because it's done in
+# the packages setup.py install for simplicity if you can do so.
+# but sometimes, you want to do a check before install which would
+# also trigger the build.
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg2 "Python test for msys"
+  cd "${srcdir}/python-build"
+  local _cyp="$(pwd)"
+  PYTHONPATH="${_cyp}/build/lib;${PYTHONPATH}" /usr/bin/py.test testing || true
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+}
