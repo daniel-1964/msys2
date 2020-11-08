@@ -1,0 +1,35 @@
+diff -pur py-cpuinfo-5.0.0.orig/tests/helpers.py py-cpuinfo-5.0.0/tests/helpers.py
+--- py-cpuinfo-5.0.0.orig/tests/helpers.py	2019-03-20 20:04:53.000000000 +0100
++++ py-cpuinfo-5.0.0/tests/helpers.py	2020-11-08 14:06:31.901549400 +0100
+@@ -89,6 +89,8 @@ def get_os_type():
+ 		os_type = 'BSD'
+ 	elif 'cygwin' in uname:
+ 		os_type = 'Cygwin'
++	elif 'msys' in uname:
++		os_type = 'Msys'
+ 	elif 'darwin' in uname:
+ 		os_type = 'MacOS'
+ 	elif 'linux' in uname:
+diff -pur py-cpuinfo-5.0.0.orig/tests/test_actual.py py-cpuinfo-5.0.0/tests/test_actual.py
+--- py-cpuinfo-5.0.0.orig/tests/test_actual.py	2019-03-20 20:04:53.000000000 +0100
++++ py-cpuinfo-5.0.0/tests/test_actual.py	2020-11-08 14:05:12.972348400 +0100
+@@ -54,6 +54,19 @@ class TestActual(unittest.TestCase):
+ 			# FIXME: This fails by segfaulting for some reason
+ 			#self.assertEqual({}, cpuinfo._get_cpu_info_from_cpuid())
+ 			self.assertTrue(len(cpuinfo.get_cpu_info()) > 0)
++		elif os_type == 'Msys':
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_registry())
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_cpufreq_info())
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_lscpu())
++			self.assertTrue(len(cpuinfo._get_cpu_info_from_proc_cpuinfo()) > 0)
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_sysctl())
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_kstat())
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_dmesg())
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_cat_var_run_dmesg_boot())
++			self.assertEqual({}, cpuinfo._get_cpu_info_from_sysinfo())
++			# FIXME: This fails by segfaulting for some reason
++			#self.assertEqual({}, cpuinfo._get_cpu_info_from_cpuid())
++			self.assertTrue(len(cpuinfo.get_cpu_info()) > 0)
+ 		elif os_type == 'MacOS':
+ 			self.assertEqual({}, cpuinfo._get_cpu_info_from_registry())
+ 			self.assertEqual({}, cpuinfo._get_cpu_info_from_cpufreq_info())

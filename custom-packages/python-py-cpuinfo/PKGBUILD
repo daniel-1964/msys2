@@ -1,0 +1,56 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=py-cpuinfo
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=5.0.0
+pkgrel=1
+pkgdesc="Get CPU info with pure Python 2 & 3 (msys)"
+arch=('any')
+url='https://github.com/workhorsy/py-cpuinfo'
+license=('MIT')
+depends=("python")
+makedepends=("python-setuptools")
+checkdepends=("python-pytest-runner")
+#install=${_realname}3.install
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/workhorsy/py-cpuinfo/archive/v${pkgver}.tar.gz"
+        '001-fix-msys-test.patch')
+sha256sums=('838c9480f416c3052897b6c4645cf12c6f0604deef8c1860bb9153112ceb96aa'
+            '0d91a371744809f7a15fc928dedcf0076655703cca2fec7c5250090c68ba22c0')
+
+prepare() {
+  cd ${srcdir}
+  patch -Np0 -i ${srcdir}/001-fix-msys-test.patch
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py pytest
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+
+  #local PREFIX_WIN=$(cygpath -wm /usr)
+  ## fix python command in files
+  #for _f in "${pkgdir}/usr"/bin/*.py; do
+  #  sed -e "s|${PREFIX_WIN}|/usr|g" -i  ${_f}
+  #done
+}
