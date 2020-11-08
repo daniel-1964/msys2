@@ -1,0 +1,95 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=hypothesis
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=5.8.0
+pkgrel=1
+pkgdesc="Advanced Quickcheck style testing library for Python (msys)"
+arch=('any')
+url='https://hypothesis.readthedocs.org'
+license=('MIT')
+depends=("python"
+         "python-attrs"
+         "python-coverage"
+         "python-sortedcontainers")
+optdepends=("python-pytz: for datetime and django module"
+            "python-faker: for fakefactory and django module"
+            "python-django: for django module"
+            "python-numpy: for numpy module"
+            "python-pytest: for pytest module")
+makedepends=("python-setuptools")
+checkdepends=("python-pytest-runner"
+              "python-flake8"
+              "python-pytz"
+              "python-numpy"
+              "python-faker"
+              "python-flaky"
+              "python-pytest-benchmark"
+              "python-django"
+              "python-pytest-xdist"
+              "python-mock"
+              "python-pandas")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/HypothesisWorks/hypothesis/archive/hypothesis-python-${pkgver}.tar.gz")
+sha512sums=('60e355e2f3a03264fff852f422fcceec6ca621e28ea63e100f85ab0144a8e291e7fada78e82ad55623c0bfba971008a059bc125eff89c82d5ddfbfca88e4d43c')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+  sed -i "/FutureWarning/a \    filterwarnings('ignore', category=DeprecationWarning, module='pandas.core')" \
+       ${_realname}-${_realname}-python-$pkgver/hypothesis-python/tests/common/setup.py
+
+  rm -rf python-build | true
+  cp -a "${_realname}-${_realname}-python-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+  export LC_CTYPE=en_US.UTF-8
+}
+
+# Note that build() is sometimes skipped because it's done in
+# the packages setup.py install for simplicity if you can do so.
+# but sometimes, you want to do a check before install which would
+# also trigger the build.
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build/hypothesis-python"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build/hypothesis-python"
+  mv tests/django ../
+  /usr/bin/python setup.py pytest --addopts -n16
+  mv ../django tests/
+  PYTHONPATH="$PWD/build/lib:$PYTHONPATH" /usr/bin/python -m tests.django.manage test tests.django || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build/hypothesis-python"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+}
