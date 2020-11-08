@@ -1,0 +1,40 @@
+# Maintainer: Andrew Sun <adsun701@gmail.com>
+
+_realname=apipkg
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.5
+pkgrel=1
+pkgdesc="Namespace control and lazy-import mechanism (msys)"
+arch=('any')
+url="https://github.com/pytest-dev/apipkg"
+license=('MIT')
+depends=("python")
+makedepends=("python-setuptools"
+             "python-setuptools-scm")
+options=('staticlibs' 'strip' '!debug')
+source=("https://files.pythonhosted.org/packages/source/a/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('37228cda29411948b422fae072f57e31d3396d2ee1c9783775980ee9c9990af6')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+}
