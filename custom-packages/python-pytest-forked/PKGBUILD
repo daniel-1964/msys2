@@ -1,0 +1,79 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=pytest-forked
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.1.3
+pkgrel=1
+pkgdesc="run tests in isolated forked subprocesses (msys)"
+arch=('any')
+url='https://github.com/pytest-dev/pytest-forked'
+license=('MIT')
+validpgpkeys=('gpg_KEY')
+depends=("python"
+         "python-pytest")
+makedepends=("python-setuptools"
+             "python-setuptools-scm")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/pytest-dev/pytest-forked/archive/v${pkgver}.tar.gz")
+sha256sums=('a805b82f12fa85f8a1d091065ba0137fad38ab728dce390bb7a83164b8a4c58f')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+#  pushd "${_realname}-${pkgver}"
+#    apply_patch_with_msg 0001-A-really-important-fix.patch \
+#      0002-A-less-important-fix.patch
+#  popd
+
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+# Note that build() is sometimes skipped because it's done in
+# the packages setup.py install for simplicity if you can do so.
+# but sometimes, you want to do a check before install which would
+# also trigger the build.
+build() {
+  msg "Python build for "
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for "
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py check
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+}
