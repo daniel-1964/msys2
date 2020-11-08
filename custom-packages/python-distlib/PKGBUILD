@@ -1,0 +1,65 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=distlib
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=0.3.1
+pkgrel=1
+pkgdesc="Low-level components of distutils2/packaging (msys)"
+arch=('any')
+url='https://bitbucket.org/pypa/${_realname}'
+license=('FSF')
+depends=("python")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=("https://files.pythonhosted.org/packages/source/${_realname:0:1}/${_realname}/${_realname}-${pkgver}.zip")
+sha256sums=('edf6116872c863e1aa9d5bb7cb5e05a022c519a4594dc703843343a9ddd9bff1')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  PYTHONHASHSEED=0 /usr/bin/python setup.py test || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+}
