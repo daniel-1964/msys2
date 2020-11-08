@@ -1,0 +1,37 @@
+# Maintainer: Sarah Ottinger
+
+_realname=werkzeug
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.0.1
+pkgrel=1
+pkgdesc='Swiss Army knife of Python web development (msys)'
+arch=('any')
+url="http://werkzeug.pocoo.org/"
+license=('custom:BSD')
+depends=("python")
+makedepends=("python-setuptools")
+source=("${_realname}-$pkgver.tar.gz::https://github.com/pallets/werkzeug/archive/${pkgver}.tar.gz")
+sha512sums=('ba82120fb3e96e3a1334c6452d5ba1950fc016d2d147d643bbc2168ccec496f1dea799982ae8c578167155082c0bdbda5d56a23f64b4b6865f97e90e22df022e')
+
+prepare() {
+  cd "$srcdir"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE.rst "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE.rst"
+}
