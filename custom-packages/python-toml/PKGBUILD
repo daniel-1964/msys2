@@ -1,0 +1,73 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=toml
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=0.10.1
+pkgrel=1
+pkgdesc="A Python library for parsing and creating TOML (msys)"
+arch=('any')
+url='https://github.com/uiri/toml'
+license=('MIT')
+depends=("python")
+makedepends=("python-setuptools")
+checkdepends=("python-pytest")
+options=('staticlibs' 'strip' '!debug')
+source=("https://files.pythonhosted.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz"
+        "https://raw.githubusercontent.com/uiri/toml/master/test.toml")
+sha512sums=('9dc813f84b56bee6519c70efe49a834d6695c82d429f0b7cc6e6153a1fb14d3fb627dea24df2d2664354f27108389d51475609272d59fc7e4b64a2c17d74f33f'
+            '86e43e2fc69e442b9ee8b78f72ce4a9ea2814d926744ed29c8908e1e4bdafa6e0777e47a43c5d0168f72a2c44844faaf7f5ce14db420a116d07c36715ea69a02')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"
+
+  cp -v test.toml "${_realname}-$pkgver"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+check() {
+  # disable useless tests
+  msg "Python test for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/py.test tests -k 'not test_invalid_tests and not test_valid_tests'
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+}
