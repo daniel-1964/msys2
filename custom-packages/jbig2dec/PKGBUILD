@@ -2,7 +2,7 @@
 
 pkgbase=jbig2dec
 pkgname=('jbig2dec' 'libjbig2dec0' 'libjbig2dec-devel')
-pkgver=0.17
+pkgver=0.19
 pkgrel=1
 pkgdesc='Decoder implementation of the JBIG2 image compression format (msys)'
 url='https://jbig2dec.com/'
@@ -12,7 +12,7 @@ depends=('libpng16')
 makedepends=('libpng-devel')
 source=("${pkgbase}-${pkgver}.tar.gz"::https://github.com/ArtifexSoftware/jbig2dec/archive/${pkgver}.tar.gz
         01-dont-run-configure-from-autogen.patch)
-sha256sums=('e14c0a978332e0cad011b1aeb9aab7555c73b55e9907f08cb1c74bb6d78a7c59'
+sha256sums=('e81b787ad0b147a437a52d9ce7de1a8f429655e8aa030383b6b2dd8919373717'
             '8715e0b3dfd738f9db57c656859897a41bc43d308ba86318ced625736784b54b')
 
 prepare() {
