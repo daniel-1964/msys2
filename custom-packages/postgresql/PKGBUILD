@@ -341,7 +341,7 @@ package_libpq5() {
   pkgdesc="PostgreSQL C client library"
   depends=('libcrypt'
            'libopenssl'
-           'libintl8'
+           'libintl'
            'libopenldap2_4_2')
   groups=('libraries')
   tar -c ${CONTENTS} | tar -xC ${pkgdir}
@@ -370,7 +370,7 @@ package_libpq-devel() {
   depends=('libintl'
            "libpq5=${pkgver}"
            'openssl-devel'
-           'pkgconfig')
+           'pkgconf')
   groups=('development')
   options=('staticlibs')
   tar -c ${CONTENTS} | tar -xC ${pkgdir}
@@ -426,7 +426,7 @@ package_libecpg-devel() {
            "libecpg-compat3=${pkgver}"
            "libecpg6=${pkgver}"
            "libpgtypes3=${pkgver}"
-           'pkg-config')
+           'pkgconf')
   groups=('development')
   options=('staticlibs')
   tar -c ${CONTENTS} | tar -xC ${pkgdir}
