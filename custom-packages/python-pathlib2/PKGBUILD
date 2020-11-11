@@ -1,0 +1,38 @@
+# Maintainer: Ryuta Suzuki <oroppas@gmail.com>
+
+_realname=pathlib2
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=2.3.5
+pkgrel=1
+pkgdesc="This module offers a set of classes featuring all the common operations on paths in an easy, object-oriented way (msys)"
+url="https://pypi.org/project/pathlib2/"
+arch=('any')
+license=('MIT')
+depends=("python"
+         "python-scandir")
+makedepends=("python-setuptools")
+source=("https://pypi.io/packages/source/p/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('6cd9a47b597b37cc57de1c05e56fb1a1c9cc9fab04fe78c29acd090418529868')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE.rst "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE.txt"
+}
