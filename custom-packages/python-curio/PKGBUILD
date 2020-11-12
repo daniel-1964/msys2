@@ -1,5 +1,6 @@
 # Maintainer: Maxime Gauduin <alucryd@archlinux.org>
 
+#pkgbase=curio
 pkgname=python-curio
 pkgver=1.4
 pkgrel=1
@@ -18,11 +19,11 @@ _tag=09dd8a20142b6210fe18f676a746918601c6092e
 source=(git+https://github.com/dabeaz/curio.git#tag=${_tag})
 sha256sums=(SKIP)
 
-pkgver() {
-  cd curio
-
-  git describe --tags
-}
+#pkgver() {
+#  cd curio
+#
+#  git describe --tags
+#}
 
 build() {
   cd curio
