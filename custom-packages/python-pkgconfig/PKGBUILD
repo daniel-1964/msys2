@@ -1,0 +1,47 @@
+# Maintainer: Antoine Martin <totaam@xpra.org>
+
+_realname=pkgconfig
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.5.1
+pkgrel=1
+pkgdesc="A Python interface to the pkg-config command line tool (msys)"
+arch=('any')
+url='https://github.com/matze/pkgconfig'
+license=('MIT')
+depends=("python")
+makedepends=("python-setuptools")
+#checkdepends=("python-pytest"
+#              "python-nose")
+options=('staticlibs' 'strip' '!debug')
+source=("https://pypi.io/packages/source/p/pkgconfig/${_realname}-${pkgver}.tar.gz")
+sha512sums=('1fd9aa973bd20a8fab864722598f1d19b94c23c7f2b522556b3182b19fe016bda7aa2be5e48a1b8fefa70a069611007d6d790e24defcb462e4594a382de85b00')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -a "${_realname}-${pkgver}" "python-build"
+}
+
+build() {
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
+}
+
+#check() {
+#  msg "Python test for msys"
+#  cd "${srcdir}/python-build"
+#  /usr/bin/python setup.py test
+#}
+
+package() {
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install --prefix=/usr \
+    --root="${pkgdir}" --optimize=2 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+}
