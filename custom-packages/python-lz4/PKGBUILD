@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=2.2.1
+pkgver=3.1.0
 pkgrel=2
 pkgdesc="This package provides python bindings for the LZ4 compression library (msys)"
 arch=('any')
@@ -21,7 +21,7 @@ makedepends=("python-setuptools-scm"
 #              "python-psutil")
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/python-lz4/python-lz4/archive/v${pkgver}.tar.gz")
-sha512sums=('84b575ddfa6252d7e061e2e562827307b712fe6d750cd2042d79c79b69d59431b17ac82f76412b689e2e12f90b7317a7c80b5602c7a34bb70aa2d586e39d8d8b')
+sha512sums=('079916eec15d46426febe135fff98269e2d3292eaa183822b7de927478ee4fb87c8504951a3d125578e71711f1c7eafd8ca8eea39ce7e19338a91f20cc1e3840')
 
 prepare() {
   cd "${srcdir}"
