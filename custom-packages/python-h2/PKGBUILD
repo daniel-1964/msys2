@@ -1,27 +1,30 @@
 # Maintainer: Felix Yan <felixonmars@archlinux.org>
 
+pkgbase=python-h2
 pkgname=python-h2
-pkgver=3.2.0
+pkgver=4.0.0
 pkgrel=2
 pkgdesc="HTTP/2 State-Machine based protocol implementation (msys)"
 arch=('any')
 license=('MIT')
 url="https://hyper.rtfd.org"
-depends=('python-hpack' 'python-hyperframe')
+depends=('python-hpack'
+         'python-hyperframe>=6.0.0')
 makedepends=('python-setuptools')
-#checkdepends=('python-pytest' 'python-hypothesis')
+checkdepends=('python-pytest'
+              'python-hypothesis')
 source=("$pkgname-$pkgver.tar.gz::https://github.com/python-hyper/hyper-h2/archive/v$pkgver.tar.gz")
-sha512sums=('103a4ea2cd29037ce03ae676864125b4111c7d31a82bbbe7028557da886d88fb5363d885f08d5d3f68dfa29013b7b03350cc0cb4d9dddf32735e98dae5d7fc7c')
+sha512sums=('84578174a13782897f9286c62d450eaf11aa71c01c96b8660179cd2df77618dc1a6c4b354b2bc5731cd21c4709c8c0a8282a859a98c4a62a7295b6dfd1b5cfb2')
 
 build() {
   cd hyper-h2-$pkgver
   python setup.py build
 }
 
-#check() {
-#  cd hyper-h2-$pkgver
-#  python -m pytest
-#}
+check() {
+  cd hyper-h2-$pkgver
+  PYTHONPATH=${PWD}/build/lib pytest
+}
 
 package() {
   cd hyper-h2-$pkgver
