@@ -1,11 +1,12 @@
 # Maintainer: Alexey Pavlov <alexpux@gmail.com>
 
-pkgbase=certifi
-pkgname=("python-${pkgbase}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=2019.11.28
+_realname=certifi
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=2020.11.8
 pkgrel=1
 pkgdesc="Python package for providing Mozilla's CA Bundle (msys)"
 url='https://pypi.python.org/pypi/certifi'
@@ -13,13 +14,13 @@ license=('GPL')
 arch=('any')
 depends=('python')
 makedepends=('python-setuptools')
-source=("https://pypi.io/packages/source/${pkgbase:0:1}/${pkgbase}/${pkgbase}-${pkgver}.tar.gz")
-sha256sums=('25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f')
+source=("https://pypi.io/packages/source/${_realname:0:1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('f05def092c44fbf25834a51509ef6e631dc19765ab8a57b4e7ab85531f0a9cf4')
 
 prepare() {
   cd ${srcdir}
   rm -rf python-build | true
-  cp -a "${pkgbase}-${pkgver}" "python-build"
+  cp -a "${_realname}-${pkgver}" "python-build"
   # Set version for setuptools_scm
   export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
 }
@@ -33,5 +34,5 @@ build() {
 package() {
   cd "${srcdir}/python-build"
   /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}"  --optimize=1 --skip-build
-  install -D -m644 LICENSE "${pkgdir}/usr"/share/licenses/python-${pkgbase}/LICENSE
+  install -D -m644 LICENSE "${pkgdir}/usr"/share/licenses/python-${_realname}/LICENSE
 }
