@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=5.2.1
+pkgver=5.3
 pkgrel=1
 pkgdesc="Code coverage measurement for Python (msys)"
 arch=('any')
@@ -17,7 +17,7 @@ makedepends=('python-setuptools'
              'python-devel')
 #install=${_realname}3-${CARCH}.install
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/nedbat/coveragepy/archive/coverage-${pkgver}.tar.gz")
-sha256sums=('d4b1405f26b70021b28c50823e9345f203280ab104e65c01b52fe57b2dd96455')
+sha256sums=('f42337b9e44a643b64e231ce02a67fe0402d64b71be6f1304878d424bc3a3159')
 
 prepare() {
   cd "${srcdir}"
