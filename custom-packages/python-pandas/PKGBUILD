@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=1.0.5
+pkgver=1.1.4
 pkgrel=1
 pkgdesc="Cross-section and time series data analysis toolkit (msys)"
 arch=('any')
@@ -22,7 +22,7 @@ optdepends=("python-scipy: needed for miscellaneous statistical functions"
 makedepends=("python-setuptools"
              "gcc")
 source=(${_realname}-${pkgver}.tar.gz::"https://github.com/pandas-dev/${_realname}/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('69c5d920a0b2a9838e677f78f4dde506b95ea8e4d30da25859db6469ded84fa8')
+sha256sums=('a979d0404b135c63954dea79e6246c45dd45371a88631cdbb4877d844e6de3b6')
 
 prepare() {
   cp -a ${_realname}-${pkgver} ${_realname}-py-${pkgver}
@@ -30,9 +30,9 @@ prepare() {
 
 build() {
   cd ${srcdir}/${_realname}-py-${pkgver}
-  /usr/bin/python setup.py build_ext --inplace
+  CPPFLAGS="-Wno-char-subscripts" /usr/bin/python setup.py build_ext --inplace
 
-  /usr/bin/python setup.py build
+  CPPFLAGS="-Wno-char-subscripts" /usr/bin/python setup.py build
 }
 
 package() {
