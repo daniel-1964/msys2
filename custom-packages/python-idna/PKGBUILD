@@ -1,11 +1,12 @@
 # Maintainer: Frederic Wang <fred.wang@free.fr>
 
-pkgbase=idna
-pkgname=("python-${pkgbase}")
+_realname=idna
+pkgbase="python-${_realname}"
+pkgname=("python-${_realname}")
 provides=("python3-${pkgbase}")
 conflicts=("python3-${pkgbase}")
 replaces=("python3-${pkgbase}")
-pkgver=2.9
+pkgver=2.10
 pkgrel=1
 pkgdesc='Internationalized Domain Names in Applications (msys)'
 url='https://github.com/kjd/idna'
@@ -14,13 +15,13 @@ arch=('any')
 depends=("python")
 makedepends=("python-setuptools")
 _dtoken="d8/82/28a51052215014efc07feac7330ed758702fc0581347098a81699b5281cb"
-source=("https://pypi.io/packages/source/${pkgbase::1}/${pkgbase}/${pkgbase}-${pkgver}.tar.gz")
-sha256sums=('7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb')
+source=("https://pypi.io/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6')
 
 prepare() {
   cd ${srcdir}
   rm -rf python-build
-  cp -a ${pkgbase}-${pkgver} python-build
+  cp -a ${_realname}-${pkgver} python-build
 }
 
 build() {
@@ -38,5 +39,5 @@ check() {
 package() {
   cd "${srcdir}/python-build"
   /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}"  --optimize=1 --skip-build
-  install -Dm644 "${srcdir}/${pkgbase}-${pkgver}/LICENSE.rst" "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE.rst" "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
 }
