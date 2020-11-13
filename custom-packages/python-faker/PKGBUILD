@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=4.0.3
+pkgver=4.14.2
 pkgrel=1
 pkgdesc="Faker generates fake data for you (msys)"
 arch=('any')
@@ -24,7 +24,7 @@ checkdepends=('python-ukpostcodeparser'
 #install=${_realname}3-${CARCH}.install
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/joke2k/faker/archive/v${pkgver}.tar.gz")
-sha512sums=('08d7a4fc3a65f4f31467e0aa91525ce92042ef7e471992a63c3fef2efa14ab894bda1f0fa1e6b651f78ceadee7c3683079001db904147739628457a44adef615')
+sha512sums=('d425c2995fd48c4d07bf89cb7bf35372494cd7beb183fcde4eab4e96686dd87aca84460042d1cc0d7022902e1aae366c3dd4b8afd88fa97cb2275603d0bb3ff6')
 
 prepare() {
   cd "${srcdir}"
