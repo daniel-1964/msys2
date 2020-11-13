@@ -1,9 +1,10 @@
 # Maintainer: Eli Schwartz <eschwartz@archlinux.org>
 
 _pkgname=httpcore
+pkgbase=python-httpcore
 pkgname=python-httpcore
-pkgver=0.9.1
-pkgrel=3
+pkgver=0.12.1
+pkgrel=1
 pkgdesc="A minimal HTTP client (msys)"
 arch=('any')
 url="https://github.com/encode/${_pkgname}"
@@ -12,8 +13,8 @@ depends=('python-h11' 'python-h2' 'python-sniffio')
 makedepends=('python-setuptools')
 #checkdepends=('python-pytest-asyncio' 'python-pytest-trio' 'python-trustme' 'mitmproxy')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
-sha512sums=('5105ff0c19b8a4a34080e79aa1d191199131450e658fbe0949b091e5acfb9cd8b11033757a3bd7dd1490e5fb61352eb44d086babd70d22be33479befd16745fd')
-b2sums=('8f7416c1e726892b152e7e9623790ac1e70b9142f45028b23df25f1d54b6f113f1a79839ec2a7d90b196197d53c880847526c2e47e07d52a0e104a9e2849bccf')
+sha512sums=('1a2e2009977c8b66aac69da4d827a3336935ec3750e7e5e3484d57bf6e671d8495e99cb02cf1a9bb876e1368312afa6e3e628918a6bd4428318121bfd83317fb')
+b2sums=('d439f59219db2d9dd289553f72fe760f01c6c0699bf6cd25db7fea9a102b6f90ff7a04d317ec60e830a7e3a0635e078df5764c1e05140b794b77442c1a25a64e')
 
 prepare() {
     cd "${srcdir}"/${_pkgname}-${pkgver}
