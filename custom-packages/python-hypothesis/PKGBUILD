@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=5.8.0
+pkgver=5.41.2
 pkgrel=1
 pkgdesc="Advanced Quickcheck style testing library for Python (msys)"
 arch=('any')
@@ -35,7 +35,7 @@ checkdepends=("python-pytest-runner"
               "python-pandas")
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/HypothesisWorks/hypothesis/archive/hypothesis-python-${pkgver}.tar.gz")
-sha512sums=('60e355e2f3a03264fff852f422fcceec6ca621e28ea63e100f85ab0144a8e291e7fada78e82ad55623c0bfba971008a059bc125eff89c82d5ddfbfca88e4d43c')
+sha512sums=('712a6b3a007e4b354e9ed2137b7dd53652abbbf0b324467ce540ca886fb956eae5d00f83cbc1c9b1799a4a3abc64f4d26d9aed85d5fb689e904e1125b87b88eb')
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {
