@@ -7,7 +7,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=2.6.0
+pkgver=2.7.1
 pkgrel=1
 pkgdesc="portable, lightweight MessagePack serializer and deserializer for Python (msys)"
 arch=('any')
@@ -18,7 +18,7 @@ makedepends=("python-setuptools")
 checkdepends=("python-pytest")
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/vsergeev/u-msgpack-python/archive/v${pkgver}.tar.gz")
-sha256sums=('2b1a6af7992a89f16ba9000ad1483d7921086d2ebe473f5a04576cbc5e9ba70d')
+sha256sums=('3cfb5a8fb0d784522c88cea2473b6f879f004118d23cdef29660d34a983d7c87')
 
 prepare() {
   cd ${srcdir}
