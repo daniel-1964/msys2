@@ -1,11 +1,12 @@
 # Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
 
-pkgbase=sympy
-pkgname=("python-${pkgbase}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=1.5.1
+_realname=sympy
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.6.2
 pkgrel=1
 pkgdesc="Symbolic manipulation package (Computer Algebra System), written in pure Python (msys)"
 arch=('any')
@@ -15,12 +16,12 @@ depends=("python"
          "python-mpmath")
 makedepends=("python-setuptools")
 options=('staticlibs' 'strip' '!debug')
-source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/sympy/sympy/archive/sympy-${pkgver}.tar.gz")
-sha512sums=('3c4220243d2cbcff9eedb2a7986431b5b4d7d0007c78208a60b21830c9a3528d2171086874c42205c1227f779e44c19b9562943e2935d329bc352e7ea85396c7')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/sympy/sympy/archive/sympy-${pkgver}.tar.gz")
+sha512sums=('e16a1d85aba438e4248bac48a163ea1827e2cee57c28f7670ed19cc69d4c08d6796d62f79d245e269d75765b8f7ff4f4ca2841f98534e136ceeb5d3f7a5d252a')
 
 prepare() {
   [[ -d python-build ]] && rm -rf python-build
-  cp -a "${pkgbase}-${pkgbase}-${pkgver}" "python-build"
+  cp -a "${_realname}-${_realname}-${pkgver}" "python-build"
 
   # Set version for setuptools_scm
   export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
@@ -42,5 +43,5 @@ package() {
   /usr/bin/python setup.py install --prefix=/usr \
     --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
 }
