@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=2.8.5
+pkgver=2.8.6
 pkgrel=1
 pkgdesc="A PostgreSQL database adapter for the Python programming language (msys)"
 arch=('any')
@@ -21,7 +21,7 @@ options=('staticlibs' 'strip' '!debug')
 source=(http://initd.org/psycopg/tarballs/PSYCOPG-2-8/psycopg2-$pkgver.tar.gz{,.asc}
 mingw-fix.patch)
 validpgpkeys=('8AD609956CF1899418E19A856013BD3AFCF957DE')
-sha256sums=('f7d46240f7a1ae1dd95aab38bd74f7428d46531f69219954266d669da60c0818'
+sha256sums=('fb23f6c71107c37fd667cb4ea363ddeb936b348bbd6449278eb92c189699f543'
             'SKIP'
             'bd100f943db9893d8676bdde81fb3ebd0ac4a7bcf44b8d6c77bce0c75e25374a')
 
