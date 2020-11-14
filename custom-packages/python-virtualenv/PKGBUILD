@@ -3,7 +3,7 @@
 _realname=virtualenv
 pkgbase=python-${_realname}
 pkgname=("python-virtualenv")
-pkgver=20.0.35
+pkgver=20.1.0
 pkgrel=1
 pkgdesc="Virtual Python Environment builder (msys)"
 url="https://virtualenv.pypa.io/"
@@ -16,7 +16,7 @@ depends=("python-setuptools"
          "python-six")
 makedepends=("python-setuptools-scm")
 source=(${_realname}-${pkgver}.tar.gz::https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz)
-sha256sums=('2a72c80fa2ad8f4e2985c06e6fc12c3d60d060e410572f553c90619b0f6efaf3')
+sha256sums=('b8d6110f493af256a40d65e29846c69340a947669eec8ce784fcf3dd3af28380')
 
 build() {
   cd "${srcdir}/${_realname}-${pkgver}"
