@@ -5,12 +5,12 @@
 
 _pyname=wheel
 _realname=${_pyname}
-pkgbase=${_realname}
+pkgbase=python-${_realname}
 pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=0.34.2
+pkgver=0.35.1
 pkgrel=1
 pkgdesc="A built-package format for Python (msys)"
 arch=('any')
@@ -22,7 +22,7 @@ optdepends=('python-keyring: for wheel.signatures'
 makedepends=('python-setuptools')
 options=('staticlibs' 'strip' '!debug')
 source=("https://pypi.io/packages/source/w/wheel/${_pyname}-${pkgver}.tar.gz")
-sha256sums=('8788e9155fe14f54164c1b9eb0a319d98ef02c160725587ad60f14ddc57b6f96')
+sha256sums=('99a22d87add3f634ff917310a3d87e499f19e663413a52eb9232c447aa646c9f')
 
 prepare() {
   rm -rf python-build-${CARCH} | true
@@ -48,6 +48,4 @@ package() {
   MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
   /usr/bin/python setup.py install --prefix=/usr \
     --root="${pkgdir}" --optimize=1 --skip-build
-
-  install -Dm644 LICENSE.txt "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
 }
