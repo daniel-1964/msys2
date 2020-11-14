@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=1.31.0
+pkgver=2.1.0
 pkgrel=1
 pkgdesc="py.test xdist plugin for distributed testing and loop-on-failing modes (msys)"
 arch=('any')
@@ -21,7 +21,7 @@ makedepends=("python-pytest"
              "python-setuptools-scm")
 options=('staticlibs' 'strip' '!debug')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/pytest-dev/pytest-xdist/archive/v${pkgver}.tar.gz")
-sha512sums=('48c18802f5573ed4ceb061e82aea2046e3b19ad54e595ef666e095409d393cc301e729edd34eab999eae85184fc22c9d5fcda6ae334d183265e4baddcb6dfa46')
+sha512sums=('1bbe43f51bb5641cb7006875f5dc4c889afcede68a02b842880aefca93c2fcf258741707d2add9daa17876a20ebc1da4907ed66e45a8c4eaaf1ca68ddaea00bb')
 
 prepare() {
   cd "${srcdir}"
