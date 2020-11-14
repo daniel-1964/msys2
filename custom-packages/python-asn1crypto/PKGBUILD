@@ -1,11 +1,12 @@
 # Maintainer: Alexey Pavlov <alexpux@gmail.com>
 
-pkgbase=asn1crypto
-pkgname=("python-${pkgbase}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=1.3.0
+_realname=asn1crypto
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.4.0
 pkgrel=1
 pkgdesc="Python ASN.1 library with a focus on performance and a pythonic API (msys)"
 url='https://github.com/wbond/asn1crypto'
@@ -13,12 +14,12 @@ license=('MIT')
 arch=('any')
 depends=('python-pycparser')
 makedepends=('python-setuptools')
-source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/wbond/asn1crypto/archive/${pkgver}.tar.gz")
-sha256sums=('09788af39fee5a0eca6390a85fc79acbd946b8a0938442f4a2f0634e27d64075')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/wbond/asn1crypto/archive/${pkgver}.tar.gz")
+sha256sums=('1aeb3e243772fdbf815867b41320436b86f05a6aa14265d90910da780910f39d')
 
 prepare() {
   cd ${srcdir}
-  cp -a ${pkgbase}-${pkgver} python-build
+  cp -a ${_realname}-${pkgver} python-build
 }
 
 build() {
@@ -30,5 +31,5 @@ build() {
 package() {
   cd ${srcdir}/python-build
   /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}" --skip-build
-  install -D -m644 LICENSE "${pkgdir}/usr"/share/licenses/python-${pkgbase}/LICENSE
+  install -D -m644 LICENSE "${pkgdir}/usr"/share/licenses/python-${_realname}/LICENSE
 }
