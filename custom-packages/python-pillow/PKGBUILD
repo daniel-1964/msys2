@@ -4,7 +4,7 @@ _realname=Pillow
 pkgbase=python-pillow
 pkgname=("python-pillow")
 pkgver=7.2.0
-pkgrel=1
+pkgrel=2
 provides=("python3-${_realname}=${pkgver}"
           "python3-pillow=${pkgver}")
 conflicts=("python3-${_realname}"
@@ -57,35 +57,31 @@ prepare() {
   patch -Np1 -i "${srcdir}"/003-remove-hardcoded-include-path.patch
 
   cd ${srcdir}
-  rm -rf python-build-${CARCH} | true
-  cp -r "${_realname}-${pkgver}" "python-build-${CARCH}"
+  rm -rf python-build | true
+  cp -r "${_realname}-${pkgver}" "python-build"
 }
 
 build() {
   cd "${srcdir}"
-  msg "Python build for ${CARCH}"
-  cd "${srcdir}/python-build-${CARCH}"
-  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
-      /usr/bin/python setup.py build
+  msg "Python build for msys"
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py build
 }
 
 check() {
-  msg "Python test for ${CARCH}"
-  cd "${srcdir}/python-build-${CARCH}"
-  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
-      /usr/bin/python selftest.py || true
+  msg "Python test for Msys"
+  cd "${srcdir}/python-build"
+    /usr/bin/python selftest.py || true
 
   #setup.py test
 }
 
 package() {
-  local _mingw_prefix=$(cygpath -am /usr)
   local _py3basever=$(/usr/bin/python -c "import sys;sys.stdout.write('.'.join(map(str, sys.version_info[:2])))")
 
-  cd "${srcdir}/python-build-${CARCH}"
-  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
-    /usr/bin/python setup.py install \
-   --prefix=${MINGW_PREFIX#\/} --root="${pkgdir}/" \
+  cd "${srcdir}/python-build"
+  /usr/bin/python setup.py install \
+   --prefix=/usr --root="${pkgdir}/" \
    --optimize=0 --skip-build
 
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
