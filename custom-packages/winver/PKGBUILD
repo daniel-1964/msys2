@@ -1,6 +1,6 @@
 pkgname=winver
 pkgver=1.0.4
-pkgrel=1
+pkgrel=2
 pkgdesc="Display detailled Windows Version"
 arch=('any')
 url="https://github.com/daniel-1964/msys2/"

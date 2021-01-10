@@ -943,6 +943,8 @@ void SystemInfo::DetectCurrentVersionKeys()
             strcpy(m_szReleaseName, "November 2019 Update");
         else if (strcmp(m_szReleaseId, "2004") == 0)
             strcpy(m_szReleaseName, "May 2020 Update");
+        else if (strcmp(m_szReleaseId, "2009") == 0)
+            strcpy(m_szReleaseName, "October 2020 Update");
         /**
          * Get UBR
          */
