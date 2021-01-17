@@ -3,7 +3,7 @@
 _realname=youtube-dl
 pkgbase=${_realname}
 pkgname=("${_realname}")
-pkgver=2020.11.12
+pkgver=2021.01.16
 pkgrel=1
 pkgdesc="A command-line program to download videos from YouTube.com and a few more sites (msys)"
 arch=('any')
@@ -16,7 +16,7 @@ depends=("python"
             #'atomicparsley: for embedding thumbnails into m4a files'
             #'python-pycryptodome: for hlsnative downloader')
 source=("${url}/downloads/${pkgver}/${_realname}-${pkgver}.tar.gz"{,.sig})
-sha256sums=('aeb00b2079c4711de7eea2a91f6923ebade84c5e985b0caeb47d572395d42831'
+sha256sums=('113a5272c1917d83f1c1e7e54971ab41aa6e22b43ba736f2b66816220bdf17e1'
             'SKIP')
 validpgpkeys=('ED7F5BF46B3BBED81C87368E2C393E0F18A9236D') # Sergey M. <dstftw@gmail.com>
 
