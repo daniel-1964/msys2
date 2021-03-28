@@ -1,0 +1,36 @@
+pkgbase=cntlm
+pkgname="cntlm"
+pkgver=0.92.3
+pkgrel=3
+license=('GPL2')
+pkgdesc="An NTLM, NTLM2SR, and NTLMv2 authenticating HTTP proxy"
+arch=('i686' 'x86_64')
+url="http://cntlm.sourceforge.net"
+backup=('etc/cntlm.conf')
+source=("http://downloads.sourceforge.net/project/$pkgname/$pkgname/$pkgname%20$pkgver/$pkgname-$pkgver.tar.gz"
+	'cntlm-config'
+        'cntlm.patch')
+sha256sums=('9c3ad10924d43f7248df9ecd33cbc033afbd7ea8d9545de0d68a2782fed76298'
+            'e708f20425ff1051a96bba9ea01ef893f6b7a7f0524e26baf664bb9eda5fa557'
+            '5b1fccefbbb41ff70748d05466d11508e0e457ff6d566043bd4627a660423a11')
+
+prepare() {
+  cd "$srcdir/$pkgname-$pkgver"
+  patch -p1 -i ${srcdir}/cntlm.patch
+}
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+  ./configure
+  make FLAGS="-ggdb -Wno-char-subscripts"
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+  make \
+    SYSCONFDIR="$pkgdir/etc" \
+    BINDIR="$pkgdir/usr/bin" \
+    MANDIR="$pkgdir/usr/share/man" \
+    install
+    install -Dm 755 "$srcdir/cntlm-config" "$pkgdir/usr/bin/cntlm-config"
+}
