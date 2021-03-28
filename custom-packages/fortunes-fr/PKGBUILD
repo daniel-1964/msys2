@@ -1,6 +1,7 @@
+pkgbase=fortunes-fr
 pkgname=fortunes-fr
 pkgver=0.65+nmu2
-pkgrel=1
+pkgrel=2
 pkgdesc="French fortunes cookies from Debian"
 groups=('games')
 arch=('any')
@@ -69,8 +70,8 @@ package()
     #
     # #debian-fr@freenode
     install -pDm644 debian-fr/debian-fr -t ${pkgdir}${DST}
-    install -pDm644  debian/copyright  -t ${pkgdir}//usr/share/doc/${PKGNAME}
-    install -pDm644  debian/changelog -t ${pkgdir}//usr/share/doc/${PKGNAME}
+    install -pDm644  debian/copyright  -t ${pkgdir}/usr/share/doc/${pkgname}
+    install -pDm644  debian/changelog -t ${pkgdir}//usr/share/doc/${pkgname}
     cd ${pkgdir}${DST}
     #
     # remove "^-- $" from datafiles
