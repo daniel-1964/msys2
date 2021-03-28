@@ -1,0 +1,32 @@
+pkgbase=fortunes-quotation-fr
+pkgname=fortunes-quotation-fr
+pkgver=1.0
+pkgrel=1
+pkgdesc="French fortunes cookies from various web sites of French quotations"
+groups=('games')
+arch=('any')
+url="https://github.com/daniel-1964/msys2/"
+license=('BSD')
+depends=('fortunes-fr')
+makedepends=('curl' 'gawk')
+source=()
+sha512sums=()
+
+prepare()
+{
+    cd $srcdir
+    cp -a ../quotations .
+}
+
+build()
+{
+    cd ${srcdir}/quotations
+    ./getall build
+}
+
+package()
+{
+    cd ${srcdir}/quotations
+    dest=${pkgdir} ./getall install
+    install -pDm644 README COPYING -t ${pkgdir}/usr/share/doc/fortunes-fr/quotations
+}

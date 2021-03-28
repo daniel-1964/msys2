@@ -1,0 +1,628 @@
+#!/bin/sh
+set -eo pipefail
+base=$(readlink -f $(dirname $0))
+strfile=$(type -P strfile) || strfile=/usr/bin/strfile
+[ -z ${cookiesdir} ] && cookiesdir=usr/share/fortune/fr
+[ -z ${builddir} ] && builddir=$(readlink -f ${base}/data)
+[ ! -e ${builddir} ] && mkdir -p ${builddir}
+[ -z ${dest} ] && dest=$(readlink -f ${base}/dest)
+[ ! -e ${dest}/${cookiesdir} ] && mkdir -p ${dest}/${cookiesdir}
+cd ${base}
+action=${1:-build}
+
+cptfortunes() {
+    echo "found $(($(grep -H -c '^%$' $* | sed -e 's/^.*:\(.*\)$/\1 + /' -e '$a\0'))) quotes"
+}
+
+getaphorismes() {
+    echo -n "Getting \"Aphorismes\" "
+    local url=https://aphorismeschroniques.wordpress.com/category
+    # Getting aphorisme-maison
+    local file=aphorismes-maison
+    if [ ! -e ${builddir}/${file} ]
+    then
+        for ((i=1; $i<16; i++))
+        do
+            lynx -nomargins -nonumbers -dump -width 1024 ${url}/${file}/page/$i |
+                awk -f ${base}/aphorismes.awk
+        done |
+            perl -C ${base}/correcttypo.pl >${builddir}/${file}
+    fi
+    # Getting aphorismes-celebres
+    file=aphorismes-celebres
+    if [ ! -e ${builddir}/${file} ]
+    then
+        for ((i=1; $i<17; i++))
+        do
+            lynx -nomargins -nonumbers -dump -width 1024 ${url}/category/${file}/page/$i |
+                awk -f ${base}/aphorismes.awk
+        done |
+            perl -C ${base}/correcttypo.pl >${builddir}/${file}
+    fi
+    cptfortunes ${builddir}/aphorismes-{maison,celebres}
+}
+
+getbribes() {
+    echo -n "Getting \"bribes\" "
+    # This list of qotations is provided by http://www.bribes.org/biblio/bribes60.zip
+    if [ ! -e ${builddir}/bribes ]
+    then
+        local tmpdir=$(mktemp -d)
+        [ -e ${base}/bribes60.zip ] || curl -JLOR http://www.bribes.org/biblio/bribes60.zip
+        unzip bribes60.zip *.htm -x intro.htm lexique.htm @index.htm -d ${tmpdir}
+        for f in ${tmpdir}/*.htm
+        do
+            lynx -nonumbers -nomargins -dump -width 4096 -html5_charsets $f
+        done |
+            gawk -f ${base}/bribes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/bribes
+        rm -fr ${tmpdir}
+    fi
+    cptfortunes ${builddir}/bribes
+}
+
+getcitations() {
+    echo -n "Getting \"citations\" "
+    # This a very old citation list that probably could not be found on the web actually
+    if [ ! -e ${builddir}/citations ]
+    then
+        iconv -f CP1252 -t utf-8 < ${base}/citations.txt |
+            dos2unix |
+            gawk -f ${base}/citations.awk |
+            perl -C ${base}/correcttypo.pl > ${builddir}/citations
+        touch -r ${base}/citations.txt ${builddir}/citations
+    fi
+    cptfortunes ${builddir}/citations
+}
+
+getdictons() {
+    local file=dictons-et-proverbes
+    echo -n "Getting \"Dictons et Proverbes\" "
+    if [ ! -e ${builddir}/${file} ]
+    then
+        local tmpfile=$(mktemp)
+        local url=http://saintpinpinsurmoumoune.e-monsite.com/pages/les-dictons-et-proverbe-de-saint-pinpin-sur-moumoune.html
+        lynx -nonumbers -nomargins -dump -width 2048 ${url} |
+            grep -E '^\*[^*]+$' |
+            sed -e 's/^ \+\*/*/' \
+                -e 's/^\*\([^ ]\)/* \1/' \
+                -e 's/^\* [Aa] /* À /' \
+                -e 's/^\(\* \)\([a-zçéàèùâêîôûëïüœ]\)/\1\u\2/' \
+                -e 's/ \+$//g' \
+                -e 's/^.*$/&\n%/' >${tmpfile}
+            patch -N -i ${base}/${file}.patch ${tmpfile}
+            cat ${tmpfile} ${base}/dictons-rigolo |
+                perl -C ${base}/correcttypo.pl >${builddir}/${file}
+            rm -f ${tmpfile}
+    fi
+    cptfortunes ${builddir}/${file}
+}
+
+getvoscitations() {
+    local file=voscitations
+    echo -n "Getting \"Vos Citations\" "
+    if [ ! -e ${builddir}/${file} ]
+    then
+        local url="http://www.vos-citations.com/parcourir-citations,"
+        local tmpfile=$(mktemp)
+#                iconv -f ms-ansi -t utf-8 |
+        for ((i = 1; i <= 408; i++))
+        do
+            2>/dev/null lynx -useragent="Mozilla/5.0" -nonumbers -nomargins -dump -width 2048 -html5_charsets "${url}$i.html" |
+                gawk -f ${base}/${file}.awk
+        done >${tmpfile}
+        patch -i ${base}/voscitations.patch ${tmpfile} -o - |
+            perl -C ${base}/correcttypo.pl >${builddir}/${file}
+        rm -f ${tmpfile}
+    fi
+    cptfortunes ${builddir}/${file}
+}
+
+getperles() {
+    local file=perles
+    echo -n "Getting \"Perles de Prof\" "
+    if [ ! -e ${builddir}/${file} ]
+    then
+        local url="http://www.perlesdeprofs.com?page="
+        for ((i = 1; i <= 818; i++))
+        do
+            lynx -nonumbers -nomargins -dump -width 2048 -html5_charsets "${url}$i" |
+                sed -e 's/\xC3\x83\xC2/\xC3/g' \
+                    -e 's/\xC3\x82\xC2/\xC2/g' \
+                    -e 's/\xC3\x83  /à /g' |
+                gawk -f ${base}/${file}.awk
+        done |
+            perl -C ${base}/correcttypo.pl >${builddir}/${file}
+    fi
+    cptfortunes ${builddir}/${file}
+}
+
+getallemand() {
+    if [ ! -e ${builddir}/proverbes-allemand ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1allemand.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Allemand" \
+                 -v start="[bavarois.gif]" \
+                 -v stop="A suivre ....." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-allemand
+    fi
+}
+
+getanglais() {
+    if [ ! -e ${builddir}/proverbes-anglais ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1anglais.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Anglais" \
+                 -v start="[telefon.gif]" \
+                 -v stop=".A suivre ....." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-anglais
+    fi
+}
+
+getarabe() {
+    if [ ! -e ${builddir}/proverbes-arabe ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1arabe.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Arabe" \
+                 -v start="Retour" \
+                 -v stop="Terminé. . . sauf si vous en avez d'autres à me soumettre !" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-arabe
+    fi
+}
+
+getchinois() {
+    if [ ! -e ${builddir}/proverbes-chinois ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1chine.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Chinois" \
+                 -v start="Retour" \
+                 -v stop="C'est fini . . . pour l'instant !" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-chinois
+    fi
+}
+
+getdivers() {
+    if [ ! -e ${builddir}/proverbes-divers ]
+    then
+        local tmpfile=$(mktemp)
+        lynx -nonumbers -nomargins -dump -width 2048 $1divers.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe" \
+                 -v start="Divers" \
+                 -v stop="[retour.gif]" \
+                 -f ${base}/proverbes.awk >${tmpfile}
+        #cp -p ${tmpfile} divers
+        if [ -e ${base}/divers.patch ]
+        then
+            patch -N -i ${base}/divers.patch -o - ${tmpfile} |
+                perl -C ${base}/correcttypo.pl >${builddir}/proverbes-divers
+        else
+            # This file must be edited manually
+            perl -C ${base}/correcttypo.pl <${tmpfile} >${builddir}/proverbes-divers
+        fi
+        rm -f ${tmpfile}
+    fi
+}
+
+getecossais() {
+    if [ ! -e ${builddir}/proverbes-ecossais ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1ecossais.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Écossais" \
+                 -v start="Retour" \
+                 -v stop="A suivre . . ." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-ecossais
+    fi
+}
+
+getespagnol() {
+    if [ ! -e ${builddir}/proverbes-espagnol ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1espagnol.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Espagnol" \
+                 -v start="Retour" \
+                 -v stop="A suivre . . ." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-espagnol
+    fi
+}
+
+getflamand() {
+    if [ ! -e ${builddir}/proverbes-flamand ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1flamand.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Flamand" \
+                 -v start="Retour" \
+                 -v stop="A suivre ..." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-flamand
+    fi
+}
+
+getfrench() {
+    if [ ! -e ${builddir}/proverbes-francais ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1francais.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Français" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-francais
+        lynx -nonumbers -nomargins -dump -width 2048 $1francai2.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Français" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-francais
+        lynx -nonumbers -nomargins -dump -width 2048 $1francai3.htm |
+            gawk -v haspicture=1 \
+                 -v type="Proverbe Français" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-francais
+        lynx -nonumbers -nomargins -dump -width 2048 $1francai4.htm |
+            gawk -v haspicture=1 \
+                 -v type="Proverbe Français" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-francais
+        lynx -nonumbers -nomargins -dump -width 2048 $1francai5.htm |
+            gawk -v haspicture=1 \
+                 -v type="Proverbe Français" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-francais
+    fi
+}
+
+getindien() {
+    if [ ! -e ${builddir}/proverbes-indien ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1indien.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Indien" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-indien
+    fi
+}
+
+getitalien() {
+    if [ ! -e ${builddir}/proverbes-italien ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1italie.htm |
+            sed -e 's/^\.[[:space:]]*/.\n\n/' |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Italien" \
+                 -v start="Retour" \
+                 -v stop="A suivre . . ." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-italien
+        lynx -nonumbers -nomargins -dump -width 2048 $1italie2.htm |
+            sed -e 's/^\.[[:space:]]*/.\n\n/' |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Italien" \
+                 -v start="Retour" \
+                 -v stop="A suivre . . ." \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-italien
+    fi
+}
+
+getjuif() {
+    if [ ! -e ${builddir}/proverbes-juif ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1juif.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Juif" \
+                 -v start="Retour" \
+                 -v stop="C'est tout ce que j'ai en magasin . . ." \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-juif
+    fi
+}
+
+getoccitan() {
+    if [ ! -e ${builddir}/proverbes-occitan ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1patois.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Occitan" \
+                 -v start="Retour" \
+                 -v stop=". A suivre . . . Vers choix" \
+                 -v count=2 \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-occitan
+    fi
+}
+
+getreligieux() {
+    if [ ! -e ${builddir}/proverbes-religieux ]
+    then
+        tmpfile=$(mktemp)
+        lynx -nonumbers -nomargins -dump -width 2048 $1saint.htm |
+            gawk -v haspicture=1 \
+                 -v type="Proverbe associé à un nom de saint" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-religieux
+        lynx -nonumbers -nomargins -dump -width 2048 $1religieu.htm |
+            gawk -v haspicture=1 \
+                 -v type="Proverbe associé à une fête religieuse" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk >${tmpfile}
+        #cp -p ${tmpfile} religieux
+        if [ -e ${base}/religieux.patch ]
+        then
+            patch -N -i ${base}/religieux.patch -o - ${tmpfile} |
+                perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-religieux
+        else
+            # This file must be edited manually
+            perl -C ${base}/correcttypo.pl <${tmpfile} >>${builddir}/proverbes-religieux
+        fi
+        rm -f ${tmpfile}
+    fi
+}
+
+getrusse() {
+    if [ ! -e ${builddir}/proverbes-russe ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1russe.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Russe" \
+                 -v start="Retour" \
+                 -v stop="A suivre . . ." \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-russe
+    fi
+}
+
+getsaison() {
+    if [ ! -e ${builddir}/proverbes-saison ]
+    then
+        tmpfile=$(mktemp)
+        lynx -nonumbers -nomargins -dump -width 2048 $1printemp.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe de printemps" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1ete.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe d'été" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1automne.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe d'automne" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1hiver.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe d'hiver" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1janvier.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de janvier" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk >${tmpfile}
+        #cp -p ${tmpfile} janvier
+        if [ -e ${base}/janvier.patch ]
+        then
+            patch -N -i ${base}/janvier.patch -o - ${tmpfile} |
+                perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        else
+            # This file must be edited manually
+            perl -C ${base}/correcttypo.pl <${tmpfile} >>${builddir}/proverbes-saison
+        fi
+        lynx -nonumbers -nomargins -dump -width 2048 $1fevrier.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de février" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk >${tmpfile}
+        #cp -p ${tmpfile} fevrier
+        if [ -e ${base}/fevrier.patch ]
+        then
+            patch -N -i ${base}/fevrier.patch -o - ${tmpfile} |
+                perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        else
+            # This file must be edited manually
+            perl -C ${base}/correcttypo.pl <${tmpfile} >>${builddir}/proverbes-saison
+        fi
+        lynx -nonumbers -nomargins -dump -width 2048 $1mars.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de mars" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk >${tmpfile}
+        #cp -p ${tmpfile} mars
+        if [ -e ${base}/mars.patch ]
+        then
+            patch -N -i ${base}/mars.patch -o - ${tmpfile} |
+                perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        else
+            # This file must be edited manually
+            perl -C ${base}/correcttypo.pl <${tmpfile} >>${builddir}/proverbes-saison
+        fi
+        lynx -nonumbers -nomargins -dump -width 2048 $1avril.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois d'avril" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1mai.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de mai" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk >${tmpfile}
+        #cp -p ${tmpfile} mai
+        if [ -e ${base}/mai.patch ]
+        then
+            patch -N -i ${base}/mai.patch -o - ${tmpfile} |
+                perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        else
+            # This file must be edited manually
+            perl -C ${base}/correcttypo.pl <${tmpfile} >>${builddir}/proverbes-saison
+        fi
+        lynx -nonumbers -nomargins -dump -width 2048 $1juin.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de juin" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1juillet.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de juillet" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1aout.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois d'août" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1septembr.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de septembre" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1octobre.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois d'octobre" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1novembre.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de novembre" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        lynx -nonumbers -nomargins -dump -width 2048 $1decembre.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe du mois de décembre" \
+                 -v start="Retour" \
+                 -v stop="Vers choix" \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >>${builddir}/proverbes-saison
+        rm -f ${tmpfile}
+    fi
+}
+
+getturc() {
+    if [ ! -e ${builddir}/proverbes-turc ]
+    then
+        lynx -nonumbers -nomargins -dump -width 2048 $1turc.htm |
+            gawk -v haspicture=0 \
+                 -v type="Proverbe Turc" \
+                 -v start="[ste-sophie.jpg]" \
+                 -v stop="C'est tout ce que j'ai en magasin . . ." \
+                 -f ${base}/proverbes.awk |
+            perl -C ${base}/correcttypo.pl >${builddir}/proverbes-turc
+    fi
+}
+
+getproverbes() {
+    echo -n "Getting \"Proverbes\" "
+    # Note that due to dupplicates, misplaced or missing line breaks, some files are manually edited
+    # Do not delete if you do not want to reedit them
+    # This files are:
+    # divers, religieux
+    # janvier, fevrier, mars, avril, mai, juin
+    # juillet, aout, septembre, octobre, novembre, decembre
+    local url="http://proverbes.pagesperso-orange.fr/"
+    getallemand "${url}"
+    getanglais "${url}"
+    getarabe "${url}"
+    getchinois "${url}"
+    getdivers "${url}"
+    getecossais "${url}"
+    getespagnol "${url}"
+    getflamand "${url}"
+    getfrench "${url}"
+    getindien "${url}"
+    getitalien "${url}"
+    getjuif "${url}"
+    getoccitan "${url}"
+    getreligieux "${url}"
+    getrusse "${url}"
+    getsaison "${url}"
+    getturc "${url}"
+    cptfortunes ${builddir}/proverbes-*
+}
+
+build() {
+    getaphorismes
+    getbribes
+    getcitations
+    getdictons
+    getperles
+    getproverbes
+    getvoscitations
+    echo -n "Total "
+    cptfortunes ${builddir}/*
+}
+
+install() {
+    build
+    for f in aphorismes-* bribes citations dictons-et-proverbes perles proverbes-* voscitations
+    do
+        echo "Copying $f fortune files to destination directory"
+        cp -p -v ${builddir}/$f ${dest}/${cookiesdir}
+    done
+    for f in ${dest}/${cookiesdir}/{aphorismes-*,bribes,citations,dictons-et-proverbes,perles,proverbes-*,voscitations}
+    do
+        echo "Creating fortune data files for $f"
+        ${strfile} -r $f
+        > $f.u8
+    done
+}
+
+${action}
