@@ -3,7 +3,7 @@
 _pkgname=httpcore
 pkgbase=python-httpcore
 pkgname=python-httpcore
-pkgver=0.12.2
+pkgver=0.12.3
 pkgrel=1
 pkgdesc="A minimal HTTP client (msys)"
 arch=('any')
@@ -13,8 +13,8 @@ depends=('python-h11' 'python-h2' 'python-sniffio')
 makedepends=('python-setuptools')
 #checkdepends=('python-pytest-asyncio' 'python-pytest-trio' 'python-trustme' 'mitmproxy')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
-sha512sums=('d4d172f9e5f6079a67626c324994ee4fcef86ff485e482b330ed6969eefb125a965d907a6dff2c463a54e3c8a26e82bda4742de162518810b53880e9d952c67c')
-b2sums=('384f266be9aac2b92b630b008c655afbf27e9442d5ee0dd3059b29b3c36c27d973a74289fef0b391c0dabbc87c9213b18fae271e4781b7a4bb1ea9fd22f6496a')
+sha512sums=('b31535231dc2b6a5f1c9c0c538628f75360f04b4747b447ab0a7168ed32d0eabd463335c2f7fa782dcabb4cbc32891a2839ae50e0999d5a791c01b02533d38f0')
+b2sums=('3c0e7a210b21e54564c4c6077fadf66344b887662c71b05a1ad4a2c0224a4d703eccdf576d4443341176edee03b6776bfd49aaef2ea2f29f02614677e1dfad85')
 
 prepare() {
     cd "${srcdir}"/${_pkgname}-${pkgver}
