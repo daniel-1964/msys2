@@ -3,7 +3,7 @@
 _pkgname=httpx
 pkgbase=python-httpx
 pkgname=python-httpx
-pkgver=0.16.1
+pkgver=0.17.1
 pkgrel=1
 pkgdesc="A next generation HTTP client for Python (msys)"
 arch=('any')
@@ -21,9 +21,9 @@ makedepends=('python-setuptools')
 #checkdepends=('python-pytest-asyncio' 'python-pytest-trio' 'python-brotli' 'python-trustme' 'uvicorn')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz"
         "0001-Do-not-override-the-system-SSL-certificates-with-the.patch")
-sha512sums=('d76b2c94c655c187ab150f20b16906034574d017a67c4a06c456d55071434cc0ba7752bdceda86aa6b1a1fe9109fa11594e4ea679cd7d2a77898fb40fa5153d3'
+sha512sums=('260040e266144f56b8d1cd085e0d97f2b570c685560fd2bc6baca633e8c9e88a666d0ba072048d63f826dd380df7116ce676dcfb48406e39a7480c44f73368c6'
             '9affdf1c41fc9660b0374d2adae8115aa01e31fa13d396a682593ff24248bf4b70fa1266d01a95281fab760265292c0d97f329f71b00e723ad71ae809c4e6235')
-b2sums=('a6c5bcdda595ffcfb824194564ebd93760a9180e60665a9540fc6a2822b1be4273b940fee61cb4b49c2d97a5f4d71b1caf32deddec18d2fb636465b3868aece4'
+b2sums=('445e61dba5a2648191f57352b664a33785af01bb9ca29c7f553d10111894d0b4011a6987bdea880dd3fc87a60ddee7813a2d51e12178277b60ac27ac6fa930ef'
         'b96027d611901e65f90969f796c244acb8605243e2fd23eb2ea946b895464e6e89a39c9886de479f8561a4d55154e2a80dc21f6f29c201a36f7ca429c6962f9f')
 
 prepare() {
