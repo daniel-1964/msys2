@@ -1,22 +1,29 @@
 # Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
 
-pkgbase=mpmath
-pkgname=("python-${pkgbase}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=1.1.0
-pkgrel=1
+_realname=mpmath
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.3.0
+pkgrel=2
 pkgdesc="Python library for arbitrary-precision floating-point arithmetic (msys)"
 arch=('any')
-url='http://www.mpmath.org/'
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
+url='https://www.mpmath.org/'
+msys2_references=(
+  'pypi: mpmath'
+)
 license=('BSD')
 depends=("python"
          "python-gmpy2")
-makedepends=("python-setuptools")
+makedepends=("python-setuptools"
+             "python-setuptools-scm"
+             "python-wheel")
 options=('staticlibs' 'strip' '!debug')
-source=(${pkgbase}-${pkgver}.tar.gz::"https://github.com/fredrik-johansson/mpmath/archive/${pkgver}.tar.gz")
-sha256sums=('16c01d589bcb1be5cab3a07de2855b578e5fc4a7882fb61a15f2aaf118fdd06e')
+source=(${_realname}-${pkgver}.tar.gz::"https://github.com/fredrik-johansson/mpmath/archive/${pkgver}.tar.gz")
+sha256sums=('8f702663fa422fbbf02d15792da4b2566160df35b8a4af55fe64cba2fec2aa00')
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {
@@ -39,23 +46,24 @@ del_file_exists() {
 
 prepare() {
   cd "${srcdir}"
-  [[ -d python-build ]] && rm -rf python-build
-  cp -a "${pkgbase}-${pkgver}" "python-build"
+  rm -rf python-build-${MSYSTEM} | true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}"
 
   # Set version for setuptools_scm
   export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
 }
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  msg "Python build for ${MSYSTEM}"  
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/COPYING"
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/COPYING"
 }
