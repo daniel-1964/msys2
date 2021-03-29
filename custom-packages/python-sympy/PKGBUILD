@@ -3,45 +3,44 @@
 _realname=sympy
 pkgbase=python-${_realname}
 pkgname=("python-${_realname}")
-provides=("python3-${_realname}")
-conflicts=("python3-${_realname}")
-replaces=("python3-${_realname}")
-pkgver=1.6.2
+pkgver=1.13.0
 pkgrel=1
 pkgdesc="Symbolic manipulation package (Computer Algebra System), written in pure Python (msys)"
 arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://www.sympy.org/en/index.html'
-license=('BSD')
+msys2_repository_url="https://github.com/sympy/sympy"
+msys2_references=(
+  'pypi: sympy'
+)
+license=('spdx:BSD-3-Clause')
 depends=("python"
          "python-mpmath")
-makedepends=("python-setuptools")
-options=('staticlibs' 'strip' '!debug')
-source=("${_realname}-${pkgver}.tar.gz::https://github.com/sympy/sympy/archive/sympy-${pkgver}.tar.gz")
-sha512sums=('e16a1d85aba438e4248bac48a163ea1827e2cee57c28f7670ed19cc69d4c08d6796d62f79d245e269d75765b8f7ff4f4ca2841f98534e136ceeb5d3f7a5d252a')
-
-prepare() {
-  [[ -d python-build ]] && rm -rf python-build
-  cp -a "${_realname}-${_realname}-${pkgver}" "python-build"
-
-  # Set version for setuptools_scm
-  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
-}
+optdepends=("python-ipython: user friendly interface for isympy")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel")
+options=(!strip)
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname/-/_}-${pkgver}.tar.gz")
+sha256sums=('3b6af8f4d008b9a1a6a4268b335b984b23835f26d1d60b0526ebc71d48a25f57')
 
 build() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py test || warning "Tests failed"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
 }
 
 package() {
-  cd "${srcdir}/python-build"
+  cd "${srcdir}/python-build-${MSYSTEM}"
 
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
