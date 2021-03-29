@@ -8,89 +8,72 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=1.19.4
+pkgver=2.0.0
 pkgrel=1
-pkgdesc="Scientific tools for Python (mingw-w64)"
+pkgdesc="Scientific tools for Python (msys)"
 arch=('any')
-license=('BSD')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
+license=('spdx:BSD-3-Clause')
 url="https://www.numpy.org/"
-makedepends=(#"openblas"
-             "python-setuptools"
+msys2_references=(
+  "cpe: cpe:/a:numpy:numpy"
+  "pypi: numpy"
+)
+makedepends=("python-build"
+             "python-installer"
+             "python-wheel"
+             "meson-python"
+             "pkgconf"
+             "ninja"
              "cython"
-             "python-devel"
-             "python-pytest"
-             "gcc-fortran")
-depends=(#"openblas"
-         "python")
+             "python-devel")
+checkdepends=("python-pytest")
+depends=("python")
 optdepends=("python-pytest: testsuite")
-#options=('!strip' 'debug')
-source=(https://github.com/numpy/numpy/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz
-        0001-detect-mingw-environment.patch
-        0002-fix-finding-python2.patch
-        0003-gfortran-better-version-check.patch
-        0004-fix-testsuite.patch
-        0005-mincoming-stack-boundary-32bit-optimized-64bit.patch
-        0006-disable-visualcompaq-for-mingw.patch
-        0007-disable-64bit-experimental-warning.patch
-        0008-mingw-gcc-doesnt-support-visibility.patch
-        0009-disable-old-mingw-stuff.patch
-        0010-mingw-inline-stuff.patch)
-sha256sums=('fe836a685d6838dbb3f603caef01183ea98e88febf4ce956a2ea484a75378413'
-            '173e9020eb88a9b281180024ad0f137f86f893e2099693693e42a5bf5944381a'
-            '140c23c214cae880833380e8479e4ce45c8439b22b1432d73ff0cc2cd58da886'
-            '3b640625b56b158465d6628f75fadce90af8825259d04af1b1af09fef53a720c'
-            '720fbba58ac6a73e9476266d033ada9bdc809ec5a6c3cd518fc2f1efec34c3f9'
-            '3cc0176440f4f474612cb3c28b94d0846b74b508631b399aec0a5c0943c4cf1a'
-            '7f1a924c1c58853611cac935de583fb2ced20c57bff09ef933927cc5cbc4bef9'
-            'c1114a027fc797bb6c5c6f7b3044fa853b9e9263555088b4b2b12bdb77baefd5'
-            '9204922151a7459ed0ecb5d7379fc16bdee6b8c74c925c575667b0ac6ff6441a'
-            'a089bb11db5110903dba987c2ffb0ab9468414c5828bdc18809b1baeebe61b92'
-            'c95b2702467055f2f0ff68fe6ba339999d4843ad1c0b8401be16a775e1ffc170')
+options=(!strip)
+source=(https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz
+        0001-numpy-for-msys2.patch)
+sha256sums=('cf5d1c9e6837f8af9f92b6bd3e86d513cdc11f60fd62185cc49ec7d1aba34864'
+            '1bec1bc99a781bccb597807223ef08864c742dfc1e7dba3d409b946014c6ac09')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 -i "${srcdir}/${_patch}"
+  done
+}
 
 prepare() {
   cd ${_realname}-${pkgver}
-  patch -Np1 -i ${srcdir}/0001-detect-mingw-environment.patch
-  patch -Np1 -i ${srcdir}/0002-fix-finding-python2.patch
-  patch -Np1 -i ${srcdir}/0003-gfortran-better-version-check.patch
-  patch -Np1 -i ${srcdir}/0004-fix-testsuite.patch
-  # Note, -mincoming-stack-boundary (and the other flags set) doesn't get used except
-  # in a test compilation, AFAICT.
-  patch -Np1 -i ${srcdir}/0005-mincoming-stack-boundary-32bit-optimized-64bit.patch
-  patch -Np1 -i ${srcdir}/0006-disable-visualcompaq-for-mingw.patch
-  patch -Np1 -i ${srcdir}/0007-disable-64bit-experimental-warning.patch
-  patch -Np1 -i ${srcdir}/0008-mingw-gcc-doesnt-support-visibility.patch
-  patch -Np1 -i ${srcdir}/0009-disable-old-mingw-stuff.patch
-  patch -Np1 -i ${srcdir}/0010-mingw-inline-stuff.patch
-  cd ..
 
-  cp -a ${_realname}-${pkgver} ${_realname}-py-${CARCH}
+  apply_patch_with_msg \
+    0001-numpy-for-msys2.patch
+
+  cd "$srcdir"
+  rm -rf python-build-${MSYSTEM} | true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}"
 }
 
 build() {
-  export ATLAS=None
-  export LDFLAGS="$LDFLAGS -shared"
-  # See: https://sourceforge.net/p/mingw-w64/mailman/message/36287627/
-  export CFLAGS="$CFLAGS -fno-asynchronous-unwind-tables"
+  cd python-build-${MSYSTEM}
 
-  cd ${_realname}-py-${CARCH}
-  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
-    /usr/bin/python setup.py config_fc --fcompiler=gnu95 build
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation \
+    
 }
 
 package() {
-  _pyver=$(/usr/bin/python -c "import sys;sys.stdout.write('.'.join(map(str, sys.version_info[:2])))")
-  _pyinc=${_pyver}
+  cd python-build-${MSYSTEM}
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  export ATLAS=None
-  export LDFLAGS="$LDFLAGS -shared"
-  export CFLAGS="$CFLAGS -fno-asynchronous-unwind-tables"
+  find "${pkgdir}${MSYSTEM_PREFIX}" -name '*.dll.a' -delete
 
-  cd ${_realname}-py-${CARCH}
-  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
-    /usr/bin/python setup.py config_fc --fcompiler=gnu95 install --prefix=/usr --root="${pkgdir}" --optimize=1
+  _pyver=$(${MSYSTEM_PREFIX}/bin/python -c "import sys;sys.stdout.write('.'.join(map(str, sys.version_info[:2])))")
+  install -m755 -d "${pkgdir}${MSYSTEM_PREFIX}/include/python${_pyver}"
+  cp -af ${pkgdir}${MSYSTEM_PREFIX}/lib/python${_pyver}/site-packages/${_realname}/_core/include/${_realname} "${pkgdir}${MSYSTEM_PREFIX}/include/python${_pyver}/"
 
-  install -Dm644 LICENSE.txt ${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE.txt
-
-  install -m755 -d "${pkgdir}/usr/include/python${_pyinc}"
-  cp -rf ${pkgdir}/usr/lib/python${_pyver}/site-packages/${_realname}/core/include/${_realname} "${pkgdir}/usr/include/python${_pyinc}/"
+  install -Dm644 LICENSE.txt ${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE.txt
 }

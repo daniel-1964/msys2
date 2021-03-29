@@ -1,0 +1,32 @@
+From 80c75e370b77296965ed571eb3bd30b316d2efd8 Mon Sep 17 00:00:00 2001
+From: Christoph Reiter <reiter.christoph@gmail.com>
+Date: Sun, 11 Sep 2022 07:18:30 +0200
+Subject: [PATCH] BLD: add back stdlib.h include in pcg64.h
+
+This seems to have been removed by accident in #21887
+stdlib.h is required for _rotr64() further down.
+
+Fixes:
+  error: call to undeclared function '_rotr64'; ISO C99 and later do not support
+  implicit function declarations [-Wimplicit-function-declaration]
+---
+ numpy/random/src/pcg64/pcg64.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/numpy/random/src/pcg64/pcg64.h b/numpy/random/src/pcg64/pcg64.h
+index 96ee7af8518..b33a39fc632 100644
+--- a/numpy/random/src/pcg64/pcg64.h
++++ b/numpy/random/src/pcg64/pcg64.h
+@@ -52,8 +52,11 @@
+ 
+ #include <inttypes.h>
+ 
+-#if defined(_WIN32) && !defined (__MINGW32__)
++#ifdef _WIN32
+ #include <stdlib.h>
++#endif
++
++#if defined(_WIN32) && !defined (__MINGW32__)
+ #define inline __forceinline
+ #endif
+ 

@@ -1,0 +1,22 @@
+diff -pur numpy-2.0.0/numpy/_core/src/common/npstd.hpp python-build-MSYS/numpy/_core/src/common/npstd.hpp
+--- numpy-2.0.0/numpy/_core/src/common/npstd.hpp	2024-06-15 20:09:52.000000000 +0200
++++ python-build-MSYS/numpy/_core/src/common/npstd.hpp	2024-07-16 18:23:49.813521000 +0200
+@@ -5,6 +5,7 @@
+ #include <cstring>
+ #include <cctype>
+ #include <cstdint>
++typedef unsigned int u_int;
+ 
+ #include <string>
+ #include <algorithm>
+diff -pur numpy-2.0.0/numpy/fft/_pocketfft_umath.cpp python-build-MSYS/numpy/fft/_pocketfft_umath.cpp
+--- numpy-2.0.0/numpy/fft/_pocketfft_umath.cpp	2024-06-15 20:09:52.000000000 +0200
++++ python-build-MSYS/numpy/fft/_pocketfft_umath.cpp	2024-07-16 18:15:10.005993400 +0200
+@@ -13,6 +13,7 @@
+ 
+ #define PY_SSIZE_T_CLEAN
+ #include <assert.h>
++typedef unsigned int u_int;
+ #include <Python.h>
+ 
+ #include "numpy/arrayobject.h"
