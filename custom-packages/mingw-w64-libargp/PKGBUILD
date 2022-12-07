@@ -1,0 +1,54 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=libargp
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=20110921
+pkgrel=3
+arch=('x86_64')
+pkgdesc="Interface for parsing command-line arguments (ucrt64)"
+url="https://www.gnu.org/software/libc/libc.html"
+license=('GPL' 'LGPL')
+makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-gcc")
+source=(${_realname}-${pkgver}.tar.bz2
+        ${_realname}-so.patch
+        ${_realname}-optional-variables.patch
+        README COPYING COPYING.LESSER)
+sha256sums=('775c236a0c87005e5b27779894bc82055cdb3906f7f2359cca893e803762109a'
+            'e404bd845e62c9664eac3ef020113be76a15c2b10257cbbd60531f63f0053f97'
+            '73591d22f58ff20c879d931ee116f63ff943ed10a5f1e67ff82a718131b2fbd2'
+            '975d628768674c1ebf62530c445c8b57f0d917a1782e019cf850a7baa848483e'
+            '8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903'
+            'da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768')
+
+prepare() {
+  cd ${_realname}-${pkgver}
+  patch -p1 -i ${srcdir}/${_realname}-so.patch
+  patch -p2 -i ${srcdir}/${_realname}-optional-variables.patch
+
+  autoreconf -fi
+}
+
+build() {
+  mkdir -p "${srcdir}/build-${CHOST}"
+  cd "${srcdir}/build-${CHOST}"
+
+  ../${_realname}-${pkgver}/configure \
+    --prefix=${MINGW_PREFIX} \
+    --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CHOST}
+
+  make
+}
+
+package() {
+  cd "${srcdir}/build-${CHOST}"
+  make DESTDIR="${pkgdir}" install
+
+  mkdir -p "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+  cp ${srcdir}/README "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+  mkdir -p "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+  cp ${srcdir}/COPYING{,.LESSER} "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+}
+
