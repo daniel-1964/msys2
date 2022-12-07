@@ -5,7 +5,7 @@
 
 pkgname=gcal
 pkgver=4.1
-pkgrel=2
+pkgrel=3
 pkgdesc="Display hybrid and proleptic Julian and Gregorian calendar sheets"
 arch=('i686' 'x86_64')
 url="http://www.gnu.org/software/gcal/"
@@ -37,7 +37,8 @@ prepare() {
 
 build() {
   cd "$srcdir/$pkgname-$pkgver"
-  ./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info
+  ./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --datadir=/usr/share
+  sed -i 's/"local"DIR_SEP//' src/rc-defs.h
   make || return 1
 }
 
