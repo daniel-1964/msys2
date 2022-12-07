@@ -1,0 +1,58 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+
+_realname=libinstpatch
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.1.6
+pkgrel=1
+pkgdesc="Instrument file software library"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+url="https://github.com/swami/libinstpatch"
+license=('LGPL2.1')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-glib2"
+         "${MINGW_PACKAGE_PREFIX}-libsndfile")
+makedepends=("${MINGW_PACKAGE_PREFIX}-pkg-config"
+             "${MINGW_PACKAGE_PREFIX}-libtool"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cmake")
+options=('strip' 'staticlibs')
+source=("$_realname-$pkgver.tar.gz::https://github.com/swami/libinstpatch/archive/v${pkgver}.tar.gz")
+sha512sums=('0e22165fc3c045bbc3ab2e1c090728232ed9142797ddbd067b682b9bcfee93850deb76c23b78f49a776e3d099be25fa029673ce8e4a909b2f48860dcdc55803c')
+b2sums=('c5881e6559a7fbcb40e1c43c7dbbfc1df9ac9445e83c70044855c192c3b04945ae125c0e06253ba76d3922a1f8fc6965810700ed57018864b319076ee9528d55')
+
+build() {
+  [[ -d "${srcdir}"/build-${CARCH} ]] && rm -rf "${srcdir}"/build-${CARCH}
+  mkdir -p "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+
+  export CFLAGS+=" ${CPPFLAGS}"
+  export CXXFLAGS+=" ${CPPFLAGS}"
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX= -DLIB_INSTALL_DIR=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -G'Ninja' \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      -DLIB_INSTALL_DIR=${MINGW_PREFIX}/lib \
+        -DCMAKE_BUILD_TYPE='None' \
+        -Wno-dev \
+        -B "${srcdir}/build-${CARCH}" \
+        -S "${srcdir}/$_realname-$pkgver"
+  cmake --build  "${srcdir}"/build-${CARCH}
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --build  "${srcdir}"/build-${CARCH}  --target install
+
+  # Fix installed location
+  mv ${pkgdir}/msys2/* ${pkgdir}/
+  rmdir ${pkgdir}/msys2
+
+  # fix *.pc files
+  local PREFIX_WIN=$(cygpath -wm ${MINGW_PREFIX})
+  for pcfile in "${pkgdir}${MINGW_PREFIX}"/lib/pkgconfig/*.pc; do
+    sed -s "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" -i "${pcfile}"
+  done
+
+  install -vDm 644 ${srcdir}/$_realname-$pkgver/{AUTHORS,ChangeLog,README.md,TODO.tasks} \
+    -t "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}"
+}
