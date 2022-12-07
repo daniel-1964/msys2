@@ -1,0 +1,78 @@
+--- bwbasic-3.20.orig/renum.c	2017-06-08 12:20:14.000000000 +0200
++++ bwbasic-3.20/renum.c	2022-10-31 19:12:56.376187600 +0100
+@@ -7,22 +7,21 @@
+ 
+ #include <stdio.h>
+ #include <string.h>
++#include <stdlib.h>
+ 
+ #define MAX_LINE_LENGTH  255
+ #define MAX_LINE_COUNT   1500
+ 
+-int instr();
+-char *midstr1();
+-char *midstr2();
++size_t instr(char *astr, char *bstr);
++char *midstr1(char *astr, size_t start);
++char *midstr2(char *astr, size_t start, size_t len);
+ void binary_search(void);
+ 
+ int f2, l2, n, x;
+ int sidx[MAX_LINE_COUNT][2];
+ char rstr[MAX_LINE_LENGTH];
+ 
+-main(argc, argv)
+-   int argc;
+-   char *argv[];
++int main(int argc, char *argv[])
+ {
+    int f, d, s, p, s1, t, l, g;
+    int c, f1, c1, i, f8, r, l1, l3;
+@@ -497,11 +496,11 @@ main(argc, argv)
+ }
+ 
+ 
+-int instr(astr, bstr)
++size_t instr(astr, bstr)
+    char *astr, *bstr;
+ {
+    char *p;
+-   int q;
++   size_t q;
+ 
+    p = strstr(astr, bstr);
+    if (p == NULL)
+@@ -518,13 +517,13 @@ int instr(astr, bstr)
+ 
+ char *midstr1(astr, start)
+    char *astr;
+-   int start;
++   size_t start;
+ {
+    static char tempstr[MAX_LINE_LENGTH];
+    char *startptr;
+ 
+    strcpy(tempstr, astr);
+-   startptr = (char *)((long)(tempstr) + start - 1);
++   startptr = tempstr + (start - 1);
+ 
+    return startptr;
+ }
+@@ -532,14 +531,14 @@ char *midstr1(astr, start)
+ 
+ char *midstr2(astr, start, len)
+    char *astr;
+-   int start, len;
++   size_t start, len;
+ {
+    static char tempstr[MAX_LINE_LENGTH];
+    char *startptr, *endptr;
+ 
+    strcpy(tempstr, astr);
+-   startptr = (char *)((long)(tempstr) + start - 1);
+-   endptr = (char *)((long)(tempstr) + start + len - 1);
++   startptr = tempstr + (start - 1);
++   endptr = tempstr + (start + len - 1);
+    strcpy(endptr, "\0");
+ 
+    return startptr;

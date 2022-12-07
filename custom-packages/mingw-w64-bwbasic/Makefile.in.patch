@@ -1,0 +1,91 @@
+--- bwbasic-3.20.orig/Makefile.in	2017-06-08 12:20:12.000000000 +0200
++++ bwbasic-3.20/Makefile.in	2022-10-31 19:15:03.291595500 +0100
+@@ -16,16 +16,18 @@ INSTALL_DATA = @INSTALL_DATA@
+ 
+ DEFS = @DEFS@
+ 
+-# Revised by JBV
+ #CFLAGS = -O
+-CFLAGS = -g -ansi -DHAVE_UNIX
++CFLAGS += -O3 -g -ansi
+ 
+ # Revised by JBV
+ #LDFLAGS = -s
+ 
++# Modified by Vince Mulhollon
+ prefix = /usr/local
+ exec_prefix = $(prefix)
+ bindir = $(exec_prefix)/bin
++BIN=$(DESTDIR)$(bindir)
++MAN=$(DESTDIR)$(prefix)/share/man/man1
+ 
+ SHELL = /bin/sh
+ 
+@@ -59,15 +61,26 @@ TESTFILES=	\
+ DISTFILES=	$(CFILES) $(HFILES) $(MISCFILES)
+ 
+ # Revised by JBV
+-#all: bwbasic
+-all: bwbasic renum
++# Vince Mulhollon added bwbasic.1
++all: bwbasic bwbasic.1 renum
+ 
+ bwbasic:	$(OFILES)
+-		$(CC) $(OFILES) -lm -o $@ $(LDFLAGS)
++	$(CC) $(CPPFLAGS) -I$(srcdir) $(DEFS) $(CFLAGS) $(OFILES) -lm -o $@ $(LDFLAGS)
+ 
+ # Added by JBV
+ renum:
+-	$(CC) renum.c -o renum
++	$(CC) $(CPPFLAGS) -I$(srcdir) $(DEFS) $(CFLAGS) $(srcdir)/renum.c -o renum
++
++# Added by Vince Mulhollon
++bwbasic.1: bwbasic.doc
++	set -e; \
++	exec > $@; \
++	echo '.TH BWBASIC 1 "October 11, 1993"'; \
++	echo '.SH NAME'; \
++	echo 'bwbasic \- Bywater BASIC interpreter/shell'; \
++	echo '.RE'; \
++	echo '.nf'; \
++	expand $<
+ 
+ $(OFILES):      $(HFILES)
+ 
+@@ -75,10 +88,14 @@ $(OFILES):      $(HFILES)
+ 	$(CC) -c $(CPPFLAGS) -I$(srcdir) $(DEFS) $(CFLAGS) $<
+ 
+ install: all
+-	$(INSTALL_PROGRAM) bwbasic $(bindir)/bwbasic
++	mkdir -p $(BIN)
++	$(INSTALL_PROGRAM) bwbasic $(BIN)
++	$(INSTALL_PROGRAM) renum $(BIN)
++	mkdir -p $(MAN)
++	$(INSTALL_PROGRAM) bwbasic.1 $(MAN)
+ 
+ uninstall:
+-	rm -f $(bindir)/bwbasic
++	rm -f $(BIN)/bwbasic $(BIN)/renum $(MAN)/bwbasic.1
+ 
+ Makefile: Makefile.in config.status
+ 	$(SHELL) config.status
+@@ -90,8 +107,9 @@ configure: configure.in
+ TAGS:	$(CFILES)
+ 	etags $(CFILES)
+ 
++# Vince Mulhollon added bwbasic.1
+ clean:
+-	rm -f *.o bwbasic core
++	rm -f *.o bwbasic bwbasic.1 renum core
+ 
+ mostlyclean: clean
+ 
+@@ -102,7 +120,7 @@ realclean: distclean
+ 	rm -f TAGS
+ 
+ dist: $(DISTFILES)
+-	echo bwbasic-2.61 > .fname
++	echo bwbasic-3.20 > .fname
+ 	rm -rf `cat .fname`
+ 	mkdir `cat .fname`
+ 	ln $(DISTFILES) `cat .fname`

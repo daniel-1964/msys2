@@ -1,0 +1,45 @@
+_realname="bwbasic"
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=3.20
+pkgrel=1
+pkgdesc="Bywater BASIC Interpreter"
+url="http://bwbasic.sourceforge.net"
+source=("${_realname}-${pkgver}.zip::https://download.sourceforge.net/${_realname}/${_realname}-${pkgver}.zip"
+        "${_realname}-tests-2017-07-06.zip::https://download.sourceforge.net/${_realname}/${_realname}-tests-2017-07-06.zip"
+        "Makefile.in.patch"
+        "renum.c.patch")
+sha512sums=('e8d1ce7474c875da314b382a938b9484742f2a5142a4072864655c5146b92d927047c7c6d4cda822ac11ad2c8c8bd91b97a838d9a19bb6a89715a8182d6a0e7a'
+            'f9ea7cd268afa4f19e9c761d60e64505b4404f32842fd3fcef84f5d3167d286b5ea1a49a6db3b04db371e3ec9148b0e71cfd989e50e3bea8cc7252d58ec86019'
+            '6c182a9382142a04d34b5c5727ebe03bcb170f68d2d91a054d857af25ea7aa95d12b2c878d0045b60e784ec5596b60d6131cbbd4e650b7d7f8cfc3985e12e7e0'
+            '62921149012f7146bba1d6635565dd1f87b635f6d81766eaf43a238339e8379f3dfdf6c54c89394cc408ce26fc39ba03bad6051b6f2f126530c0529704a476f2')
+noextract=("${_realname}-${pkgver}.zip" # No subdir on zipfile
+           "${_realname}-tests-2017-07-06.zip") 
+prepare() {
+  unzip -oq "${_realname}-${pkgver}.zip" -d "${srcdir}/${_realname}-${pkgver}"
+  unzip -oq bwbasic-tests-2017-07-06.zip -d ${srcdir} bwbasic-tests/GAMES/*
+
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  patch -Np1 -i "${srcdir}/Makefile.in.patch"
+  patch -Np1 -i "${srcdir}/renum.c.patch"
+}
+
+build() {
+
+  cp -a ${srcdir}/${_realname}-${pkgver} $srcdir/build-${MINGW_CHOST}
+
+  cd $srcdir/build-${MINGW_CHOST}
+  ./configure --prefix=${MINGW_PREFIX}
+  make
+}
+
+package() {
+  cd "${srcdir}/build-${MINGW_CHOST}"
+
+  make DESTDIR="${pkgdir}" install
+  mkdir "${pkgdir}${MINGW_PREFIX}/share/doc"
+  cp -a docs "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+  cp -a "${srcdir}/${_realname}-tests/GAMES" "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/"
+  cp -a *.bas README INSTALL COPYING "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/"
+}
