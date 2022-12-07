@@ -1,0 +1,26 @@
+# $ Id: $
+# Maintainer: Pierre Schmitz <pierre@archlinux.de>
+
+_realname=gmm++
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=5.4
+pkgrel=1
+pkgdesc="A generic C++ template library for sparse, dense and skyline matrices"
+arch=('i586' 'i686' 'x86_64')
+license=('LGPL')
+url="http://download-mirror.savannah.gnu.org/releases/getfem/stable/"
+source=(http://download-mirror.savannah.gnu.org/releases/getfem/stable/gmm-${pkgver}.tar.gz)
+md5sums=('58d37544072ef3567c8f0666b04b5760')
+
+build() {
+    cd $srcdir/gmm-${pkgver}
+    autoreconf
+    ./configure CXX=g++ --prefix="${MINGW_PREFIX}"
+    make
+}
+
+package() {
+    cd $srcdir/gmm-${pkgver}
+    make install DESTDIR=${pkgdir}
+}
