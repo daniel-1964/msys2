@@ -1,0 +1,12 @@
+post_install() {
+  /ucrt64/bin/busybox mkdir -p /ucrt64/busybox
+  /ucrt64/bin/busybox --install -s /ucrt64/busybox
+}
+
+post_upgrade() {
+  post_install
+}
+
+pre_remove() {
+  ucrt64/bin/busybox rm -rf /ucrt64/busybox
+}

@@ -1,0 +1,47 @@
+# Maintainer: Martell Malone <martellmalone@gmail.com>
+
+_realname=busybox
+_tag="FRP-4621-gf3c5e8bc3"
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.36.0
+pkgrel=1
+pkgdesc="BusyBox: The Swiss Army Knife of Embedded Linux (mingw64)"
+arch=('x86_64')
+url="https://busybox.net/"
+license=('GPL2')
+#install=busybox.install
+makedepends=('make'
+             "${MINGW_PACKAGE_PREFIX}-gcc")
+source=("https://github.com/rmyorston/busybox-w32/archive/refs/tags/${_tag}.tar.gz")
+sha256sums=('cf40208d6c839a5e2e4181ad5745951a68b2af188d295b9ecb84f719d471560f')
+build() {
+  cd "${srcdir}/${_realname}-w32-${_tag}"
+  make mingw64_defconfig
+  if [ -x ${MINGW_PREFIX}/bin/bzip2 ]
+  then
+    have_bzip2=1
+    rename bzip2 _bzip2 ${MINGW_PREFIX}/bin/bzip2
+  fi
+  make
+  if [ -n ${have_bzip2} ]
+  then
+    rename _bzip2 bzip2 ${MINGW_PREFIX}/bin/_bzip2
+  fi
+  mv -v busybox_unstripped.exe busybox.exe
+}
+
+package() {
+  cd "${srcdir}/${_realname}-w32-${_tag}"
+
+  # install busybox
+  install -pD busybox.exe -t ${pkgdir}/${MINGW_PREFIX}/bin/
+
+  # Doc
+  install -pDm644 docs/busybox.1 -t ${pkgdir}/${MINGW_PREFIX}/share/man/man1
+  install -pDm644 docs/busybox.{html,txt} -t ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/
+  install -pDm644 README* -t ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/
+
+  # license
+  install -pDm644 LICENSE ${pkgdir}/${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}
