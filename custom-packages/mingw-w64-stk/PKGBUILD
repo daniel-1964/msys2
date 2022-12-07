@@ -1,0 +1,58 @@
+# Maintainer: Michael Gogins <michael.gogins@gmail.com>
+
+_realname='stk'
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=4.6.1
+pkgrel=1
+pkgdesc="The Synthesis ToolKit in C++ (STK)"
+arch=('i686' 'x86_64')
+url="https://ccrma.stanford.edu/software/stk/"
+# options=('!libtool')
+options=('!strip' '!buildflags' 'staticlibs')
+license=('MIT')
+source=("http://ccrma.stanford.edu/software/stk/release/${_realname}-${pkgver}.tar.gz" 
+        "stk.patch")
+md5sums=('4a07cd00bf264fa8488ba0fce9a59a3f'
+         'b4337ba072de4d68c177d99ae96aceda')
+
+#pkgver() {
+#    cd $srcdir/${_realname}-${pkgver}
+#    echo $(git rev-list --count HEAD).$(git rev-parse --short HEAD)
+#}
+
+prepare() {
+  cd $srcdir/${_realname}-${pkgver}
+  pwd
+  patch -Np1 -i ../../stk.patch
+}
+
+build() {
+    #export CFLAGS="-Wno-error"
+    cd "${srcdir}/${_realname}-${pkgver}/"
+    # Needed because of patch to configure.ac.
+    autoreconf -fiv
+    ./configure --with-asio --with-ds --with-wasapi --enable-static --enable-shared --prefix=${MINGW_PREFIX}
+    make
+}
+
+#check() {
+#    cd "${srcdir}/${_realname}-${pkgver}"
+#    make -j1 check
+#}
+
+package() {
+    cd "${srcdir}/${_realname}-${pkgver}/"
+    make DESTDIR="${pkgdir}" install
+    cp src/libstk*.a ${pkgdir}/${MINGW_PREFIX}/lib/
+    mkdir -p ${pkgdir}${MINGW_PREFIX}/{bin,share/stk}
+    mv ${pkgdir}/${MINGW_PREFIX}/lib/*.dll ${pkgdir}${MINGW_PREFIX}/bin/
+    cp -rf projects rawwaves ${pkgdir}/${MINGW_PREFIX}/share/stk
+    mkdir -p ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}
+    cp -pr *.md LICENSE doc/* ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}
+    rm -fr ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/doxygen
+    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name Makefile.in -delete
+    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*vcxproj*" -delete
+    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*.dsp" -delete
+    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*.sln" -delete
+}

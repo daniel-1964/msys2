@@ -1,0 +1,84 @@
+diff -pur stk-4.6.1.orig/configure.ac stk-4.6.1/configure.ac
+--- stk-4.6.1.orig/configure.ac	2019-04-18 15:27:12.000000000 +0200
++++ stk-4.6.1/configure.ac	2021-10-10 21:42:12.414545200 +0200
+@@ -113,14 +113,21 @@ AC_CANONICAL_HOST
+ 
+ basesharedname="libstk-\$(RELEASE)"
+ 
+-AC_SUBST( sharedlib, ["libstk.so"] )
+-AC_SUBST( sharedname, [${basesharedname}.so] )
+-AC_SUBST( libflags, ["-shared -Wl,-soname,${basesharedname}.so -o $sharedname"] )
+ case $host in
+   *-apple*)
+-  AC_SUBST( sharedlib, ["libstk.dylib"] )
+-  AC_SUBST( sharedname, ["${basesharedname}.dylib"] )
+-  AC_SUBST( libflags, ["-dynamiclib -o ${basesharedname}.dylib"] )
++    AC_SUBST( sharedlib, ["libstk.dylib"] )
++    AC_SUBST( sharedname, ["${basesharedname}.dylib"] )
++    AC_SUBST( libflags, ["-dynamiclib -o ${basesharedname}.dylib"] )
++    ;;
++  *mingw*)
++    AC_SUBST( sharedlib, ["libstk.dll.a"] )
++    AC_SUBST( sharedname, ["stk-4.dll"])
++    AC_SUBST( libflags, ["-shared -Wl,--out-implib,${sharedlib} -o ${sharedname}"] )
++    ;;
++  *)
++    AC_SUBST( sharedlib, ["libstk.so"] )
++    AC_SUBST( sharedname, [${basesharedname}.so] )
++    AC_SUBST( libflags, ["-shared -Wl,-soname,${basesharedname}.so -o $sharedname"] )
+ esac
+ 
+ if test $realtime = yes; then
+@@ -181,7 +188,7 @@ api="$api -D__UNIX_JACK__"
+     AC_CHECK_LIB(pthread, pthread_create, , AC_MSG_ERROR(RtAudio requires the pthread library!))
+     ;;
+ 
+-    *-mingw32*)
++    *-mingw*)
+     AC_ARG_WITH(asio, [  --with-asio = choose ASIO API support (windoze only)])
+     AS_IF([test "x$with_asio" == "xyes"], [
+     api="$api -D__WINDOWS_ASIO__"
+@@ -200,7 +207,7 @@ api="$api -D__UNIX_JACK__"
+     AS_IF([test "x$with_wasapi" == "xyes"], [
+     api="$api -D__WINDOWS_WASAPI__"
+     AC_MSG_RESULT(using WASAPI)
+-    LIBS="-luuid -lksuser $LIBS" ])
++    LIBS="-luuid -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid $LIBS" ])
+ 
+     # If no audio api flags specified, use DirectSound
+     AS_IF([test "$api" == ""], [
+diff -pur stk-4.6.1.orig/src/Makefile.in stk-4.6.1/src/Makefile.in
+--- stk-4.6.1.orig/src/Makefile.in	2019-04-18 15:27:12.000000000 +0200
++++ stk-4.6.1/src/Makefile.in	2021-10-10 21:44:05.131272500 +0200
+@@ -88,9 +88,9 @@ $(STATICLIB) : $(OBJECTS)
+ 	$(AR) $(STATICLIB) $(OBJECT_PATH)/*.o
+ 
+ $(SHAREDLIB) : $(OBJECTS)
+-	$(RM) -f $(@) $(SHAREDLIB).$(MAJOR) $(SHAREDLIB)
++	$(RM) -f $(@) #$(SHAREDLIB).$(MAJOR) $(SHAREDLIB)
+ 	$(CC) $(LDFLAGS) -fPIC @libflags@ $(OBJECT_PATH)/*.o $(LIBS)
+-	$(LN) -s @sharedname@ $(SHAREDLIB)
++	#$(LN) -s @sharedname@ $(SHAREDLIB)
+ 
+ install-headers:
+ 	install -d $(DESTDIR)$(PREFIX)$(INCLUDEDIR)/stk
+@@ -99,7 +99,7 @@ install-headers:
+ install: $(SHAREDLIB) install-headers
+ 	install -d $(DESTDIR)$(PREFIX)$(LIBDIR)
+ 	install -m 644 @sharedname@ $(DESTDIR)$(PREFIX)$(LIBDIR)
+-	ln -sf @sharedname@ $(DESTDIR)$(PREFIX)$(LIBDIR)/$(SHAREDLIB)
++	#ln -sf @sharedname@ $(DESTDIR)$(PREFIX)$(LIBDIR)/$(SHAREDLIB)
+ 
+ 
+ $(OBJECTS) : Stk.h
+diff -pur stk-4.6.1.orig/src/RtAudio.cpp stk-4.6.1/src/RtAudio.cpp
+--- stk-4.6.1.orig/src/RtAudio.cpp	2019-04-18 15:27:12.000000000 +0200
++++ stk-4.6.1/src/RtAudio.cpp	2021-10-10 19:12:20.789465400 +0200
+@@ -43,6 +43,7 @@
+ 
+ #include "RtAudio.h"
+ #include <iostream>
++#include <cmath>
+ #include <cstdlib>
+ #include <cstring>
+ #include <climits>
