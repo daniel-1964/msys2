@@ -1,0 +1,38 @@
+# Maintainer: Michael Gogins <michael.gogins@gmail.com>
+
+_realname=puredata
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgrel=4
+pkgver=0.51
+pkgdesc="Visual programming language for audio and visuals."
+arch=('any')
+url="https://puredata.info/"
+license=('LGPL')
+provides=("${MINGW_PACKAGE_PREFIX}-puredata")
+conflicts=("${MINGW_PACKAGE_PREFIX}-puredata")
+source=("https://msp.puredata.info/Software/pd-${pkgver}-${pkgrel}.src.tar.gz")
+sha256sums=('52591f18316e9f2471ca21c3d6b41c56336e0615ec40a093232e95cc230bfcc1')
+
+build() {
+    cd $srcdir/pd-${pkgver}-${pkgrel}
+    ./autogen.sh
+    ./configure \
+        --prefix="${MINGW_PREFIX}" \
+        --without-local-portmidi \
+        --without-local-portaudio \
+        --enable-portmidi \
+        --enable-fftw \
+        --enable-portaudio \
+        --with-wish=wish
+    # Somewhat a hack but it works
+    sed -i 's/ -ldl//g' extra/*/GNUmakefile
+    make
+}
+
+package() {
+    cd "$srcdir/pd-${pkgver}-${pkgrel}"
+    make install DESTDIR=${pkgdir}
+    cp -p src/libpd.a ${pkgdir}/${MINGW_PREFIX}/lib
+    mv ${pkgdir}/${MINGW_PREFIX}/bin/pd.{def,lib} ${pkgdir}/${MINGW_PREFIX}/lib
+}
