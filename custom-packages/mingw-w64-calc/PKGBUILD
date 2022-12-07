@@ -1,0 +1,83 @@
+_realname="calc"
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.14.1.0
+pkgrel=1
+pkgdesc="C-style arbitrary precision calculator (mingw)"
+arch=('any')
+url="http://www.isthe.com/chongo/tech/comp/calc/"
+license=('LGPL', 'GPL')
+depends=("${MINGW_PACKAGE_PREFIX}-readline"
+         'less')
+options=('staticlibs' 'strip')
+set -o pipefail
+source=("https://github.com/lcn2/${_realname}/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.bz2"
+	'calc-mingw.patch'
+        'comma.cal.patch'
+        'random.c'
+        'random.h'
+        'getrusage.c'
+        'resource.h')
+sha512sums=('58c2bcbb696cf51381a6da047e4e8004c40ed3be51a469685cf2c5db012c86411098f119491e82e244d86cbbd2b9434c335bdb6841312155831fffebe296fd79'
+            'fe1a2b3052ea03ad953093a52734444baf992a212be140f26e21243e889c7aa8f766d2fac6898bd7247548684869aead8ad926f44e095a93d39ecefb7c4d4404'
+            '751fddaa02c4361553eb5fd8ce6764a3d2f0988842221e60828dac73eea83b3c70d5a32b71e4ecd870f57d54f8c50fe1aa6fda70117c43675524582891c572cd'
+            '719df4823ce78ca0bc21ef5d92d9bfb570c272146cfb0d4107916f4fd1807d6fc0b94f905fbc366a15d2a5f99e9f47ae52a2dc499d2a1a5eecd488b21035dab6'
+            '9efb57f957923d769b6aaf28e16ab57d13dffc37e2d72241a053e47a9d63ec6cc02382ef2ad192fcad4ee04b3a89713970651884b6b8f4809ffbca95667e304a'
+            '794b0b2bd7f3c58313bd41b325c9ee8dea0c8b97630730ce0e3c5dbf231faaba69b39ae6232bc41106fd795c4057878a566c162717a15d2c2a56a400da3bffbf'
+            '4b5835f50d543a8d06c57ff3982a7295cdd18b0c8991fffccc6f3d74da830d61c1216827ec7d5384611d047063b378a0d18201478668ed129caf03add15620f4')
+
+prepare() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  patch -Np1 -i ${srcdir}/calc-mingw.patch
+  patch -Np1 -i ${srcdir}/comma.cal.patch
+  cp -p ${srcdir}/random.[ch] ${srcdir}/getrusage.c .
+  mkdir sys
+  cp -p ${srcdir}/resource.h ./sys  
+}
+
+build() {
+  msg2 "Compile to build"
+  [[ -d $srcdir/build-${MINGW_CHOST} ]] && rm -rf $srcdir/build-${MINGW_CHOST}
+  cp -a ${srcdir}/${_realname}-${pkgver} $srcdir/build-${MINGW_CHOST}
+  cd $srcdir/build-${MINGW_CHOST}
+  local P=${MINGW_PREFIX}
+  local OPT="target=Cygwin PREFIX=${P} BINDIR=${P}/bin LIBDIR=${P}/lib CALC_SHAREDIR=${P}/share/calc INCDIR=${P}/include CALCPAGER=less T="
+  make -j1 $OPT clobber
+  make -j1 EXTRA_CFLAGS="${CFLAGS} -Werror -Wno-unused-parameter" calc-static-only $OPT BLD_TYPE=calc-static-only
+  #make -j1 EXTRA_CFLAGS="${CFLAGS} -Werror -Wno-unused-parameter" calc-dynamic-only $OPT BLD_TYPE=calc-dynamic-only
+}
+
+check() {
+  local P=${MINGW_PREFIX}
+  local OPT="target=Cygwin PREFIX=${P} BINDIR=${P}/bin LIBDIR=${P}/lib CALC_SHAREDIR=${P}/share/calc CALCPAGER=less T="
+  cd $srcdir/build-${MINGW_CHOST}
+  make ${OPT} check
+}
+
+package() {
+  msg2 "Install to dest"
+  cd $srcdir/build-${MINGW_CHOST}
+  local DOCS="BUGS
+	CHANGES
+	HOWTO.INSTALL
+	README.*
+	sample.README
+	*.md
+	LIBRARY"
+  local P=${MINGW_PREFIX}
+  local OPT="target=Cygwin PREFIX=${P} BINDIR=${P}/bin LIBDIR=${P}/lib CALC_SHAREDIR=${P}/share/calc INCDIR=${P}/include MANDIR=${P}/share/man/man1 CALCPAGER=less T=${pkgdir}"
+  make -j1 install $OPT
+  mkdir "${pkgdir}${MINGW_PREFIX}/share/doc"
+  install -Dpm644 sample_*.{c,exe} -t ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/examples/
+  for d in ${DOCS}
+  do
+    install -Dpm644 $d -t ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/
+  done
+  install -Dpm644 COPYING COPYING-LGPL -t ${pkgdir}/${MINGW_PREFIX}/share/licenses/${_realname}/
+  rm -f ${pkgdir}/${MINGW_PREFIX}/bin/calc-static.exe
+  rm -f ${pkgdir}/${MINGW_PREFIX}/lib/*.so
+  rm -f ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/examples/*-static.exe
+  mv ${pkgdir}/${MINGW_PREFIX}/bin/cscript ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/examples/
+  rename sample_rand test_random ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/examples/sample_rand.*
+  rename sample_many many_random ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/examples/sample_many.*
+}
