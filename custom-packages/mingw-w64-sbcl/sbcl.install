@@ -1,0 +1,7 @@
+post_install() {
+  # Set the source location in core image
+  ${MINGW_PREFIX}/bin/sbcl --core ${MINGW_PREFIX}/lib/sbcl/sbcl.core --no-sysinit --no-userinit \
+                     --eval "(sb-ext:set-sbcl-source-location \"$(cygpath -m ${MINGW_PREFIX}/share/sbcl-source)/\")" \
+                     --eval "(sb-ext:save-lisp-and-die \"$(cygpath -m ${MINGW_PREFIX}/lib/sbcl/sbcl.core)\")"
+}
+

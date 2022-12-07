@@ -1,0 +1,101 @@
+# Contributor: John Proctor <jproctor@prium.net>
+# Contributor: Daniel White <daniel@whitehouse.id.au>
+# Maintainer: Juergen Hoetzel <juergen@archlinux.org>
+# Contributor: Leslie Polzer (skypher)
+
+_realname=sbcl
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
+         "${MINGW_PACKAGE_PREFIX}-${_realname}-sources")
+pkgver=2.2.11
+pkgrel=1
+pkgdesc="Steel Bank Common Lisp"
+url="http://www.sbcl.org/"
+arch=('any')
+license=('custom')
+depends=("${MINGW_PACKAGE_PREFIX}-zlib")
+provides=("${MINGW_PACKAGE_PREFIX}-common-lisp"
+          "${MINGW_PACKAGE_PREFIX}-cl-asdf")
+makedepends=("${MINGW_PACKAGE_PREFIX}-sbcl")
+source=("https://downloads.sourceforge.net/project/sbcl/sbcl/$pkgver/$_realname-$pkgver-source.tar.bz2"
+        "sbcl.patch")
+sha256sums=('3607d68016731880845ced5d5d55c6054cc49f19121a15027e6c5607ae8496df'
+            '63559b259baac47545cb6f0e909d536507c401e32e933e326e66f6e906e4a9be')
+
+
+prepare() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  patch -Np1 -i ${srcdir}/sbcl.patch
+}
+
+build() {
+  cd "$srcdir/$_realname-$pkgver"
+  export CFLAGS+=" -D_GNU_SOURCE -fno-omit-frame-pointer"
+  export GNUMAKE="make"
+  SBCL=${MINGW_PREFIX}/bin
+
+  # build system uses LINKFLAGS and OS_LIBS to build LDFLAGS
+  export LINKFLAGS="$LDFLAGS"
+  unset LDFLAGS
+  unset MAKEFLAGS
+  ./make.sh --xc-host="${SBCL}/sbcl --disable-debugger --no-sysinit --no-userinit" --prefix=/${MINGW_PREFIX} --fancy --with-sb-linkable-runtime
+
+  # Generate the doc
+  make -C doc/internals info html
+  make -C doc/manual docstrings 
+  for f in $(<doc/manual/missingdoc)
+  do
+    >doc/manual/docstrings/$f
+  done
+  make -C doc/manual all
+}
+
+package_sbcl() {
+  cd "$srcdir/$_realname-$pkgver"
+  ./install.sh --prefix="$pkgdir/${MINGW_PREFIX}" 
+
+  # Additional docs
+  for f in ${srcdir}/${_realname}-${pkgver}/contrib/*
+  do
+    for g in $f/README*
+    do
+      [ -e $g ] && cp -p $g ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/$(basename $f)-$(basename $g)
+    done
+  done
+  install -p -m644 "$srcdir/$_realname-$pkgver/doc/internals/sbcl-internals.info" \
+                   -t "$pkgdir/${MINGW_PREFIX}/share/info/"
+  install -p -m644 "$srcdir/$_realname-$pkgver/doc/internals/sbcl-internals_html/"* \
+                   -t "$pkgdir/${MINGW_PREFIX}/share/doc/$_realname/HTML/"
+  mv "$pkgdir/${MINGW_PREFIX}/share/doc/$_realname/HTML" "$pkgdir/${MINGW_PREFIX}/share/doc/$_realname/sbcl-internals"
+
+  # license
+  install -p -D -m644 "$srcdir/$_realname-$pkgver/COPYING" \
+                   "$pkgdir/${MINGW_PREFIX}/share/licenses/$_realname/license.txt"
+}
+
+package_sbcl-sources() {
+  install=${_realname}.install
+  depends=("${MINGW_PACKAGE_PREFIX}-sbcl")
+  pkgdesc+=" (Lisp sources)"
+  cd "$srcdir/$_realname-$pkgver"
+  # sources
+  mkdir -p "$pkgdir/${MINGW_PREFIX}/share/sbcl-source"
+  cp -pR -t "$pkgdir/${MINGW_PREFIX}/share/sbcl-source" "$srcdir/$_realname-$pkgver/"{src,contrib}
+
+  # drop unwanted files
+  find "$pkgdir/${MINGW_PREFIX}/share/sbcl-source" -type f \
+    \( -name Makefile -o -name .cvsignore -o -iname readme* -o -name *.texinfo \) -delete
+  find "$pkgdir/${MINGW_PREFIX}/share/sbcl-source" -type f \
+    \( -name \*.fasl -o -name \*.o -o -name \*.log -o -name \*.dll -o -name a.out \) -delete
+  rm "$pkgdir/${MINGW_PREFIX}/share/sbcl-source/src/runtime/sbcl.exe"
+}
+
+# generate wrappers
+for _name in "${pkgname[@]}"
+do
+  _short="package_${_name#${MINGW_PACKAGE_PREFIX}-}"
+  _func="$(declare -f "${_short}")"
+  eval "${_func/#${_short}/package_${_name}}"
+done
+# template end;
+
