@@ -19,27 +19,30 @@ makedepends=('doxygen')
 optdepends=("${MINGW_PACKAGE_PREFIX}-liboggz: for KateDJ"
             "${MINGW_PACKAGE_PREFIX}-wxPython: for KateDJ")
 source=("$_realname::git+git://github.com/Distrotech/libkate.git#tag=kate-${pkgver}"
-        0001-Fix-automake-warnings.patch)
+        0001-Fix-automake-warnings.patch
+        0002-port-KateDJ-to-python3.patch)
 sha512sums=('SKIP'
-            '525d120cddd040441859f2783e6e566da631ba304074bfa40a34399879fc3053577e8e71ef804168aeef519fac62e205829b50a61d770cddd46f7dbfba660842')
-
+            '525d120cddd040441859f2783e6e566da631ba304074bfa40a34399879fc3053577e8e71ef804168aeef519fac62e205829b50a61d770cddd46f7dbfba660842'
+            '01abb82859ccfd995c97c2d6d7fa43340d3837e679640c361eabf7073dcd2035058b9bef4ebc7dcdc0f5de3d76cd1328f0aab6d8b569a9959ab20c213fb487ac')
 prepare() {
   cd "${srcdir}/${_realname}"
 
   patch -Np1 -i "${srcdir}/0001-Fix-automake-warnings.patch"
+  patch -Np1 -i "${srcdir}/0002-port-KateDJ-to-python3.patch"
 }
 
 build() {
-  mkdir -p $srcdir/build-${MINGW_CHOST} && cd $srcdir/build-${MINGW_CHOST}
 
-  ../${_realname}/autogen.sh  \
+  cp -a ${srcdir}/${_realname} $srcdir/build-${MINGW_CHOST}
+
+  cd $srcdir/build-${MINGW_CHOST}
+  ./autogen.sh  \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
     --sysconfdir=${MINGW_PREFIX}/etc \
     --enable-static \
     --enable-doc
-    cp -p "${srcdir}/${_realname}"/include/kate/*.h include/kate
     doxygen -u doc/kate.doxygen
   make
 }
