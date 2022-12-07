@@ -1,0 +1,44 @@
+# Maintainer: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: N30N <archlinux@alunamation.com>
+# Contributor: linkmauve <linkmauve@linkmauve.fr>
+# Contributor: mokkurkalve <xenofil@gmail.com>
+
+_realname=cmdow
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.4.8
+pkgrel=1
+pkgdesc="Win32 console application for manipulating program windows"
+url="https://ritchielawrence.github.io/cmdow/"
+license=('MIT')
+arch=('any')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=('git'
+             "${MINGW_PACKAGE_PREFIX}-python-markdown"
+             "${MINGW_PACKAGE_PREFIX}-gcc")
+source=("$_realname::git+git://github.com/ritchielawrence/cmdow.git"
+        cmdow.patch
+        Makefile)
+sha512sums=('SKIP'
+            '25cb82394f0adb8a2d22d543dc9d6e462f532cbb166af2428a5683f661cbcabcf62edea5f5ecfcc4895f47d5ce831509044c721841e28fc25e6f9eb1ecdf97af'
+            '7148ce1b5a4eb27122d192c9f96c94a7188ac47a2318b136715e518101ad162a3f5f293b438fee7a194e99cee48f4774cb0775a98c37d849efba2fe60a6d1d54')
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+  rm -fr bin
+  patch -Np1 -i "${srcdir}/cmdow.patch"
+  cp -p "${srcdir}/Makefile" .
+}
+
+build() {
+  [ -d $srcdir/build-${MINGW_CHOST} ] && rm -fr $srcdir/build-${MINGW_CHOST}
+  cp -a "${srcdir}/${_realname}" $srcdir/build-${MINGW_CHOST}
+  cd $srcdir/build-${MINGW_CHOST}
+  make CFG=release
+}
+
+package() {
+  cd "${srcdir}/build-${MINGW_CHOST}"
+
+  make PREFIX=${MINGW_PREFIX} DESTDIR="${pkgdir}" install
+}
