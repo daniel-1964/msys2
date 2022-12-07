@@ -1,0 +1,57 @@
+# Maintainer: Michael Gogins <michael.gogins@gmail.com>
+
+_realname=musicxml
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgrel=1
+pkgver=3.18.60
+pkgdesc="library and tools for the MusicXML format (git version)"
+arch=('x86_64' 'i686')
+url="https://github.com/dfober/libmusicxml"
+license=('LGPL')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake")
+provides=("${MINGW_PACKAGE_PREFIX}-libmusicxml")
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
+             "${MINGW_PACKAGE_PREFIX}-pkg-config"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+options=(!libtool strip staticlibs)
+conflicts=("${MINGW_PACKAGE_PREFIX}-libmusicxml")
+source=("$_realname::git+https://github.com/dfober/libmusicxml"
+        "$_realname.patch")
+sha256sums=('SKIP'
+            'f9ae047a363a764e7a080041329e11661b308bc3bf846e59bcc1d9b47f944917')
+
+pkgver() {
+    cd $srcdir/$_realname
+    echo $(git describe --tag | sed 's/v\([[:digit:]]\+\)\.\([[:digit:]]\+\)-\([[:digit:]]\+\)-.*/\1.\2.\3/')
+}
+
+prepare() {
+    cd ${srcdir}/${_realname}
+    patch -p1 -i "${srcdir}/$_realname.patch"
+}
+
+build() {
+    [[ -d "build-${MINGW_CHOST}" ]] && rm -rf "build-${MINGW_CHOST}"
+    mkdir -p "${srcdir}/build-${MINGW_CHOST}"
+    cd "${srcdir}/build-${MINGW_CHOST}"
+    MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+        ${MINGW_PREFIX}/bin/cmake \
+            -GNinja \
+            -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+            ../${_realname}/build
+
+    ${MINGW_PREFIX}/bin/cmake --build .
+}
+
+package() {
+    cd "${srcdir}/build-${MINGW_CHOST}"
+
+    DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --build . --target install
+    cd ${pkgdir}/${MINGW_PREFIX}/share/doc/$_realname
+    mv doc/* .
+    rmdir doc
+    mv ../../../README.html ../../../CHANGELOG.txt .
+}

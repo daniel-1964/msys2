@@ -1,0 +1,22 @@
+--- musicxml.orig/build/CMakeLists.txt	2021-10-11 19:45:29.174533600 +0200
++++ musicxml/build/CMakeLists.txt	2021-10-12 18:59:31.547101100 +0200
+@@ -209,6 +209,10 @@ set (DOCDIR  ${CMAKE_INSTALL_PREFIX}/sha
+ if (APPLE)
+   set (BINDEST bin)
+   set (LIBDEST lib)
++elseif (MINGW)
++  set (BINDEST bin)
++  set (LIBDEST lib)
++  set (DOCDIR  ${CMAKE_INSTALL_PREFIX}/share/doc/musicxml)
+ elseif (WIN32)
+   set (BINDEST bin)
+   set (LIBDEST bin)
+@@ -271,7 +275,7 @@ install (
+ 
+ ####################################
+ # install VS redistributables
+-if (WIN32)
++if (WIN32 AND NOT MINGW)
+ if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 14 2015 Win64")
+ 	set (VS "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/redist/x64/Microsoft.VC140.CRT")
+ elseif (${CMAKE_GENERATOR} STREQUAL "Visual Studio 15 2017 Win64")
