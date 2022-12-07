@@ -1,0 +1,81 @@
+# Contributor: John Proctor <jproctor@prium.net>
+# Maintainer: juergen <juergen@archlinux.org>
+
+_realname=ecl
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=21.2.1
+# Remember to rebuild sagemath when the soname changes
+pkgrel=3
+pkgdesc="Embeddable Common Lisp"
+arch=('any')
+url="https://common-lisp.net/project/ecl/"
+license=('LGPL')
+depends=('bash' 
+         "${MINGW_PACKAGE_PREFIX}-gc"
+         "${MINGW_PACKAGE_PREFIX}-gmp"
+         "${MINGW_PACKAGE_PREFIX}-libatomic_ops"
+         "${MINGW_PACKAGE_PREFIX}-libffi")
+makedepends=('texinfo')
+provides=("${MINGW_PACKAGE_PREFIX}-common-lisp"
+          "${MINGW_PACKAGE_PREFIX}-cl-asdf")
+options=('!makeflags')
+source=("https://common-lisp.net/project/ecl/static/files/release/${_realname}-${pkgver}.tgz"
+      "ecl-mingw.patch")
+sha256sums=('b15a75dcf84b8f62e68720ccab1393f9611c078fcd3afdd639a1086cad010900'
+            '1b26aa24f3a934a761e0b055d0f6034093fc4037cf067e71e858605de55e095e')
+
+prepare() {
+  cd $_realname-$pkgver
+  sed -i 's|-Wl,--rpath,~A|-Wl,--rpath,/usr/lib/ecl|' src/configure
+  patch -Np1 -i "${srcdir}/ecl-mingw.patch"
+}
+
+build() {
+  cd $_realname-$pkgver
+  unset ECLDIR || true
+  CFLAGS+=" -fcommon -ffat-lto-objects" \
+  ./configure \
+    --build=${MINGW_CHOST} \
+    --prefix=${MINGW_PREFIX} \
+    --enable-boehm=system \
+    --enable-gmp=system \
+    --enable-libatomic=system \
+    --enable-manual=info \
+    --enable-shared \
+    --enable-threads \
+    --with-bytecmp \
+    --with-clos-streams \
+    --with-cmp \
+    --with-defsystem \
+    --with-rt \
+    --with-serve-event \
+    --with-sse \
+    --with-tcp \
+    --with-win32 \
+    --with-system-gmp \
+    --without-cxx \
+    --without-x \
+
+  make
+}
+
+package() {
+  make -C $_realname-$pkgver DESTDIR="$pkgdir" install
+  # Make install for mingw is ugly: we correct it
+  cd ${pkgdir}${MINGW_PREFIX}
+  mkdir -p share/licenses/${_realname}
+  mv COPYING* LICENSE* share/licenses/${_realname}
+  rm -fr ecl/gc
+  mkdir include
+  mv ecl include/
+  mkdir -p lib/ecl
+  mv *.a *.fas *.asd encodings help.doc lib/ecl
+  rm -f TAGS build-stamp
+  mkdir bin
+  mv *.exe *.dll ecl-config bin
+  mkdir -p etc/profile.d
+  cat >etc/profile.d/ecl.sh <<EOF
+export ECLDIR=$(cygpath -m ${MINGW_PREFIX}/lib/ecl/)
+EOF
+}

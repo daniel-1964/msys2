@@ -1,0 +1,24 @@
+diff -pur ecl-21.2.1.orig/src/cmp/cmpmain.lsp ecl-21.2.1/src/cmp/cmpmain.lsp
+--- ecl-21.2.1.orig/src/cmp/cmpmain.lsp	2021-02-01 13:59:46.000000000 +0100
++++ ecl-21.2.1/src/cmp/cmpmain.lsp	2022-11-14 18:53:21.454629300 +0100
+@@ -956,6 +956,8 @@ from the C language code.  NIL means \"d
+          *ecl-include-directory*)
+         ((probe-file "SYS:ecl;config.h")
+          (setf *ecl-include-directory* (namestring (translate-logical-pathname "SYS:"))))
++        ((probe-file "SYS:..;..;include;ecl;config.h")
++         (setf *ecl-include-directory* (namestring (truename (translate-logical-pathname "SYS:..;..;include")))))
+         ((error "Unable to find include directory"))))
+ 
+ (defun ecl-library-directory ()
+@@ -968,6 +970,11 @@ from the C language code.  NIL means \"d
+          *ecl-library-directory*)
+         ((probe-file "SYS:BUILD-STAMP")
+          (setf *ecl-library-directory* (namestring (translate-logical-pathname "SYS:"))))
++        ((probe-file (merge-pathnames (compile-file-pathname "ecl" :type
++                                       #+dlopen :shared-library
++                                       #-dlopen :static-library)
++                                      (truename "SYS:..;..;bin")))
++         (setf *ecl-library-directory* (namestring (truename (translate-logical-pathname "SYS:..;..;bin")))))
+         ((error "Unable to find library directory"))))
+ 
+ (defun compiler-cc (c-pathname o-pathname)
