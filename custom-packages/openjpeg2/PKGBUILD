@@ -2,10 +2,10 @@
 
 pkgbase=openjpeg
 pkgname=('openjpeg2' 'libopenjp2_7' 'libopenjp2-devel' 'libopenjp2-doc')
-pkgver=2.3.1
+pkgver=2.5.0
 pkgrel=1
 pkgdesc="An open source JPEG 2000 codec (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://www.openjpeg.org/"
 license=("BSD")
 depends=('gcc-libs'
@@ -27,14 +27,17 @@ source=(${pkgbase}-${pkgver}.tar.gz::https://github.com/uclouvain/openjpeg/archi
         0003-versioned-dlls.msys.patch
         0004-msys-disable-java.patch
         0005-sock-jpip.all.patch
-        0006-openjpeg-2.1.0-stdcall-for-all-win.patch)
-sha256sums=('63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9'
-            '3f3bde353ca3432f157258164c5e3c345af82ca3a9d5a68f815c3030b01cbc32'
-            '31b2cc6824b07b705ba1c05b38904c8c4fc6ba39acefebda3e6ec85dbef9a174'
-            'bff45c40e06002e49dfd2d52412ffc29bac536e63d4bee0cd3551d5d6f869cf4'
-            'a7426b2699770b128c515de96bd9e8ad7391f01e9c6ec092d019686d9ec7ebac'
-            '9df169f03e6e69cba0d7d33592f9eba373a02cd9554b456d3eb9ff3d9135391b'
-            'e8c375faa317c819174b50aa43b6be61c108872661b014738c4a0cfa95aac919')
+        0006-openjpeg-2.1.0-stdcall-for-all-win.patch
+        0007-pkgconfig-add-Cflags-private.patch)
+
+sha256sums=('0333806d6adecc6f7a91243b2b839ff4d2053823634d4f6ed7a59bc87409122a'                                                                                  
+            '3f3bde353ca3432f157258164c5e3c345af82ca3a9d5a68f815c3030b01cbc32'                                                                                  
+            '31b2cc6824b07b705ba1c05b38904c8c4fc6ba39acefebda3e6ec85dbef9a174'                                                                                  
+            'd3bf3883b129cf055144ab378e40915968de8336eb2b450ccc5272beb341f2f5'                                                                                  
+            'a7426b2699770b128c515de96bd9e8ad7391f01e9c6ec092d019686d9ec7ebac'                                                                                  
+            '9df169f03e6e69cba0d7d33592f9eba373a02cd9554b456d3eb9ff3d9135391b'                                                                                  
+            '44679801b740ddb75edd4b55031c5f70a02eaf4f8e5eba5f3ad1b397b2ec4aed'                                                                                  
+            '997dedd8211fc5e666b078b69ed622dd8ab4ceb05694b3ca593e92a32c151e2e')                                                                                 
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {
@@ -57,12 +60,13 @@ del_file_exists() {
 prepare() {
   cd "${srcdir}/${pkgbase}-${pkgver}"
   apply_patch_with_msg \
-   0001-fix-install-for-dlls.all.patch \
    0002-cmake-files-destination.patch \
    0003-versioned-dlls.msys.patch \
    0004-msys-disable-java.patch \
-   0005-sock-jpip.all.patch
-  #patch -p1 -i ${srcdir}/0006-openjpeg-2.1.0-stdcall-for-all-win.patch
+   0007-pkgconfig-add-Cflags-private.patch
+  #patch -Nbp1 -i ${srcdir}/0001-fix-install-for-dlls.all.patch 
+  #patch -Nbp1 -i ${srcdir}/0005-sock-jpip.all.patch \
+  #patch -Nbp1 -i ${srcdir}/0006-openjpeg-2.1.0-stdcall-for-all-win.patch
 }
 
 build() {
@@ -120,9 +124,9 @@ check() {
 
 package_openjpeg2() {
   depends=("libopenjp2_7=${pkgver}")
-  mkdir -p ${pkgdir}/usr/{bin,share/man/man1,share/doc/openjpeg-2.3}
+  mkdir -p ${pkgdir}/usr/{bin,share/man/man1}
   cp -a ${srcdir}/dest/usr/bin/*.exe ${pkgdir}/usr/bin/
-  cp -a ${srcdir}/dest/usr/share/doc/openjpeg-2.3 ${pkgdir}/usr/share/doc/
+  install -Dpm64 ${srcdir}/dest/usr/share/doc/openjpeg-2.5/LICENSE -t ${pkgdir}/usr/share/licenses/openjpeg-2.5/
   cp -a ${srcdir}/dest/usr/share/man/man1 ${pkgdir}/usr/share/man/
 }
 
@@ -147,6 +151,6 @@ package_libopenjp2-devel() {
 package_libopenjp2-doc() {
   pkgdesc="Libopenjpeg2 documentation"
   groups=('development')
-  mkdir -p ${pkgdir}/usr/share/doc/openjpeg-2.3
-  cp -a ${srcdir}/dest/usr/share/doc/html  ${pkgdir}/usr/share/doc/openjpeg-2.3/
+  mkdir -p ${pkgdir}/usr/share/doc/openjpeg-2.5
+  cp -a ${srcdir}/dest/usr/share/doc/openjpeg-2.5/html  ${pkgdir}/usr/share/doc/openjpeg-2.5/
 }
