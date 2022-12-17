@@ -4,7 +4,7 @@
 
 pkgbase=tcllib
 pkgname="${pkgbase}"
-pkgver=1.20
+pkgver=1.21
 pkgrel=1
 pkgdesc="Set of pure-Tcl extensions (msys)"
 arch=('any')
@@ -12,7 +12,7 @@ url="https://core.tcl.tk/tcllib/"
 license=('bsd')
 depends=("tcl")
 source=(https://github.com/tcltk/tcllib/archive/tcllib-${pkgver/./-}.tar.gz)
-sha256sums=('e56892698903e0cc902a75a0eb9324845efcd3257c41e09edec25a6ab1654cf3')
+sha256sums=('c939b06b3383480a293d6d3cec9af91491e8a38aa3571dfb5024fbf0db260bbd')                                                                                 
 
 package(){
   cd ${srcdir}/tcllib-tcllib-${pkgver/./-}
