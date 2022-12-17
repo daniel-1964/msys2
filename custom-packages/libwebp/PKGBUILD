@@ -3,10 +3,10 @@
 
 pkgname=('webp' 'libwebp7' 'libwebpmux3' 'libwebpdemux2' 'libwebpdecoder3' 'libwebp-devel')
 pkgbase=libwebp
-pkgver=1.1.0
+pkgver=1.2.4
 pkgrel=1
 pkgdesc="the WebP library. Includes conversion tools (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://developers.google.com/speed/webp/"
 license=('BSD')
 depends=('gcc-libs'
@@ -20,7 +20,7 @@ makedepends=('gcc'
              'libpng-devel'
              'libtiff-devel')
 source=(${pkgbase}-${pkgver}.tar.gz::https://github.com/webmproject/libwebp/archive/v${pkgver}.tar.gz)
-sha256sums=('424faab60a14cb92c2a062733b6977b4cc1e875a6398887c5911b3a1a6c56c51')
+sha256sums=('dfe7bff3390cd4958da11e760b65318f0a48c32913e4d5bc5e8d55abaaa2d32e')
 validpgpkeys=('6B0E6B70976DE303EDF2F601F9C3D6BDB8232B5D')
 
 prepare() {
