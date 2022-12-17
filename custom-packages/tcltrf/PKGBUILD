@@ -1,9 +1,10 @@
-pkgbase="trf"
-pkgname="tcltrf"
+_realname="trf"
+pkgbase="tcltrf"
+pkgname="${pkgbase}"
 pkgver=2.1.4
 pkgrel=1
 pkgdesc="Tcl extension for data transformations (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="http://tcltrf.sourceforge.net"
 license=('BSD')
 depends=('tcl'
@@ -17,7 +18,7 @@ makedepends=('libbz2-devel'
              'openssl-devel'
              'tclmemchan'
              'zlib-devel')
-source=("https://download.sourceforge.net/${pkgname}/${pkgbase}${pkgver}.tar.gz"
+source=("https://download.sourceforge.net/${pkgname}/${_realname}${pkgver}.tar.gz"
         'crypt.patch'
         'bzip2.patch'
         'static.patch'
@@ -46,7 +47,7 @@ sha256sums=('ddc24212a26b25820cf2830a510ec4a59e7ab3e73b1d2bec7042f82883189624'
 options=('!emptydirs')
 
 prepare() {
-  cd $srcdir/${pkgbase}${pkgver}
+  cd $srcdir/${_realname}${pkgver}
   patch -Np1 -i ${srcdir}/crypt.patch
   patch -Np1 -i ${srcdir}/bzip2.patch
   patch -Np1 -i ${srcdir}/static.patch
@@ -65,7 +66,7 @@ prepare() {
 
 build() {
   [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
-  cp -a ${srcdir}/${pkgbase}${pkgver} ${srcdir}/build
+  cp -a ${srcdir}/${_realname}${pkgver} ${srcdir}/build
   cd "${srcdir}/build"
   ./configure \
     --prefix=/usr \
@@ -85,11 +86,11 @@ build() {
 package() {
   cd "${srcdir}/build"
   make DESTDIR="${pkgdir}" install
-  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
-  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/man/*.n -t ${pkgdir}/usr/share/man/mann
-  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/capi/man/*.3 -t ${pkgdir}/usr/share/man/man3
-  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/html/*.html -t ${pkgdir}/usr/share/doc/${pkgbase}/html
-  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/doc/capi/html/*.html -t ${pkgdir}/usr/share/doc/${pkgbase}/html
+  install -Dm644 "${srcdir}"/${_realname}${pkgver}/doc/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
+  install -Dm644 "${srcdir}"/${_realname}${pkgver}/doc/man/*.n -t ${pkgdir}/usr/share/man/mann
+  install -Dm644 "${srcdir}"/${_realname}${pkgver}/doc/capi/man/*.3 -t ${pkgdir}/usr/share/man/man3
+  install -Dm644 "${srcdir}"/${_realname}${pkgver}/doc/html/*.html -t ${pkgdir}/usr/share/doc/${pkgbase}/html
+  install -Dm644 "${srcdir}"/${_realname}${pkgver}/doc/capi/html/*.html -t ${pkgdir}/usr/share/doc/${pkgbase}/html
   # Avoid manpage name clash with tcllib
   rename .n .ntrf ${pkgdir}/usr/share/man/mann/*.n
 }

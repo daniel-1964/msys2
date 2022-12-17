@@ -1,16 +1,17 @@
-pkgbase="tls"
-pkgname="tcltls"
+_realname="tls"
+pkgbase="tcltls"
+pkgname=${pkgbase}
 pkgver=1.7.21
 pkgrel=1
 pkgdesc="Tcl extension for TLS OpenSSL. (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 utl="https://github.com/rkeene/TclTLS"
 license=('BSD')
 depends=('tcllib'
          'libopenssl'
          'tcl')
 makedepends=('openssl-devel')
-source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/rkeene/TclTLS/archive/${pkgbase}-${pkgver//./-}.tar.gz"
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/rkeene/TclTLS/archive/${_realname}-${pkgver//./-}.tar.gz"
         'hostname-tests.patch'
         'cipher-tests.patch'
         'certs-tests.patch.gz'
@@ -25,7 +26,7 @@ sha256sums=('2e6ba601a66c89792563792f5f466b48c1da6415d0274fdb88a42c0beeaa1254'
 options=('!emptydirs')
 
 prepare() {
-  cd $srcdir/TclTLS-${pkgbase}-${pkgver//./-}
+  cd $srcdir/TclTLS-${_realname}-${pkgver//./-}
   patch -Np1 -i ${srcdir}/hostname-tests.patch
   patch -Np1 -i ${srcdir}/cipher-tests.patch
   patch -Np1 -i ${srcdir}/certs-tests.patch
@@ -36,7 +37,7 @@ prepare() {
 
 build() {
   [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
-  cp -a ${srcdir}/TclTLS-${pkgbase}-${pkgver//./-} ${srcdir}/build
+  cp -a ${srcdir}/TclTLS-${_realname}-${pkgver//./-} ${srcdir}/build
   cd "${srcdir}/build"
   ./configure \
     --prefix=/usr
@@ -46,7 +47,7 @@ build() {
 package() {
   cd "${srcdir}/build"
   make DESTDIR="${pkgdir}" install
-  install -Dm644 "$srcdir/TclTLS-${pkgbase}-${pkgver//./-}/license.terms" ${pkgdir}/usr/share/licenses/${pkgname}/license.terms
+  install -Dm644 "$srcdir/TclTLS-${_realname}-${pkgver//./-}/license.terms" ${pkgdir}/usr/share/licenses/${pkgname}/license.terms
   install -Dm644 "${srcdir}"/tls.n -t ${pkgdir}/usr/share/man/mann
 }
 

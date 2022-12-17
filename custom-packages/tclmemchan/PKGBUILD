@@ -1,9 +1,10 @@
-pkgbase="Memchan"
-pkgname="tclmemchan"
+_realname="Memchan"
+pkgbase="tclmemchan"
+pkgname=${pkgbase}
 pkgver=2.3
 pkgrel=1
 pkgdesc="Tcl extension for in-memory channels. (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="http://memchan.sourceforge.net"
 license=('BSD')
 depends=('tcl'
@@ -16,7 +17,7 @@ makedepends=('libbz2-devel'
              'libcrypt-devel'
              'openssl-devel'
              'zlib-devel')
-source=("https://download.sourceforge.net/memchan/${pkgbase}${pkgver}.tar.gz"
+source=("https://download.sourceforge.net/memchan/${_realname}${pkgver}.tar.gz"
         'configure.patch'
         'randinit.patch'
         'tcl.m4')
@@ -27,7 +28,7 @@ sha256sums=('adaa5952fe532a917372dcdbc873c082656c49b613d92b09e7938d8f276f2749'
 options=('!emptydirs')
 
 prepare() {
-  cd $srcdir/${pkgbase}${pkgver}
+  cd $srcdir/${_realname}${pkgver}
   patch -Np1 -i ${srcdir}/configure.patch
   patch -Np1 -i ${srcdir}/randinit.patch
   cp -a ${srcdir}/tcl.m4 tclconfig/tcl.m4
@@ -36,7 +37,7 @@ prepare() {
 
 build() {
   [[ -d "${srcdir}/build" ]] && rm -fr "${srcdir}/build"
-  cp -a ${srcdir}/${pkgbase}${pkgver} ${srcdir}/build
+  cp -a ${srcdir}/${_realname}${pkgver} ${srcdir}/build
   cd "${srcdir}/build"
   ./configure \
     --prefix=/usr \
@@ -47,5 +48,5 @@ build() {
 package() {
   cd "${srcdir}/build"
   make DESTDIR="${pkgdir}" install
-  install -Dm644 "${srcdir}"/${pkgbase}${pkgver}/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
+  install -Dm644 "${srcdir}"/${_realname}${pkgver}/license.terms ${pkgdir}/usr/share/licenses/${pkgbase}/license.terms
 }

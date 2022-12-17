@@ -1,17 +1,16 @@
 # Based on Arch's PKGBUILD
 
+_realname=tclvfs-cvs
 pkgbase=tclvfs
-pkgname=${pkgbase}-cvs
+pkgname=${pkgbase}
 pkgver=20130425
 pkgrel=3
 pkgdesc="Virtual Filesystem support for Tcl (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://sourceforge.net/projects/tclvfs/"
 license=('BSD')
 depends=("tcl")
 makedepends=('cvs')
-provides=("tclvfs")
-conflicts=("tclvfs")
 source=('tcl.m4')
 # generate with 'makepkg -g'
 sha256sums=('2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')

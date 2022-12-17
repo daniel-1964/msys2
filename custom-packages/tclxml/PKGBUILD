@@ -1,8 +1,9 @@
-pkgname="tclxml"
+pkgbase="tclxml"
+pkgname=${pkgbase}
 pkgver=3.2
 pkgrel=1
 pkgdesc="Tcl library for XML parsing (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://tclxml.sourceforge.net/"
 license=('custom:BSD')
 depends=('tcl'
