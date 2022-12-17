@@ -6,7 +6,7 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=1.4.0
+pkgver=1.5.1
 pkgrel=1
 pkgdesc="Python ASN.1 library with a focus on performance and a pythonic API (msys)"
 url='https://github.com/wbond/asn1crypto'
@@ -15,7 +15,7 @@ arch=('any')
 depends=('python-pycparser')
 makedepends=('python-setuptools')
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/wbond/asn1crypto/archive/${pkgver}.tar.gz")
-sha256sums=('1aeb3e243772fdbf815867b41320436b86f05a6aa14265d90910da780910f39d')
+sha256sums=('c06e6827971891a7c42299eff3f0881d6fbf1ada53f11c5797240a9c0cec6a1c')
 
 prepare() {
   cd ${srcdir}
