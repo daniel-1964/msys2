@@ -1,57 +1,69 @@
---- giflib-5.1.9/Makefile.orig	2019-06-10 11:06:10.797407400 +0300
-+++ giflib-5.1.9/Makefile	2019-06-10 11:10:11.917745000 +0300
-@@ -62,27 +62,25 @@
+--- giflib-5.2.2/Makefile.orig	2024-02-19 02:01:50.000000000 +0100
++++ giflib-5.2.2/Makefile	2024-02-20 23:05:57.574482400 +0100
+@@ -86,6 +86,16 @@
+ LIBUTILSO	= libutil.$(SOEXTENSION)
+ LIBUTILSOMAJOR	= libutil.$(LIBMAJOR).$(SOEXTENSION)
+ endif
++ifeq ($(findstring MSYS, $(UNAME)), MSYS)
++SOEXTENSION	= dll
++LIBGIFSO        = msys-gif-$(LIBMAJOR).$(SOEXTENSION)
++LIBGIFSOIMPORT  = libgif.dll.a
++LIBGIFSOMAJOR   = msys-gif-$(LIBMAJOR).$(SOEXTENSION)
++LIBGIFSOVER	= msys-gif-$(LIBMAJOR).$(SOEXTENSION)
++LIBUTILSO	= msys-util-$(LIBMAJOR).$(SOEXTENSION)
++LIBUTILSOMAJOR	= msys-util-$(LIBMAJOR).$(SOEXTENSION)
++LIBUTILSOIMPORT = libutil.dll.a
++endif
  
- LDLIBS=libgif.a -lm
- 
--all: libgif.so libgif.a libutil.so libutil.a $(UTILS)
-+all: msys-gif-$(LIBMAJOR).dll libgif.a msys-util-$(LIBMAJOR).dll libutil.a $(UTILS)
- 	$(MAKE) -C doc
- 
- $(UTILS):: libgif.a libutil.a
- 
--libgif.so: $(OBJECTS) $(HEADERS)
--	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,-soname -Wl,libgif.so.$(LIBMAJOR) -o libgif.so $(OBJECTS)
-+msys-gif-$(LIBMAJOR).dll: $(OBJECTS) $(HEADERS)
-+	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,--out-implib,libgif.dll.a -o msys-gif-$(LIBMAJOR).dll $(OBJECTS)
- 
+ all: $(LIBGIFSO) libgif.a $(LIBUTILSO) libutil.a $(UTILS)
+ ifeq ($(UNAME), Darwin)
+@@ -98,6 +108,8 @@
+ $(LIBGIFSO): $(OBJECTS) $(HEADERS)
+ ifeq ($(UNAME), Darwin)
+ 	$(CC) $(CFLAGS) -dynamiclib -current_version $(LIBVER) $(OBJECTS) -o $(LIBGIFSO)
++else ifeq ($(findstring MSYS,$(UNAME)),MSYS)
++	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,--out-implib,$(LIBGIFSOIMPORT) -o $(LIBGIFSO) $(OBJECTS)
+ else
+ 	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,-soname -Wl,$(LIBGIFSOMAJOR) -o $(LIBGIFSO) $(OBJECTS)
+ endif
+@@ -105,9 +117,11 @@
  libgif.a: $(OBJECTS) $(HEADERS)
  	$(AR) rcs libgif.a $(OBJECTS)
  
--libutil.so: $(UOBJECTS) $(UHEADERS)
--	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,-soname -Wl,libutil.so.$(LIBMAJOR) -o libutil.so $(UOBJECTS)
-+msys-util-$(LIBMAJOR).dll: $(UOBJECTS) $(UHEADERS)
-+	$(CC) $(CFLAGS) -shared $(LDFLAGS)  -Wl,--out-implib,libutil.dll.a -o msys-util-$(LIBMAJOR).dll $(UOBJECTS) -L. -lgif
- 
- libutil.a: $(UOBJECTS) $(UHEADERS)
- 	$(AR) rcs libutil.a $(UOBJECTS)
- 
- clean:
--	rm -f $(UTILS) $(TARGET) libgetarg.a libgif.a libgif.so libutil.a libutil.so *.o
--	rm -f libgif.so.$(LIBMAJOR).$(LIBMINOR).$(LIBPOINT)
--	rm -f libgif.so.$(LIBMAJOR)
-+	rm -f $(UTILS) $(TARGET) libgetarg.a libgif.a msys-gif-$(LIBMAJOR).dll libgif.dll.a libutil.a msys-util-$(LIBMAJOR).dll libutil.dll.a *.o
- 	rm -fr doc/*.1 *.html doc/staging
- 
- check: all
-@@ -100,9 +98,8 @@
+-$(LIBUTILSO): $(UOBJECTS) $(UHEADERS)
++$(LIBUTILSO): $(UOBJECTS) $(UHEADERS) $(LIBGIFSO)
+ ifeq ($(UNAME), Darwin)
+ 	$(CC) $(CFLAGS) -dynamiclib -current_version $(LIBVER) $(OBJECTS) -o $(LIBUTILSO)
++else ifeq ($(findstring MSYS,$(UNAME)),MSYS)
++	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,--out-implib,$(LIBUTILSOIMPORT) -o $(LIBUTILSO) $(UOBJECTS) -L. -lgif
+ else
+ 	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,-soname -Wl,$(LIBUTILMAJOR) -o $(LIBUTILSO) $(UOBJECTS)
+ endif
+@@ -144,12 +158,12 @@
  install-lib:
  	$(INSTALL) -d "$(DESTDIR)$(LIBDIR)"
  	$(INSTALL) -m 644 libgif.a "$(DESTDIR)$(LIBDIR)/libgif.a"
--	$(INSTALL) -m 755 libgif.so "$(DESTDIR)$(LIBDIR)/libgif.so.$(LIBVER)"
--	ln -sf libgif.so.$(LIBVER) "$(DESTDIR)$(LIBDIR)/libgif.so.$(LIBMAJOR)"
--	ln -sf libgif.so.$(LIBMAJOR) "$(DESTDIR)$(LIBDIR)/libgif.so"
-+	$(INSTALL) -m 644 libgif.dll.a "$(DESTDIR)$(LIBDIR)/libgif.dll.a"
-+	$(INSTALL) -m 755 msys-gif-$(LIBMAJOR).dll "$(DESTDIR)$(BINDIR)/msys-gif-$(LIBMAJOR).dll"
+-	$(INSTALL) -m 755 $(LIBGIFSO) "$(DESTDIR)$(LIBDIR)/$(LIBGIFSOVER)"
+-	ln -sf $(LIBGIFSOVER) "$(DESTDIR)$(LIBDIR)/$(LIBGIFSOMAJOR)"
+-	ln -sf $(LIBGIFSOMAJOR) "$(DESTDIR)$(LIBDIR)/$(LIBGIFSO)"
++	$(INSTALL) -m 644 $(LIBGIFSOIMPORT) "$(DESTDIR)$(LIBDIR)/$(LIBGIFSOIMPORT)"
++	$(INSTALL) -d "$(DESTDIR)$(BINDIR)"
++	$(INSTALL) -m 755 $(LIBGIFSO) "$(DESTDIR)$(BINDIR)/$(LIBGIFSO)"
  install-man:
  	$(INSTALL) -d "$(DESTDIR)$(MANDIR)/man1"
- 	$(INSTALL) -m 644 doc/*.1 "$(DESTDIR)$(MANDIR)/man1"
-@@ -113,7 +110,7 @@
- 	rm -f "$(DESTDIR)$(INCDIR)/gif_lib.h"
- uninstall-lib:
- 	cd "$(DESTDIR)$(LIBDIR)" && \
--		rm -f libgif.a libgif.so libgif.so.$(LIBMAJOR) libgif.so.$(LIBVER)
-+		rm -f libgif.a msys-gif-$(LIBMAJOR).dll libgif.dll.a
- uninstall-man:
- 	cd "$(DESTDIR)$(MANDIR)/man1" && rm -f $(shell cd doc >/dev/null && echo *.1)
+-	$(INSTALL) -m 644 $(MANUAL_PAGES) "$(DESTDIR)$(MANDIR)/man1"
++	$(INSTALL) -m 644 doc/*.1 "$(DESTDIR)$(MANDIR)/man1"
+ uninstall: uninstall-man uninstall-include uninstall-lib uninstall-bin
+ uninstall-bin:
+ 	cd "$(DESTDIR)$(BINDIR)" && rm -f $(INSTALLABLE)
+--- giflib-5.2.2/doc/Makefile.orig	2024-02-18 19:15:05.000000000 +0100
++++ giflib-5.2.2/doc/Makefile	2024-02-21 09:00:48.621317500 +0100
+@@ -15,7 +15,7 @@
+ .adoc.html:
+ 	asciidoc $<
  
+-all: allhtml manpages
++all: manpages
+ 
+ # The distinction between XMLMAN and XMLINTERNAL is because
+ # some pages shouldn't be installed as part of a binary package;
