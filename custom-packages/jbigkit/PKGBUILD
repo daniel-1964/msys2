@@ -1,11 +1,12 @@
 # Maintainer: Alexey Pavlov <alexpux@gmail.com>
 # Contributor: Renato Silva <br.renatosilva@gmail.com>
 
+pkgbase='jbigkit'
 pkgname=('jbigkit' 'libjbig2' 'libjbig-devel')
 pkgver=2.1
 pkgrel=4
 pkgdesc="Data compression library/utilities for bi-level high-resolution images (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://www.cl.cam.ac.uk/~mgk25/jbigkit/"
 license=(GPL2)
 depends=("gcc-libs")
