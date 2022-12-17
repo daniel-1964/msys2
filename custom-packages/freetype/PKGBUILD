@@ -2,11 +2,11 @@
 # Contributor: Renato Silva <br.renatosilva@gmail.com>
 
 pkgname=('libfreetype6' 'libfreetype-devel')
-ppkgbase=freetype
-pkgver=2.10.2
-pkgrel=2
+pkgbase=freetype
+pkgver=2.12.1
+pkgrel=1
 pkgdesc="TrueType font rendering library (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://www.freetype.org/"
 license=(GPL2+ custom:FreeType)
 depends=("gcc-libs"
@@ -22,19 +22,19 @@ makedepends=("gcc"
              "libpng-devel"
              "pkg-config")
 options=('strip' '!libtool' 'staticlibs')
-source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.xz{,.sig}
+source=(https://downloads.sourceforge.net/sourceforge/${pkgbase}/${pkgbase}-${pkgver}.tar.xz{,.sig}
         freetype-2.10.0-enable-valid.patch
         freetype-2.10.0-enable-spr.patch
         freetype-2.5.1-enable-sph.patch)
-sha256sums=('1543d61025d2e6312e0a1c563652555f17378a204a61e99928c9fcef030a2d8b'
+sha256sums=('4766f20157cc4cf0cd292f80bf917f92d1c439b243ac3018debf6b9140c41a7f'
             'SKIP'
             '30e84993f899b66c31451992667f7ac6cc9e0b19dfe2f47ccb546d77bbc77ef5'
             '0571f18d97834df020e4cbdb1338b14f9160669f868237080951e01f5b86727c'
             '324012ad68388d22c63368314721d2360b48dd40daa808d0383699a281d931b0')
-validpgpkeys=('58E0C111E39F5408C5D3EC76C1A60EACE707FDA5')
+validpgpkeys=('E30674707856409FF1948010BE6C3AAC63AD8E3F')
 
 prepare() {
-  cd "${srcdir}/freetype-${pkgver}"
+  cd "${srcdir}/${pkgbase}-${pkgver}"
   plain "freetype-2.10.0-enable-valid.patch"
   patch -Np1 -i "${srcdir}/freetype-2.10.0-enable-valid.patch"
   plain "freetype-2.10.0-enable-spr.patch"
@@ -89,9 +89,8 @@ build() {
   cd "${srcdir}/build-shared"
   make DESTDIR=${srcdir}/dest install
   # Licenses
-  install -Dm644 "${srcdir}/${ppkgbase}-${pkgver}/docs/LICENSE.TXT" "${srcdir}/dest/usr/share/licenses/${ppkgbase}/LICENSE.TXT"
-  install -Dm644 "${srcdir}/${ppkgbase}-${pkgver}/docs/GPLv2.TXT"   "${srcdir}/dest/usr/share/licenses/${ppkgbase}/GPLv2.TXT"
-  install -Dm644 "${srcdir}/${ppkgbase}-${pkgver}/docs/FTL.TXT"     "${srcdir}/dest/usr/share/licenses/${ppkgbase}/FTL.TXT"
+  install -pDm644 "${srcdir}/${pkgbase}-${pkgver}/docs/GPLv2.TXT"   "${srcdir}/dest/usr/share/licenses/${pkgbase}/GPLv2.TXT"
+  install -pDm644 "${srcdir}/${pkgbase}-${pkgver}/docs/FTL.TXT"     "${srcdir}/dest/usr/share/licenses/${pkgbase}/FTL.TXT"
 }
 
 check() {
