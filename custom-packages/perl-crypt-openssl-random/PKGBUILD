@@ -1,18 +1,21 @@
 # Maintainer: Florian Pritz <bluewind@xinu.at>
 
-pkgname=perl-crypt-openssl-random
-pkgver=0.15
-pkgrel=6
+pkgbase=perl-crypt-openssl-random
+pkgname=${pkgbase}
+pkgver=0.17
+pkgrel=1
 pkgdesc='Routines for accessing the OpenSSL pseudo-random number generator'
-arch=(x86_64)
+arch=('i686' 'x86_64')
 license=(PerlArtistic GPL)
 options=(!emptydirs)
-makedepends=('perl-crypt-openssl-guess>=0.11')
+makedepends=('perl-crypt-openssl-guess>=0.11'
+             'libxcrypt-devel'
+             'openssl-devel')
 depends=(perl openssl )
 url=https://metacpan.org/release/Crypt-OpenSSL-Random
 source=("https://search.cpan.org/CPAN/authors/id/R/RU/RURBAN/Crypt-OpenSSL-Random-$pkgver.tar.gz")
-md5sums=(bcde8d5a822c91376deda3c4f0c75fbe)
-sha512sums=(bba8ce86b97ce2d6271be503efff6e6e0ff60a797282a2b7cb9c6c0592b69cc43344f9738b4790e5fc165a7273ff01e35ada481cf8c4dfde38cb7ad741d97530)
+md5sums=('294f545c54a5a4855cb00c5648eb5c2b')
+sha512sums=('a73a9c5c7d361467dace1ea34169e211ba7a11e29c84e9a87568a3cccf28c4cf317c39ee9c4b697e06dac408bb4c2446dd948289da9a77daf8283f27abdc2887')
 _ddir="Crypt-OpenSSL-Random-$pkgver"
 
 build() {

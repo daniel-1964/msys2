@@ -1,13 +1,15 @@
 # Maintainer: Florian Pritz <bluewind@xinu.at>
 
-pkgname=perl-crypt-openssl-bignum
+pkgbase=perl-crypt-openssl-bignum
+pkgname=${pkgbase}
 pkgver=0.09
-pkgrel=5
+pkgrel=6
 pkgdesc="OpenSSL's multiprecision integer arithmetic"
-arch=(x86_64)
+arch=('i686' 'x86_64')
 license=(PerlArtistic GPL)
 options=(!emptydirs)
 depends=(perl openssl)
+makedepends=(libxcrypt-devel openssl-devel)
 url=https://metacpan.org/release/Crypt-OpenSSL-Bignum
 source=("https://search.cpan.org/CPAN/authors/id/K/KM/KMX/Crypt-OpenSSL-Bignum-$pkgver.tar.gz")
 md5sums=(c8ae05771c70c69b3e5647b29a885ed2)
