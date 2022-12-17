@@ -1,0 +1,44 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=exceptiongroup
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+pkgver=1.2.2
+pkgrel=1
+pkgdesc="Backport of PEP 654 (exception groups) (msys)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: exceptiongroup'
+)
+url='https://github.com/agronholm/exceptiongroup'
+license=('spdx:MIT')
+depends=("python")
+makedepends=("python-build"
+             "python-installer"
+             "python-flit-scm")
+checkdepends=("python-pytest")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc')
+
+build() {
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+check() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
