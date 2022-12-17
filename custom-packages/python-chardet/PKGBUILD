@@ -7,16 +7,20 @@ provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
 pkgdesc="Python module for character encoding auto-detection (msys)"
-pkgver=4.0.0
+pkgver=5.1.0
 pkgrel=1
 arch=('any')
 url="https://github.com/chardet/chardet"
 license=('LGPL')
-makedepends=("python-setuptools")
+depends=('python')
+makedepends=('python-build'
+             'python-installer'
+             'python-setuptools'
+             'python-wheel')
 checkdepends=('python-pytest' 'python-packaging')
 #More comprehensive than PyPi source
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/chardet/chardet/archive/${pkgver}.tar.gz")
-sha256sums=('67bbe3eb02691d38831ddf2719c40fe09381bc17f15321946f6cd71dc274e530')
+sha256sums=('556325114dc086fb2aaaf8ca06efda4cb9eba417095d8689ddc560da97313dd9')
 
 prepare() {
   cd "${srcdir}"
@@ -27,18 +31,17 @@ prepare() {
 build() {
   msg "Python build for msys2"
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  /usr/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
   msg "Python test for msys2"
   cd "${srcdir}/python-build"
-  /usr/bin/python test.py
+  /usr/bin/python -m pytest
 }
 
 package() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}" --optimize=1
+  /usr/bin/python -m installer --prefix=/usr --destdir="${pkgdir}" dist/*.whl
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
-  local PREFIX_WIN=$(cygpath -wm /usr)
 }
