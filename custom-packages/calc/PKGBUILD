@@ -3,7 +3,7 @@ pkgname=("${pkgbase}" "lib${pkgbase}" "lib${pkgbase}-devel")
 pkgver=2.12.7.2
 pkgrel=1
 pkgdesc="C-style arbitrary precision calculator (Msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="http://www.isthe.com/chongo/tech/comp/calc/"
 source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/lcn2/${pkgbase}/archive/${pkgver}.tar.gz"
 	'manpage-fixes.patch'
