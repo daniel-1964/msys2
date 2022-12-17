@@ -2,10 +2,10 @@
 
 pkgname=('recode' 'librecode0' 'librecode-devel')
 pkgbase=recode
-pkgver=3.7.6
+pkgver=3.7.12
 pkgrel=2
 pkgdesc="Converts files between various character sets and usages (msys2)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="http://recode.progiciels-bpi.ca/index.html"
 license=('GPL3' 'LGPL')
 depends=('gettext')
@@ -14,8 +14,8 @@ makedepends=('gcc'
              'python')
 source=("https://github.com/rrthomas/recode/releases/download/v${pkgver}/${pkgbase}-${pkgver}.tar.gz"
         01-no-undefined.patch)
-sha256sums=('46c5828ac6f5fb759ecf98b16a674188d901b84675b0dbbc0afc03c542d3a954'
-            '21de31138709ec460fb684b5bf110beabf31627b8e55b4131aad67c7633e77dd')
+sha256sums=('4db1c9076f04dbaa159726f5000847e5e5a83aec8e5c64f8ca04383f6cda12d5'
+            'e04eb3a85390e73faaecca79e942cc84fea7a3854998b2250f1d9ca02f1f1cc9')
 
 prepare() {
   cd ${srcdir}/${pkgbase}-${pkgver}
@@ -28,7 +28,7 @@ build() {
   [[ -d "${srcdir}/build" ]] && rm -rf "${srcdir}/build"
   mkdir -p ${srcdir}/build && cd ${srcdir}/build
   export lt_cv_deplibs_check_method='pass_all'
-  PYTHON=python \
+  PYTHON=python3 \
   ../${pkgbase}-${pkgver}/configure \
     --prefix=/usr \
     --mandir=/usr/share/man \
