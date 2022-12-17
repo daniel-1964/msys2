@@ -1,8 +1,8 @@
 pkgbase="units"
 pkgname=${pkgbase}
-pkgver=2.19
+pkgver=2.22
 pkgrel=1
-arch=('any')
+arch=('i686' 'x86_64')
 pkgdesc="Console unit converter (msys)"
 url="http://www.gnu.org/software/${pkgbase}/"
 license=('GPLV3')
@@ -16,7 +16,7 @@ _D="${startdir}/src/dest"
 _S="${startdir}/src/${pkgbase}-${pkgver}"
 set -o pipefail
 source=("ftp://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.gz")
-sha256sums=('4262136bdfc152b63ff5a9b93a7d80ce18b5e8bebdcffddc932dda769e306556')
+sha256sums=('5d13e1207721fe7726d906ba1d92dc0eddaa9fc26759ed22e3b8d1a793125848')
 
 src_compile() {
   cp -a ${_S}/. ${_B}/
