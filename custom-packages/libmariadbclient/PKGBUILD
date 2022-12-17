@@ -2,10 +2,10 @@
 
 pkgbase=libmariadbclient
 pkgname=("${pkgbase}" "${pkgbase}-devel")
-pkgver=3.1.7
+pkgver=3.1.13
 pkgrel=2
 pkgdesc="MariaDB client libraries (mingw-w64)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://mariadb.org/"
 license=('LGPL')
 makedepends=('gcc'
@@ -21,23 +21,22 @@ depends=('gcc-libs'
          'zlib')
 #optdepends=('curl')
 options=('!strip' 'staticlibs')
-source=(#"https://downloads.mariadb.org/interstitial/connector-c-${pkgver}/source-tgz/mariadb-connector-c-${pkgver}-src.tar.gz"
-        http://mirror.mephi.ru/mariadb/connector-c-${pkgver}/mariadb-connector-c-${pkgver}-src.tar.gz{,.asc}
+source=(https://archive.mariadb.org/connector-c-3.1.13/mariadb-connector-c-3.1.13-src.tar.gz{,.asc}
         001-mingw-build.patch
         002-fix-prototype.patch
         003-gcc-fix-use_VA_ARGS.patch
         3.0.8-msys-dll.patch
         3.0.8-msys-export.patch
         3.0.8-iconv.patch)
-validpgpkeys=("199369E5404BD5FC7D2FE43BCBCB082A1BB943DB") #MariaDB Package Signing Key <package-signing-key@mariadb.org>
-sha256sums=('64f7bc8f5df3200ba6e3080f68ee4942382a33e8371baea8ca4b9242746df59a'
+validpgpkeys=('199369E5404BD5FC7D2FE43BCBCB082A1BB943DB') #MariaDB Package Signing Key <package-signing-key@mariadb.org>
+sha256sums=('0271a5edfd64b13bca5937267474e4747d832ec62e169fc2589d2ead63746875'
             'SKIP'
-            '9c6381c522fca4bda4bbe9e3b16e929bd215ded7f4263801da739856d3d109f1'
-            '7f2231363c2b21bfd578c4600ca0fad33fb8ebf2a463bc3b42f202c9ff7ef366'
-            '18d3bd0b06906e7ac295b024f1d94d9852ede0a28f06da0d51b452c2d896b432'
+            'a5ef33cae8a5a5b06c5b5686628bb8e9419f6bd2305343c63e952f4da1fa0fac'                                                                                  
+            '346695ce8f10c2c426f880240ef7bbe7b8d70c6e58b0cc30483735c2b2d53261'
+            'fc08055e5d63e310e2658b15f6e1f00b59f2aad2dec37560c01954fac6af4a6e'
             '7610d135a709cf173a12d571a1bd1a285e032f6037488eed4144629027761bac'
-            'c1a0733a4317670cb19bac9c3597cc2b2b391851547690acf4f3c66a7ddd73c9'
-            '2f4fb5bb61141bdc64d482d45072b37c964e99e3f154b9a178be0682a9e18e54')
+            '1a6a668e27cf4c20c8cee40caefd4177573aaa969ad3768aba356cdd7e2e07a0'
+            '8041e559bf381444e4eb8ef149b65796126178839e6501a36e6f86934283f11d')
 
 prepare() {
   cd ${srcdir}/mariadb-connector-c-${pkgver}-src
