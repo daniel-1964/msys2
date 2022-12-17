@@ -4,16 +4,17 @@
 
 pkgbase=tcl-nsf
 pkgname="${pkgbase}"
-pkgver=2.1.0
+pkgver=2.3.0
 pkgrel=1
 pkgdesc="Next Scripting Language (msys)"
-arch=('any')
+arch=('i686' 'x86_64')
 url="https://next-scripting.org"
 license=('MIT')
 depends=("tcl")
+makedepends=("autotools")
 source=("https://downloads.sourceforge.net/project/next-scripting/${pkgver}/nsf${pkgver}.tar.gz"
         'tcl.m4')
-sha256sums=('be4d7ed30bc366ca9c264626d55d5dd029eec6bf51d2a8a5e26803d64684b020'
+sha256sums=('3940c4c00e18900abac8d57c195498f563c3cdb65157257af57060185cfd7ba9'
             '2162a7f2a58cc5d31de1a6e3c47907b2bdf5b12aa44d9a4787ddd01c7745a60c')
 
 prepare() {
