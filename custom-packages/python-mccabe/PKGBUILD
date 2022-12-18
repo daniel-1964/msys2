@@ -6,21 +6,23 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=0.6.1
-pkgrel=1
+pkgver=0.7.0
+pkgrel=2
 pkgdesc="McCabe complexity checker for Python (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://github.com/flintwork/mccabe'
+msys2_references=(
+  'pypi: mccabe'
+)
 license=('custom:Expat')
 validpgpkeys=('gpg_KEY')
 depends=("python")
 makedepends=("python-pytest-runner"
              "python-setuptools")
 options=('staticlibs' 'strip' '!debug')
-source=("${_realname}-${pkgver}.tar.gz::https://github.com/flintwork/mccabe/archive/${pkgver}.tar.gz"
-        fix-metadata.patch)
-sha256sums=('2748af6516175b94be318cd8226fa50b5339b9dc886bce378ac2afb37a157524'
-            'e2395fa0cf7acd786d6349f1306e5604db60d427aa1f65e3751517d96aa4a9d1')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/flintwork/mccabe/archive/${pkgver}.tar.gz")
+sha256sums=('f4f7fa5ed8b7f77601fea3e748d6238928323a291fcde0fddbbe6cb2d0cb2da2')
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {
@@ -42,31 +44,27 @@ del_file_exists() {
 # =========================================== #
 
 prepare() {
-  cd "${srcdir}"
-  pushd ${_realname}-${pkgver}
-  apply_patch_with_msg fix-metadata.patch
-  popd
-
-  rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
+  rm -rf python-build-${MSYSTEM} | true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}"
 }
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  msg "Python build for ${MSYSTEM}"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
 }
 
 check() {
-  msg "Python test for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py test
+  msg "Python test for ${MSYSTEM}"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python setup.py test
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/COPYING"
 }
