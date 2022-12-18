@@ -7,53 +7,49 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=2.8.1
+pkgver=2.9.0
 pkgrel=1
 pkgdesc="Provides powerful extensions to the standard datetime module (msys)"
 arch=('any')
-license=('BSD' 'Apache')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'archlinux: python-dateutil'
+  'pypi: python-dateutil'
+)
+license=('spdx:BSD-3-Clause OR Apache-2.0')
 url="https://github.com/dateutil/dateutil"
-depends=('python-six')
-makedepends=('python-setuptools'
-             'python-setuptools-scm')
-checkdepends=('python-pytest'
-              'python-freezegun'
-              'python-hypothesis')
-source=("${_realname}-${pkgver}.tar.gz"::"https://files.pythonhosted.org/packages/source/${_pyname:0:1}/${_pyname}/${_pyname}-${pkgver}.tar.gz"{,.asc})
-validpgpkeys=("6B49ACBADCF6BD1CA20667ABCD54FCE3D964BEFB")
-sha256sums=('73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c'
-            '73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c')
+depends=("python-six")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools-scm"
+             "python-wheel")
+checkdepends=("python-pytest"
+              "python-freezegun"
+              "python-hypothesis")
+source=("https://pypi.org/packages/source/${_pyname::1}/${_pyname}/${_pyname}-${pkgver}.tar.gz")
+sha256sums=('78e73e19c63f5b20ffa567001531680d939dc042bf7850431877645523c66709')
 
 prepare() {
-  cd "${srcdir}"
-  rm -rf python-build | true
-  cp -a "${_pyname}-${pkgver}" "python-build"
-
+  cd "${srcdir}/${_pyname}-${pkgver}"
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
 }
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-      /usr/bin/python setup.py build
+  cp -r "${_pyname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  msg "Python test for msys"
-  cd "${srcdir}/python-build"
-      /usr/bin/pytest || warning "Tests failed"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
 }
 
 package() {
-  cd "${srcdir}/python-build"
+  cd "${srcdir}/python-build-${MSYSTEM}"
 
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root=${pkgdir} --optimize=1 --skip-build
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  local _py3basever=$(/usr/bin/python -c "import sys;sys.stdout.write('.'.join(map(str, sys.version_info[:2])))")
-
-  install -Dm644 LICENSE ${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE
-  chmod -R a+r $pkgdir//usr/lib/python${_py3basever}/
-
-  # Remove data files
-  #rm ${pkgdir}/usr/lib/python${_py3basever}/site-packages/dateutil/zoneinfo/dateutil-zoneinfo.tar.gz
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
