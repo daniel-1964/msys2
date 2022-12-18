@@ -1,7 +1,4 @@
-# Maintainer: Some One <some.one@some.email.com>
-#This value is here because some python package names have capital letters
-#while there is a strong preference for lowercase letters in ArchLinux and
-#MSYS packages.
+# Maintainer: Biswapriyo Nath <nathbappai@gmail.com>
 
 _realname=pyflakes
 pkgbase=python-${_realname}
@@ -9,64 +6,42 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=2.2.0
-pkgrel=1
+pkgver=3.2.0
+pkgrel=2
 pkgdesc="A lint-like tool for Python to identify common errors quickly without executing code (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: pyflakes'
+)
 url='https://pypi.python.org/pypi/pyflakes'
-license=('MIT')
+license=('spdx:MIT')
 depends=("python")
-makedepends=("python-setuptools")
-options=('staticlibs' 'strip' '!debug')
-source=("https://pypi.io/packages/source/p/pyflakes/pyflakes-${pkgver}.tar.gz")
-sha256sums=('35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8')
-
-# Helper macros to help make tasks easier #
-apply_patch_with_msg() {
-  for _patch in "$@"
-  do
-    msg2 "Applying ${_patch}"
-    patch -Nbp1 -i "${srcdir}/${_patch}"
-  done
-}
-
-del_file_exists() {
-  for {_fname} in "$@"
-  do
-    if [ -f ${_fname} ]; then
-      rm -rf ${_fname}
-    fi
-  done
-}
-# =========================================== #
-
-prepare() {
-  rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
-}
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel")
+checkdepends=("python-pytest")
+options=('!strip')
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('1c61603ff154621fb2a9172037d84dca3500def8c8b630657d1701f026f8af3f')
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  msg "Python test for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py test
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  cd "${srcdir}/python-build-${MSYSTEM}"
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  #local PREFIX_WIN=$(cygpath -wm /usr)
-  ## fix python command in files
-  #for _f in "${pkgdir}/usr"/bin/*.py; do
-  #  sed -e "s|${PREFIX_WIN}/bin/|/usr/bin/env |g" -i ${_f}
-  #done
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
