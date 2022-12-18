@@ -1,0 +1,48 @@
+# Contributor: Frederic Wang <fred.wang@free.fr>
+
+_realname=funcsigs
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.0.2
+pkgrel=5
+pkgdesc='Python function signatures from PEP362 for Python 2.6, 2.7 and 3.3+'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: funcsigs'
+)
+url='https://github.com/testing-cabal/funcsigs'
+license=('ASL')
+makedepends=("python"
+             "python-setuptools")
+_dtoken="94/4a/db842e7a0545de1cdb0439bb80e6e42dfe82aaeaadd4072f2263a4fbed23"
+source=("https://pypi.python.org/packages/${_dtoken}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('a7bb0f2cf3a3fd1ab2732cb49eba4252c2af4240442415b4abce3b87022a8f50')
+noextract=(${_realname}-${pkgver}.tar.gz)
+
+prepare() {
+  cd "${srcdir}"
+  [[ -d ${srcdir}${_realname}-${pkgver} ]] && rm -rf ${srcdir}/${_realname}-${pkgver}
+  tar -xzf ${srcdir}/${_realname}-${pkgver}.tar.gz -C ${srcdir} || true
+
+  rm -rf python-build | true
+  cp -r ${_realname}-${pkgver} python-build
+}
+
+build() {
+  msg "Python build for ${CARCH}"
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
+}
+
+package() {
+  cd ${srcdir}/python-build
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
