@@ -1,11 +1,11 @@
 #!/bin/sh
-set -eo pipefail
+set -euo pipefail
 base=$(readlink -f $(dirname $0))
 strfile=$(type -P strfile) || strfile=/usr/bin/strfile
-[ -z ${cookiesdir} ] && cookiesdir=usr/share/fortune/fr
-[ -z ${builddir} ] && builddir=$(readlink -f ${base}/data)
+[ -z ${cookiesdir:-} ] && cookiesdir=usr/share/fortune/fr
+[ -z ${builddir:-} ] && builddir=$(readlink -f ${base}/data)
 [ ! -e ${builddir} ] && mkdir -p ${builddir}
-[ -z ${dest} ] && dest=$(readlink -f ${base}/dest)
+[ -z ${dest:-} ] && dest=$(readlink -f ${base}/dest)
 [ ! -e ${dest}/${cookiesdir} ] && mkdir -p ${dest}/${cookiesdir}
 cd ${base}
 action=${1:-build}
@@ -59,6 +59,20 @@ getbribes() {
         rm -fr ${tmpdir}
     fi
     cptfortunes ${builddir}/bribes
+}
+
+getcelebres() {
+    echo -n "Getting \"ccelebres\" "
+    # This is provided by sebsauvage.net
+    local file=celebre
+    if [ ! -e ${builddir}/${file} ]
+    then
+        [ -e ${base}/citation-celebre.7z ] || curl -JLOR https://sebsauvage.net/files/fortune/citation-celebre.7z
+        7z e -so citation-celebre.7z citation-celebre.com |
+            perl -C ${base}/correcttypo.pl > ${builddir}/${file}
+        patch -i ${base}/${file} ${builddir}/${file}
+    fi
+    cptfortunes ${builddir}/${file}
 }
 
 getcitations() {
@@ -601,6 +615,7 @@ getproverbes() {
 build() {
     getaphorismes
     getbribes
+    getcelebres
     getcitations
     getdictons
     getperles
@@ -612,12 +627,12 @@ build() {
 
 install() {
     build
-    for f in aphorismes-* bribes citations dictons-et-proverbes perles proverbes-* voscitations
+    for f in aphorismes-* bribes celebre citations dictons-et-proverbes perles proverbes-* voscitations
     do
         echo "Copying $f fortune files to destination directory"
         cp -p -v ${builddir}/$f ${dest}/${cookiesdir}
     done
-    for f in ${dest}/${cookiesdir}/{aphorismes-*,bribes,citations,dictons-et-proverbes,perles,proverbes-*,voscitations}
+    for f in ${dest}/${cookiesdir}/{aphorismes-*,bribes,celebre,citations,dictons-et-proverbes,perles,proverbes-*,voscitations}
     do
         echo "Creating fortune data files for $f"
         ${strfile} -r $f
