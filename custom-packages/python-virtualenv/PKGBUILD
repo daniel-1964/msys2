@@ -3,31 +3,40 @@
 _realname=virtualenv
 pkgbase=python-${_realname}
 pkgname=("python-virtualenv")
-pkgver=20.1.0
+pkgver=20.26.2
 pkgrel=1
 pkgdesc="Virtual Python Environment builder (msys)"
-url="https://virtualenv.pypa.io/"
 arch=('any')
-license=('MIT')
-depends=("python-setuptools"
-         "python-appdirs"
+msys2_references=(
+  'archlinux: python-virtualenv'
+  'pypi: virtualenv'
+  "cpe: cpe:/a:python:virtualenv"
+)
+msys2_repository_url='https://github.com/pypa/virtualenv/'
+url="https://virtualenv.pypa.io/"
+license=('spdx:MIT')
+depends=("python-platformdirs"
          "python-distlib"
-         "python-filelock"
-         "python-six")
-makedepends=("python-setuptools-scm")
-source=(${_realname}-${pkgver}.tar.gz::https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz)
-sha256sums=('b8d6110f493af256a40d65e29846c69340a947669eec8ce784fcf3dd3af28380')
+         "python-filelock")
+makedepends=("python-build"
+             "python-installer"
+             "python-hatchling"
+             "python-hatch-vcs")
+options=('!strip')
+source=(https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz)
+sha256sums=('82bf0f4eebbb78d36ddaee0283d43fe5736b53880b8a8cdcd37390a07ac3741c')
 
 build() {
-  cd "${srcdir}/${_realname}-${pkgver}"
-
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build" && cd "python-build"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 package() {
-  cd "${srcdir}/${_realname}-${pkgver}"
+  cd "${srcdir}/python-build"
 
-  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}" -O1
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${_realname}"
+  install -Dm644 LICENSE -t "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/${_realname}"
 }
