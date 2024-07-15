@@ -1,27 +1,37 @@
-pkgname=winver
-pkgver=1.0.4
-pkgrel=2
-pkgdesc="Display detailled Windows Version"
+_realname="winver"
+if [ "${MSYSTEM}" == "MSYS" ]
+then
+    pkgbase=${_realname}
+    pkgname="${_realname}"
+    prefix="${MSYSTEM_PREFIX}"
+else
+    pkgbase=mingw-w64-${_realname}
+    pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+    prefix="${MINGW_PREFIX}"
+fi
+pkgver=2.0
+pkgrel=1
+pkgdesc="Display detailled Windows Version informations"
 arch=('any')
 url="https://github.com/daniel-1964/msys2/"
 license=('BSD')
 source=()
-#sha512sums=('skip')
+#sha512sums=()
 
 prepare()
 {
     cd $srcdir
-    cp -pr ../${pkgname} .
+    cp -a ../${_realname} .
 }
 
 build()
 {
-    cd ${srcdir}/${pkgname}
-    make PREFIX=/usr
+    cd ${srcdir}/${_realname}
+    make PREFIX=${prefix}
 }
 
 package()
 {
-    cd ${srcdir}/${pkgname}
-    make install PREFIX=/usr DESTDIR=${pkgdir}
+    cd ${srcdir}/${_realname}
+    make install PREFIX=${prefix} DESTDIR=${pkgdir}
 }

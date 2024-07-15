@@ -1,191 +1,141 @@
-// SystemInfo.cpp: implementation of the SystemInfo class.
-//////////////////////////////////////////////////////////////////////
+/**
+ * SystemInfo.cpp: implementation of the SystemInfo class.
+ */
+
+/**
+ * Portion copyright (C) 2005 - 2010 Marius Bancila
+ * http://www.mariusbancila.ro
+ * http://www.mariusbancila.ro/blog
+ * http://www.codexpert.ro
+ * http://www.codeguru.com
+ * http://www.sharparena.com
+ *
+ * copyright <C) 2018 - 2023 Various WEB contributors
+ */
 
 #include "SystemInfo.h"
 
-#include <tchar.h>
-#include <stdio.h>
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
+#include <iostream>
+#include <locale>
 
-#ifdef __CYGWIN__
-#define _tcscpy strcpy
+#ifndef PRODUCT_EDUCATION
+#define PRODUCT_EDUCATION 0x00000079
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-#define BUFSIZE 80
+#ifndef PRODUCT_EDUCATION_N
+#define PRODUCT_EDUCATION_N 0x0000007A
+#endif
+
+#ifndef PRODUCT_ENTERPRISE_S
+#define PRODUCT_ENTERPRISE_S 0x0000007D
+#endif
+
+#ifndef PRODUCT_ENTERPRISE_S_N
+#define PRODUCT_ENTERPRISE_S_N 0x0000007E
+#endif
+
+#ifndef PRODUCT_ENTERPRISE_S_EVALUATION
+#define PRODUCT_ENTERPRISE_S_EVALUATION 0x00000081
+#endif
+
+#ifndef PRODUCT_ENTERPRISE_S_N_EVALUATION
+#define PRODUCT_ENTERPRISE_S_N_EVALUATION 0x00000082
+#endif
+
+#ifndef PRODUCT_MOBILE_ENTERPRISE
+#define PRODUCT_MOBILE_ENTERPRISE 0x00000085
+#endif
 
 #ifndef VER_SUITE_WH_SERVER
 #define VER_SUITE_WH_SERVER 0x8000
 #endif
 
-typedef void (WINAPI *PGetNativeSystemInfo)(LPSYSTEM_INFO);
+typedef void(WINAPI *PGetNativeSystemInfo)(LPSYSTEM_INFO);
 
-typedef BOOL (WINAPI *PGetProductInfo)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+typedef BOOL(WINAPI *PGetProductInfo)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 
-const char *WindowsVersionStr[] = {
-    "Windows",
-    "Windows 32s",
-    "Windows 95",
-    "Windows 95 SR2",
-    "Windows 98",
-    "Windows 98 SE",
-    "Windows Me",
-    "Windows NT 3.51",
-    "Windows NT 4.0",
-    "Windows NT 4.0 Server",
-    "Windows 2000",
-    "Windows XP",
-    "Windows XP Professional x64",
-    "Windows Home Server",
-    "Windows Server 2003",
-    "Windows Server 2003 R2",
-    "Windows Vista",
-    "Windows Server 2008",
-    "Windows 7",
-    "Windows Server 2008 R2",
-    "Windows 8",
-    "Windows Server 2012",
-    "Windows 8.1",
-    "Windows Server 2012 R2",
-    "Windows 10",
-    "Windows Server 2016"
-};
+#define BUFSIZE 512
 
-const char *WindowsEditionStr[] = {
-    "Unknown product",
-    "Work Station",
-    "Server",
-    "Advanced Server",
-    "Home",
-    "Ultimate",
-    "Home Basic",
-    "Home Premium",
-    "Enterprise",
-    "Home Basic N",
-    "Business",
-    "Server Standard",
-    "Server Datacenter (full installation)",
-    "Small Business Server",
-    "Server Enterprise (full installation)",
-    "Starter",
-    "Server Datacenter (core installation)",
-    "Server Standard (core installation)",
-    "Server Enterprise (core installation)",
-    "Server Enterprise for Itanium-based Systems",
-    "Business N",
-    "Web Server (full installation)",
-    "HPC Edition",
-    "Storage Essentials",
-    "Storage Server Express",
-    "Storage Server Standard",
-    "Storage Server Workgroup",
-    "Storage Server Enterprise",
-    "Server for Windows Essential Server Solutions",
-    "Small Business Server Premium",
-    "Home Premium N",
-    "Enterprise N",
-    "Ultimate N",
-    "Web Server (core installation)",
-    "Essential Business Server Management Server",
-    "Essential Business Server Security Server",
-    "Essential Business Server Messaging Server",
-    "Server Foundation",
-    "Home Server 2011",
-    "Server without Hyper-V for Windows Essential Server Solutions",
-    "Server Standard without Hyper-V",
-    "Server Datacenter without Hyper-V (full installation)",
-    "Server Enterprise without Hyper-V (full installation)",
-    "Server Datacenter without Hyper-V (core installation)",
-    "Server Standard without Hyper-V (core installation)",
-    "Server Enterprise without Hyper-V (core installation)",
-    "Microsoft Hyper-V Server",
-    "Storage Server Express (core installation)",
-    "Storage Server Standard (core installation)",
-    "Storage Server Workgroup (core installation)",
-    "Storage Server Enterprise (core installation)",
-    "Starter N",
-    "Professional",
-    "Professional N",
-    "Small Business Server 2011 Essentials",
-    "Server For Small Business Solutions",
-    "Server Solutions Premium",
-    "Server Solutions Premium (core installation)",
-    "Server For Small Business Solutions EM",
-    "Server For Small Business Solutions EM",
-    "MultiPoint Server",
-    "Essential Server Solution Management",
-    "Essential Server Solution core",
-    "Essential Server Solution Additional",
-    "Essential Server Solution Management SVC",
-    "Essential Server Solution Additional SVC",
-    "Small Business Server Premium (core installation)",
-    "Server Hyper Core V",
-    "Essential Server Solution",
-    "Starter E",
-    "Home Basic E",
-    "Home Pemiux E",
-    "Professional E",
-    "Enterprise E",
-    "Ultimate E",
-    "Enterprise Evaluation",
-    "MultiPoint Server Standard (full installation)",
-    "MultiPoint Server Premium (full installation)",
-    "Server Standard (evaluation installation)",
-    "Server Datacenter (evaluation installation)",
-    "Enterprise N Evaluation",
-    "Essential Server Solution Automotive",
-    "Essential Server Solution Industry A",
-    "Thinpc",
-    "Essential Server Solution A",
-    "Essential Server Solution Industry",
-    "Essential Server Solution E",
-    "Essential Server Solution Industry E",
-    "Essential Server Solution Industry A E",
-    "Storage Server Workgroup (evaluation installation)",
-    "Storage Server Standard (evaluation installation)",
-    "Home ARM",
-    "Home N",
-    "Home China",
-    "Home Single Language",
-    "Home",
-    "Professional with Media Center",
-    "Mobile",
-    "Education",
-    "Education N",
-    "Enterprise 2015 LTSB",
-    "Enterprise 2015 LTSB N",
-    "Enterprise 2015 LTSB Evaluation",
-    "Enterprise 2015 LTSB N Evaluation",
-    "Mobile Enterprise"
-};
-
-SystemInfo::SystemInfo()
+#if __cplusplus >= 201103L
+/**
+ * Compare two string ignoring case
+ */
+bool ci_compare(const std::string &l, const std::string &r, const std::locale &loc = std::locale())
 {
-    BOOL canDetect = TRUE;
-    PGetNativeSystemInfo pGNSI = NULL;
-    m_bOsVersionInfoEx = FALSE;
-    m_nWinVersion = Windows;
-    m_nWinEdition = EditionUnknown;
+    return (l.size() == r.size()) &&
+           std::equal(l.cbegin(), l.cend(), r.cbegin(), [loc](std::string::value_type l1, std::string::value_type r1) {
+               return std::toupper(l1, loc) == std::toupper(r1, loc);
+           });
+}
 
-    memset(m_szServicePack, 0, sizeof(m_szServicePack));
+/**
+ * Try to find in the Haystack the Needle - ignore case
+ */
+std::string::const_iterator ci_find(const std::string &haystack, const std::string &needle,
+                                    const std::locale &loc = std::locale())
+{
+    auto it = std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(),
+                          [loc](std::string::value_type ch1, std::string::value_type ch2) {
+                              return std::toupper(ch1, loc) == std::toupper(ch2, loc);
+                          });
+    return it;
+}
+#else
+bool ci_equal(std::string::value_type l1, std::string::value_type r1)
+{
+    return std::toupper(l1) == std::toupper(r1);
+}
+
+/**
+ * Compare two string ignoring case
+ */
+bool ci_compare(const std::string &l, const std::string &r)
+{
+    return (l.size() == r.size()) && std::equal(l.cbegin(), l.cend(), r.cbegin(), ci_equal);
+}
+
+/**
+ * Try to find in the Haystack the Needle - ignore case
+ */
+std::string::const_iterator ci_find(const std::string &haystack, const std::string &needle)
+{
+    std::string::const_iterator it =
+        std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(), ci_equal);
+    return it;
+}
+#endif
+
+/**
+ * Construction/Destruction
+ */
+SystemInfo::SystemInfo()
+    : m_bOsVersionInfoEx(FALSE), m_bServer(false), m_dwPatch(0), m_dwUBR(-1), m_nWinEdition(EditionUnknown),
+      m_nWinVersion(Windows)
+{
+    bool canDetect = true;
+    PGetNativeSystemInfo pGNSI = NULL;
+
     /**
      * Try calling GetVersionEx using the OSVERSIONINFOEX structure.
      */
-    ZeroMemory(&m_osvi, sizeof(OSVERSIONINFOEX));
-    m_osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-    if (!(m_bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &m_osvi)))
+    ZeroMemory(&m_Osvi, sizeof(OSVERSIONINFOEX));
+    m_Osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    if (!(m_bOsVersionInfoEx = GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&m_Osvi))))
     {
         /**
          * If that fails, try using the OSVERSIONINFO structure.
          */
-        m_osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-        if (!GetVersionEx((OSVERSIONINFO *) &m_osvi))
-            canDetect = FALSE;
+        m_Osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+        if (!GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&m_Osvi)))
+        {
+            canDetect = false;
+        }
     }
-    pGNSI = (PGetNativeSystemInfo) GetProcAddress(
-        GetModuleHandle(_T("kernel32.dll")),
-        "GetNativeSystemInfo");
+    pGNSI =
+        reinterpret_cast<PGetNativeSystemInfo>(GetProcAddress(GetModuleHandle("kernel32.dll"), "GetNativeSystemInfo"));
     if (NULL != pGNSI)
         pGNSI(&m_SysInfo);
     else
@@ -199,236 +149,270 @@ SystemInfo::SystemInfo()
     }
 }
 
-SystemInfo::~SystemInfo()
-{
-
-}
-
 void SystemInfo::DetectWindowsVersion()
 {
-   if (m_bOsVersionInfoEx)
-   {
-      switch (m_osvi.dwPlatformId)
-      {
+    if (m_bOsVersionInfoEx)
+    {
+        switch (m_Osvi.dwPlatformId)
+        {
         case VER_PLATFORM_WIN32s:
-          m_nWinVersion = Windows32s;
-          break;
+            m_nWinVersion = Windows32s;
+            break;
         case VER_PLATFORM_WIN32_WINDOWS:
-          /**
-           * Test for the Windows 95 product family.
-           */
-          switch (m_osvi.dwMajorVersion)
-          {
+            /**
+             * Test for the Windows 95 product family.
+             */
+            switch (m_Osvi.dwMajorVersion)
+            {
             case 4:
-              switch(m_osvi.dwMinorVersion)
-              {
+                switch (m_Osvi.dwMinorVersion)
+                {
                 case 0:
-                  if (m_osvi.szCSDVersion[0] == 'B' || m_osvi.szCSDVersion[0] == 'C')
-                      m_nWinVersion = Windows95OSR2;
-                  else
-                      m_nWinVersion = Windows95;
-                  break;
+                    if (m_Osvi.szCSDVersion[0] == 'A')
+                    {
+                        m_nWinVersion = Windows95OSR1;
+                        m_dwPatch = 1;
+                    }
+                    else if (m_Osvi.szCSDVersion[0] == 'B')
+                    {
+                        m_nWinVersion = Windows95OSR2;
+                        m_dwPatch = 2;
+                    }
+                    else if (m_Osvi.szCSDVersion[0] == 'C')
+                    {
+                        m_nWinVersion = Windows95OSR25;
+                        m_dwPatch = 3;
+                    }
+                    else
+                    {
+                        m_nWinVersion = Windows95;
+                    }
+                    break;
                 case 10:
-                  if (m_osvi.szCSDVersion[0] == 'A')
-                      m_nWinVersion = Windows98SE;
-                  else
-                      m_nWinVersion = Windows98;
-                  break;
+                    if (m_Osvi.szCSDVersion[0] == 'A')
+                    {
+                        m_nWinVersion = Windows98SE;
+                    }
+                    else
+                    {
+                        m_nWinVersion = Windows98;
+                    }
+                    break;
                 case 90:
-                  m_nWinVersion = WindowsMillennium;
-                  break;
-              }
-              break;
-          }
-          break;
+                    m_nWinVersion = WindowsMillennium;
+                    break;
+                }
+                break;
+            }
+            break;
         case VER_PLATFORM_WIN32_NT:
-          /**
-           * Test for the Windows NT product family.
-           */
-          switch (m_osvi.dwMajorVersion)
-          {
+            m_bServer = (m_Osvi.wProductType != VER_NT_WORKSTATION);
+            /**
+             * Test for the Windows NT product family.
+             */
+            switch (m_Osvi.dwMajorVersion)
+            {
             case 3:
-              m_nWinVersion = WindowsNT351;
-              break;
+                m_nWinVersion = (m_Osvi.wProductType == VER_NT_WORKSTATION) ? WindowsNT351 : WindowsNT351Server;
+                break;
             case 4:
-              switch (m_osvi.wProductType)
-              {
-                case 1:
-                  m_nWinVersion = WindowsNT40;
-                  break;
-                case 3:
-                  m_nWinVersion = WindowsNT40Server;
-                  break;
-              }
-              break;
+                m_nWinVersion = (m_Osvi.wProductType == VER_NT_WORKSTATION) ? WindowsNT40 : WindowsNT40Server;
+                break;
             case 5:
-              switch (m_osvi.dwMinorVersion)
-              {
+                switch (m_Osvi.dwMinorVersion)
+                {
                 case 0:
-                  m_nWinVersion = Windows2000;
-                  break;
+                    m_nWinVersion = Windows2000;
+                    break;
                 case 1:
-                  m_nWinVersion = WindowsXP;
-                  break;
+                    m_nWinVersion = WindowsXP;
+                    m_dwPatch = m_Osvi.wServicePackMajor;
+                    break;
                 case 2:
-                  if (m_osvi.wSuiteMask == VER_SUITE_WH_SERVER)
-                  {
-                      m_nWinVersion = WindowsHomeServer;
-                  }
-                  else if (m_osvi.wProductType == VER_NT_WORKSTATION &&
-                           m_SysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-                  {
-                      m_nWinVersion = WindowsXPProfessionalx64;
-                  }
-                  else
-                  {
-                      m_nWinVersion = ::GetSystemMetrics(SM_SERVERR2) == 0 ?
-                          WindowsServer2003 :
-                          WindowsServer2003R2;
-                  }
-                  break;
-              }
-              break;
+                    if ((m_Osvi.wSuiteMask & VER_SUITE_WH_SERVER) != 0)
+                    {
+                        m_nWinVersion = WindowsHomeServer;
+                    }
+                    else if (m_Osvi.wProductType == VER_NT_WORKSTATION &&
+                             m_SysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+                    {
+                        m_nWinVersion = WindowsXPProfessionalx64;
+                    }
+                    else if (::GetSystemMetrics(SM_SERVERR2) == 0)
+                    {
+                        m_nWinVersion = WindowsServer2003;
+                        m_dwPatch = m_Osvi.wServicePackMajor;
+                    }
+                    else
+                    {
+                        m_nWinVersion = WindowsServer2003R2;
+                        m_dwPatch = 10;
+                    }
+                    break;
+                }
+                break;
             case 6:
-              switch (m_osvi.dwMinorVersion)
-              {
+                switch (m_Osvi.dwMinorVersion)
+                {
                 case 0:
-                  m_nWinVersion = m_osvi.wProductType == VER_NT_WORKSTATION ?
-                      WindowsVista :
-                  WindowsServer2008;
-                  break;
+                    m_nWinVersion = m_Osvi.wProductType == VER_NT_WORKSTATION ? WindowsVista : WindowsServer2008;
+                    break;
                 case 1:
-                  m_nWinVersion = m_osvi.wProductType == VER_NT_WORKSTATION ?
-                      Windows7 :
-                  WindowsServer2008R2;
-                  break;
+                    if ((m_Osvi.wSuiteMask & VER_SUITE_WH_SERVER) != 0)
+                    {
+                        m_nWinVersion = WindowsHomeServer2011;
+                    }
+                    else
+                    {
+                        m_nWinVersion = m_Osvi.wProductType == VER_NT_WORKSTATION ? Windows7 : WindowsServer2008R2;
+                    }
+                    break;
                 case 2:
-                  m_nWinVersion = m_osvi.wProductType == VER_NT_WORKSTATION ?
-                      Windows8 :
-                  WindowsServer2012;
-                  break;
+                    m_nWinVersion = m_Osvi.wProductType == VER_NT_WORKSTATION ? Windows8 : WindowsServer2012;
+                    break;
                 case 3:
-                  m_nWinVersion = m_osvi.wProductType == VER_NT_WORKSTATION ?
-                      Windows8_1 :
-                  WindowsServer2012R2;
-                  break;
-              }
-              break;
+                    m_nWinVersion = m_Osvi.wProductType == VER_NT_WORKSTATION ? Windows8_1 : WindowsServer2012R2;
+                    break;
+                }
+                break;
             case 10:
-              switch (m_osvi.dwMinorVersion)
-              {
-                case 0:
-                  m_nWinVersion = m_osvi.wProductType == VER_NT_WORKSTATION ?
-                      Windows10 :
-                  WindowsServer2016;
-                  break;
-              }
-              break;
-          }
-          break;
-      }
-   }
-   else
-   {
-       /**
-        * Test for specific product on Windows NT 4.0 SP5 and earlier
-        */
-       HKEY hKey;
-       char szProductType[BUFSIZE];
-       DWORD dwBufLen=BUFSIZE;
-       LONG lRet;
-       lRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                           "SYSTEM\\CurrentControlSet\\Control\\ProductOptions",
-                           0, KEY_QUERY_VALUE, &hKey);
-       if (lRet != ERROR_SUCCESS)
-           return;
-       lRet = RegQueryValueEx(hKey, "ProductType", NULL, NULL,
-                              (LPBYTE) szProductType, &dwBufLen);
-       if ((lRet != ERROR_SUCCESS) || (dwBufLen > BUFSIZE))
-           return;
-       RegCloseKey(hKey);
-       if (lstrcmpi("WINNT", szProductType) == 0)
-       {
-           if (m_osvi.dwMajorVersion <= 4)
-           {
-               m_nWinVersion = WindowsNT40;
-               m_nWinEdition = Workstation;
-           }
-       }
-       if (lstrcmpi("LANMANNT", szProductType) == 0)
-       {
-           if (m_osvi.dwMajorVersion == 5 && m_osvi.dwMinorVersion == 2)
-           {
-               m_nWinVersion = WindowsServer2003;
-           }
-           if (m_osvi.dwMajorVersion == 5 && m_osvi.dwMinorVersion == 0)
-           {
-               m_nWinVersion = Windows2000;
-               m_nWinEdition = Server;
-           }
-           if (m_osvi.dwMajorVersion <= 4)
-           {
-               m_nWinVersion = WindowsNT40;
-               m_nWinEdition = Server;
-           }
-       }
-       if (lstrcmpi("SERVERNT", szProductType) == 0)
-       {
-           if (m_osvi.dwMajorVersion == 5 && m_osvi.dwMinorVersion == 2)
-           {
-               m_nWinVersion = WindowsServer2003;
-               m_nWinEdition = EnterpriseServer;
-           }
-           if (m_osvi.dwMajorVersion == 5 && m_osvi.dwMinorVersion == 0)
-           {
-               m_nWinVersion = Windows2000;
-               m_nWinEdition = AdvancedServer;
-           }
-           if (m_osvi.dwMajorVersion <= 4)
-           {
-               m_nWinVersion = WindowsNT40;
-               m_nWinEdition = EnterpriseServer;
-           }
-       }
-   }
+                if (m_Osvi.wProductType == VER_NT_WORKSTATION)
+                {
+                    if (m_Osvi.dwBuildNumber < 22000)
+                    {
+                        m_nWinVersion = Windows10;
+                    }
+                    else
+                    {
+                        m_nWinVersion = Windows11;
+                    }
+                }
+                else
+                {
+                    if (m_Osvi.dwBuildNumber < 17863)
+                    {
+                        m_nWinVersion = WindowsServer2016;
+                    }
+                    else if (m_Osvi.dwBuildNumber < 20348)
+                    {
+                        m_nWinVersion = WindowsServer2019;
+                    }
+                    else
+                    {
+                        m_nWinVersion = WindowsServer2022;
+                    }
+                }
+                break;
+            }
+            break;
+        }
+    }
+    else
+    {
+        /**
+         * Test for specific product on Windows NT 4.0 SP5 and earlier
+         */
+        HKEY hKey;
+        char szProductType[BUFSIZE];
+        DWORD dwBufLen = sizeof(szProductType);
+        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\ProductOptions", 0, KEY_QUERY_VALUE,
+                         &hKey) != ERROR_SUCCESS)
+        {
+            return;
+        }
+        if ((RegQueryValueEx(hKey, "ProductType", NULL, NULL, reinterpret_cast<LPBYTE>(szProductType), &dwBufLen) !=
+             ERROR_SUCCESS) ||
+            (dwBufLen > BUFSIZE))
+        {
+            return;
+        }
+        RegCloseKey(hKey);
+        if (ci_compare("WINNT", szProductType))
+        {
+            if (m_Osvi.dwMajorVersion <= 4)
+            {
+                m_nWinVersion = (m_Osvi.dwMajorVersion == 4 ? WindowsNT40 : WindowsNT351);
+                m_nWinEdition = Workstation;
+            }
+        }
+        else if (ci_compare("LANMANNT", szProductType))
+        {
+            m_bServer = true;
+            if (m_Osvi.dwMajorVersion == 5 && m_Osvi.dwMinorVersion == 2)
+            {
+                m_nWinVersion = WindowsServer2003;
+                m_nWinEdition = Server;
+            }
+            else if (m_Osvi.dwMajorVersion == 5 && m_Osvi.dwMinorVersion == 0)
+            {
+                m_nWinVersion = Windows2000;
+                m_nWinEdition = Server;
+            }
+            else if (m_Osvi.dwMajorVersion <= 4)
+            {
+                m_nWinVersion = (m_Osvi.dwMajorVersion == 4) ? WindowsNT40Server : WindowsNT351Server;
+                m_nWinEdition = Server;
+            }
+        }
+        else if (ci_compare("SERVERNT", szProductType))
+        {
+            m_bServer = true;
+            if (m_Osvi.dwMajorVersion == 5 && m_Osvi.dwMinorVersion == 2)
+            {
+                m_nWinVersion = WindowsServer2003;
+                m_nWinEdition = EnterpriseServer;
+            }
+            else if (m_Osvi.dwMajorVersion == 5 && m_Osvi.dwMinorVersion == 0)
+            {
+                m_nWinVersion = Windows2000;
+                m_nWinEdition = AdvancedServer;
+            }
+            else if (m_Osvi.dwMajorVersion <= 4)
+            {
+                m_nWinVersion = (m_Osvi.dwMajorVersion == 4) ? WindowsNT40Server : WindowsNT351Server;
+                m_nWinEdition = EnterpriseServer;
+            }
+        }
+        m_szEditionName = WindowsEditionStr[m_nWinEdition];
+    }
+    m_szVersionName = WindowsVersionStr[m_nWinVersion];
+#if __cplusplus >= 201103L
+    Lookup();
+#endif
 }
 
 void SystemInfo::DetectWindowsEdition()
 {
     if (m_bOsVersionInfoEx)
     {
-        switch (m_osvi.dwMajorVersion)
+        switch (m_Osvi.dwMajorVersion)
         {
-          case 4:
-            switch(m_osvi.wProductType)
+        case 4:
+            switch (m_Osvi.wProductType)
             {
-              case VER_NT_WORKSTATION:
+            case VER_NT_WORKSTATION:
                 m_nWinEdition = Workstation;
                 break;
-              case VER_NT_SERVER:
-                m_nWinEdition = ((m_osvi.wSuiteMask & VER_SUITE_ENTERPRISE) != 0 ?
-                                 EnterpriseServer :
-                                 StandardServer);
+            case VER_NT_SERVER:
+                m_nWinEdition = ((m_Osvi.wSuiteMask & VER_SUITE_ENTERPRISE) != 0 ? EnterpriseServer : StandardServer);
                 break;
             }
             break;
-          case 5:
-            switch (m_osvi.wProductType)
+        case 5:
+            switch (m_Osvi.wProductType)
             {
-              case VER_NT_WORKSTATION:
-                m_nWinEdition = ((m_osvi.wSuiteMask & VER_SUITE_PERSONAL) != 0 ?
-                                 Home :
-                                 Professional);
+            case VER_NT_WORKSTATION:
+                m_nWinEdition = ((m_Osvi.wSuiteMask & VER_SUITE_PERSONAL) != 0 ? Home : Professional);
                 break;
-              case VER_NT_SERVER:
-                switch (m_osvi.dwMinorVersion)
+            case VER_NT_SERVER:
+                switch (m_Osvi.dwMinorVersion)
                 {
-                  case 0:
-                    if ((m_osvi.wSuiteMask & VER_SUITE_DATACENTER) != 0)
+                case 0:
+                    if ((m_Osvi.wSuiteMask & VER_SUITE_DATACENTER) != 0)
                     {
                         m_nWinEdition = DatacenterServer;
                     }
-                    else if ((m_osvi.wSuiteMask & VER_SUITE_ENTERPRISE) != 0)
+                    else if ((m_Osvi.wSuiteMask & VER_SUITE_ENTERPRISE) != 0)
                     {
                         m_nWinEdition = AdvancedServer;
                     }
@@ -437,18 +421,22 @@ void SystemInfo::DetectWindowsEdition()
                         m_nWinEdition = Server;
                     }
                     break;
-                  default:
-                    if ((m_osvi.wSuiteMask & VER_SUITE_DATACENTER) != 0)
+                default:
+                    if ((m_Osvi.wSuiteMask & VER_SUITE_DATACENTER) != 0)
                     {
                         m_nWinEdition = DatacenterServer;
                     }
-                    else if ((m_osvi.wSuiteMask & VER_SUITE_ENTERPRISE) != 0)
+                    else if ((m_Osvi.wSuiteMask & VER_SUITE_ENTERPRISE) != 0)
                     {
                         m_nWinEdition = EnterpriseServer;
                     }
-                    else if ((m_osvi.wSuiteMask & VER_SUITE_BLADE) != 0)
+                    else if ((m_Osvi.wSuiteMask & VER_SUITE_BLADE) != 0)
                     {
                         m_nWinEdition = WebServer;
+                    }
+                    else if ((m_Osvi.wSuiteMask & VER_SUITE_WH_SERVER) != 0)
+                    {
+                        m_nWinEdition = HomeServer;
                     }
                     else
                     {
@@ -459,327 +447,328 @@ void SystemInfo::DetectWindowsEdition()
                 break;
             }
             break;
-          case 6:
-          case 10:
+        case 6:
+        case 10:
             DWORD dwReturnedProductType = DetectProductInfo();
             switch (dwReturnedProductType)
             {
-              case PRODUCT_UNDEFINED:
+            case PRODUCT_UNDEFINED:
                 m_nWinEdition = EditionUnknown;
                 break;
-              case PRODUCT_ULTIMATE:
+            case PRODUCT_ULTIMATE:
                 m_nWinEdition = Ultimate;
                 break;
-              case PRODUCT_HOME_BASIC:
+            case PRODUCT_HOME_BASIC:
                 m_nWinEdition = HomeBasic;
                 break;
-              case PRODUCT_HOME_PREMIUM:
+            case PRODUCT_HOME_PREMIUM:
                 m_nWinEdition = HomePremium;
                 break;
-              case PRODUCT_ENTERPRISE:
+            case PRODUCT_ENTERPRISE:
                 m_nWinEdition = Enterprise;
                 break;
-              case PRODUCT_HOME_BASIC_N:
+            case PRODUCT_HOME_BASIC_N:
                 m_nWinEdition = HomeBasic_N;
                 break;
-              case PRODUCT_BUSINESS:
+            case PRODUCT_BUSINESS:
                 m_nWinEdition = Business;
                 break;
-              case PRODUCT_STANDARD_SERVER:
+            case PRODUCT_STANDARD_SERVER:
                 m_nWinEdition = StandardServer;
                 break;
-              case PRODUCT_DATACENTER_SERVER:
+            case PRODUCT_DATACENTER_SERVER:
                 m_nWinEdition = DatacenterServer;
                 break;
-              case PRODUCT_SMALLBUSINESS_SERVER:
+            case PRODUCT_SMALLBUSINESS_SERVER:
                 m_nWinEdition = SmallBusinessServer;
                 break;
-              case PRODUCT_ENTERPRISE_SERVER:
+            case PRODUCT_ENTERPRISE_SERVER:
                 m_nWinEdition = EnterpriseServer;
                 break;
-              case PRODUCT_STARTER:
+            case PRODUCT_STARTER:
                 m_nWinEdition = Starter;
                 break;
-              case PRODUCT_DATACENTER_SERVER_CORE:
+            case PRODUCT_DATACENTER_SERVER_CORE:
                 m_nWinEdition = DatacenterServerCore;
                 break;
-              case PRODUCT_STANDARD_SERVER_CORE:
+            case PRODUCT_STANDARD_SERVER_CORE:
                 m_nWinEdition = StandardServerCore;
                 break;
-              case PRODUCT_ENTERPRISE_SERVER_CORE:
+            case PRODUCT_ENTERPRISE_SERVER_CORE:
                 m_nWinEdition = EnterpriseServerCore;
                 break;
-              case PRODUCT_ENTERPRISE_SERVER_IA64:
+            case PRODUCT_ENTERPRISE_SERVER_IA64:
                 m_nWinEdition = EnterpriseServerIA64;
                 break;
-              case PRODUCT_BUSINESS_N:
+            case PRODUCT_BUSINESS_N:
                 m_nWinEdition = Business_N;
                 break;
-              case PRODUCT_WEB_SERVER:
+            case PRODUCT_WEB_SERVER:
                 m_nWinEdition = WebServer;
                 break;
-              case PRODUCT_CLUSTER_SERVER:
+            case PRODUCT_CLUSTER_SERVER:
                 m_nWinEdition = ClusterServer;
                 break;
-              case PRODUCT_HOME_SERVER:
+            case PRODUCT_HOME_SERVER:
                 m_nWinEdition = HomeServer;
                 break;
-              case PRODUCT_STORAGE_EXPRESS_SERVER:
+            case PRODUCT_STORAGE_EXPRESS_SERVER:
                 m_nWinEdition = StorageExpressServer;
                 break;
-              case PRODUCT_STORAGE_STANDARD_SERVER:
+            case PRODUCT_STORAGE_STANDARD_SERVER:
                 m_nWinEdition = StorageStandardServer;
                 break;
-              case PRODUCT_STORAGE_WORKGROUP_SERVER:
+            case PRODUCT_STORAGE_WORKGROUP_SERVER:
                 m_nWinEdition = StorageWorkgroupServer;
                 break;
-              case PRODUCT_STORAGE_ENTERPRISE_SERVER:
+            case PRODUCT_STORAGE_ENTERPRISE_SERVER:
                 m_nWinEdition = StorageEnterpriseServer;
                 break;
-              case PRODUCT_SERVER_FOR_SMALLBUSINESS:
+            case PRODUCT_SERVER_FOR_SMALLBUSINESS:
                 m_nWinEdition = ServerForSmallBusiness;
                 break;
-              case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
+            case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
                 m_nWinEdition = SmallBusinessServerPremium;
                 break;
 #if _WIN32_WINNT >= 0x0601 // windows 7
-              case PRODUCT_HOME_PREMIUM_N:
+            case PRODUCT_HOME_PREMIUM_N:
                 m_nWinEdition = HomePremium_N;
                 break;
-              case PRODUCT_ENTERPRISE_N:
+            case PRODUCT_ENTERPRISE_N:
                 m_nWinEdition = Enterprise_N;
                 break;
-              case PRODUCT_ULTIMATE_N:
+            case PRODUCT_ULTIMATE_N:
                 m_nWinEdition = Ultimate_N;
                 break;
-              case PRODUCT_WEB_SERVER_CORE:
+            case PRODUCT_WEB_SERVER_CORE:
                 m_nWinEdition = WebServerCore;
                 break;
-              case PRODUCT_MEDIUMBUSINESS_SERVER_MANAGEMENT:
+            case PRODUCT_MEDIUMBUSINESS_SERVER_MANAGEMENT:
                 m_nWinEdition = MediumBusinessServerManagement;
                 break;
-              case PRODUCT_MEDIUMBUSINESS_SERVER_SECURITY:
+            case PRODUCT_MEDIUMBUSINESS_SERVER_SECURITY:
                 m_nWinEdition = MediumBusinessServerSecurity;
                 break;
-              case PRODUCT_MEDIUMBUSINESS_SERVER_MESSAGING:
+            case PRODUCT_MEDIUMBUSINESS_SERVER_MESSAGING:
                 m_nWinEdition = MediumBusinessServerMessaging;
                 break;
-              case PRODUCT_SERVER_FOUNDATION:
+            case PRODUCT_SERVER_FOUNDATION:
                 m_nWinEdition = ServerFoundation;
                 break;
-              case PRODUCT_HOME_PREMIUM_SERVER:
+            case PRODUCT_HOME_PREMIUM_SERVER:
                 m_nWinEdition = HomePremiumServer;
                 break;
-              case PRODUCT_SERVER_FOR_SMALLBUSINESS_V:
+            case PRODUCT_SERVER_FOR_SMALLBUSINESS_V:
                 m_nWinEdition = ServerForSmallBusiness_V;
                 break;
-              case PRODUCT_STANDARD_SERVER_V:
+            case PRODUCT_STANDARD_SERVER_V:
                 m_nWinEdition = StandardServer_V;
                 break;
-              case PRODUCT_DATACENTER_SERVER_V:
+            case PRODUCT_DATACENTER_SERVER_V:
                 m_nWinEdition = DatacenterServer_V;
                 break;
-              case PRODUCT_ENTERPRISE_SERVER_V:
+            case PRODUCT_ENTERPRISE_SERVER_V:
                 m_nWinEdition = EnterpriseServer_V;
                 break;
-              case PRODUCT_DATACENTER_SERVER_CORE_V:
+            case PRODUCT_DATACENTER_SERVER_CORE_V:
                 m_nWinEdition = DatacenterServerCore_V;
                 break;
-              case PRODUCT_STANDARD_SERVER_CORE_V:
+            case PRODUCT_STANDARD_SERVER_CORE_V:
                 m_nWinEdition = StandardServerCore_V;
                 break;
-              case PRODUCT_ENTERPRISE_SERVER_CORE_V:
+            case PRODUCT_ENTERPRISE_SERVER_CORE_V:
                 m_nWinEdition = EnterpriseServerCore_V;
                 break;
-              case PRODUCT_HYPERV:
+            case PRODUCT_HYPERV:
                 m_nWinEdition = HyperV;
                 break;
-              case PRODUCT_STORAGE_EXPRESS_SERVER_CORE:
+            case PRODUCT_STORAGE_EXPRESS_SERVER_CORE:
                 m_nWinEdition = StorageExpressServerCore;
                 break;
-              case PRODUCT_STORAGE_STANDARD_SERVER_CORE:
+            case PRODUCT_STORAGE_STANDARD_SERVER_CORE:
                 m_nWinEdition = StorageStandardServerCore;
                 break;
-              case PRODUCT_STORAGE_WORKGROUP_SERVER_CORE:
+            case PRODUCT_STORAGE_WORKGROUP_SERVER_CORE:
                 m_nWinEdition = StorageWorkgroupServerCore;
                 break;
-              case PRODUCT_STORAGE_ENTERPRISE_SERVER_CORE:
+            case PRODUCT_STORAGE_ENTERPRISE_SERVER_CORE:
                 m_nWinEdition = StorageEnterpriseServerCore;
                 break;
-              case PRODUCT_STARTER_N:
+            case PRODUCT_STARTER_N:
                 m_nWinEdition = Starter_N;
                 break;
-              case PRODUCT_PROFESSIONAL:
+            case PRODUCT_PROFESSIONAL:
                 m_nWinEdition = Professional;
                 break;
-              case PRODUCT_PROFESSIONAL_N:
+            case PRODUCT_PROFESSIONAL_N:
                 m_nWinEdition = Professional_N;
                 break;
-              case PRODUCT_SB_SOLUTION_SERVER:
+            case PRODUCT_SB_SOLUTION_SERVER:
                 m_nWinEdition = SBSolutionServer;
                 break;
-              case PRODUCT_SERVER_FOR_SB_SOLUTIONS:
+            case PRODUCT_SERVER_FOR_SB_SOLUTIONS:
                 m_nWinEdition = ServerForSBSolution;
                 break;
-              case PRODUCT_STANDARD_SERVER_SOLUTIONS:
+            case PRODUCT_STANDARD_SERVER_SOLUTIONS:
                 m_nWinEdition = StandardServerSolutions;
                 break;
-              case PRODUCT_STANDARD_SERVER_SOLUTIONS_CORE:
+            case PRODUCT_STANDARD_SERVER_SOLUTIONS_CORE:
                 m_nWinEdition = StandardServerSolutionsCore;
                 break;
-              case PRODUCT_SB_SOLUTION_SERVER_EM:
+            case PRODUCT_SB_SOLUTION_SERVER_EM:
                 m_nWinEdition = SBSolutionServer_EM;
                 break;
-              case PRODUCT_SERVER_FOR_SB_SOLUTIONS_EM:
+            case PRODUCT_SERVER_FOR_SB_SOLUTIONS_EM:
                 m_nWinEdition = ServerForSBSolution_EM;
                 break;
-              case PRODUCT_SOLUTION_EMBEDDEDSERVER:
+            case PRODUCT_SOLUTION_EMBEDDEDSERVER:
                 m_nWinEdition = SolutionEmbeddedServer;
                 break;
-              case PRODUCT_SOLUTION_EMBEDDEDSERVER_CORE:
+            case PRODUCT_SOLUTION_EMBEDDEDSERVER_CORE:
                 m_nWinEdition = SolutionEmbeddedServerCore;
                 break;
-              case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM_CORE:
+            case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM_CORE:
                 m_nWinEdition = SmallBusinessServerPremiumCore;
                 break;
-              case PRODUCT_ESSENTIALBUSINESS_SERVER_MGMT:
+            case PRODUCT_ESSENTIALBUSINESS_SERVER_MGMT:
                 m_nWinEdition = EssentialBusinessServerMGMT;
                 break;
-              case PRODUCT_ESSENTIALBUSINESS_SERVER_ADDL:
+            case PRODUCT_ESSENTIALBUSINESS_SERVER_ADDL:
                 m_nWinEdition = EssentialBusinessServerADDL;
                 break;
-              case PRODUCT_ESSENTIALBUSINESS_SERVER_MGMTSVC:
+            case PRODUCT_ESSENTIALBUSINESS_SERVER_MGMTSVC:
                 m_nWinEdition = EssentialBusinessServerMGMTSVC;
                 break;
-              case PRODUCT_ESSENTIALBUSINESS_SERVER_ADDLSVC:
+            case PRODUCT_ESSENTIALBUSINESS_SERVER_ADDLSVC:
                 m_nWinEdition = EssentialBusinessServerADDLSVC;
                 break;
-              case PRODUCT_CLUSTER_SERVER_V:
+            case PRODUCT_CLUSTER_SERVER_V:
                 m_nWinEdition = ClusterServer_V;
                 break;
-              case PRODUCT_EMBEDDED:
+            case PRODUCT_EMBEDDED:
                 m_nWinEdition = Embedded;
                 break;
-              case PRODUCT_STARTER_E:
+            case PRODUCT_STARTER_E:
                 m_nWinEdition = Starter_E;
                 break;
-              case PRODUCT_HOME_BASIC_E:
+            case PRODUCT_HOME_BASIC_E:
                 m_nWinEdition = HomeBasic_E;
                 break;
-              case PRODUCT_HOME_PREMIUM_E:
+            case PRODUCT_HOME_PREMIUM_E:
                 m_nWinEdition = HomePremium_E;
                 break;
-              case PRODUCT_PROFESSIONAL_E:
+            case PRODUCT_PROFESSIONAL_E:
                 m_nWinEdition = Professional_E;
                 break;
-              case PRODUCT_ENTERPRISE_E:
+            case PRODUCT_ENTERPRISE_E:
                 m_nWinEdition = Enterprise_E;
                 break;
-              case PRODUCT_ULTIMATE_E:
+            case PRODUCT_ULTIMATE_E:
                 m_nWinEdition = Ultimate_E;
                 break;
 #endif
 #if _WIN32_WINNT >= 0x0602 // windows 8
-              case PRODUCT_ENTERPRISE_EVALUATION:
+            case PRODUCT_ENTERPRISE_EVALUATION:
                 m_nWinEdition = EnterpriseEvaluation;
                 break;
-              case PRODUCT_MULTIPOINT_STANDARD_SERVER:
+            case PRODUCT_MULTIPOINT_STANDARD_SERVER:
                 m_nWinEdition = MultipointStandardServer;
                 break;
-              case PRODUCT_MULTIPOINT_PREMIUM_SERVER:
+            case PRODUCT_MULTIPOINT_PREMIUM_SERVER:
                 m_nWinEdition = MultipointPremiumServer;
                 break;
-              case PRODUCT_STANDARD_EVALUATION_SERVER:
+            case PRODUCT_STANDARD_EVALUATION_SERVER:
                 m_nWinEdition = StandardEvaluationServer;
                 break;
-              case PRODUCT_DATACENTER_EVALUATION_SERVER:
+            case PRODUCT_DATACENTER_EVALUATION_SERVER:
                 m_nWinEdition = DatacenterEvaluationServer;
                 break;
-              case PRODUCT_ENTERPRISE_N_EVALUATION:
+            case PRODUCT_ENTERPRISE_N_EVALUATION:
                 m_nWinEdition = EnterpriseNEvaluation;
                 break;
-              case PRODUCT_EMBEDDED_AUTOMOTIVE:
+            case PRODUCT_EMBEDDED_AUTOMOTIVE:
                 m_nWinEdition = EmbeddedAutomotive;
                 break;
-              case PRODUCT_EMBEDDED_INDUSTRY_A:
+            case PRODUCT_EMBEDDED_INDUSTRY_A:
                 m_nWinEdition = EmbeddedIndustryA;
                 break;
-              case PRODUCT_THINPC:
+            case PRODUCT_THINPC:
                 m_nWinEdition = Thinpc;
                 break;
-              case PRODUCT_EMBEDDED_A:
+            case PRODUCT_EMBEDDED_A:
                 m_nWinEdition = EmbeddedA;
                 break;
-              case PRODUCT_EMBEDDED_INDUSTRY:
+            case PRODUCT_EMBEDDED_INDUSTRY:
                 m_nWinEdition = EmbeddedIndustry;
                 break;
-              case PRODUCT_EMBEDDED_E:
+            case PRODUCT_EMBEDDED_E:
                 m_nWinEdition = EmbeddedE;
                 break;
-              case PRODUCT_EMBEDDED_INDUSTRY_E:
+            case PRODUCT_EMBEDDED_INDUSTRY_E:
                 m_nWinEdition = EmbeddedIndustryE;
                 break;
-              case PRODUCT_EMBEDDED_INDUSTRY_A_E:
+            case PRODUCT_EMBEDDED_INDUSTRY_A_E:
                 m_nWinEdition = EmbeddedIndustryAE;
                 break;
-              case PRODUCT_STORAGE_WORKGROUP_EVALUATION_SERVER:
+            case PRODUCT_STORAGE_WORKGROUP_EVALUATION_SERVER:
                 m_nWinEdition = StorageWorkgroupEvaluationServer;
                 break;
-              case PRODUCT_STORAGE_STANDARD_EVALUATION_SERVER:
+            case PRODUCT_STORAGE_STANDARD_EVALUATION_SERVER:
                 m_nWinEdition = StorageStandardEvaluationServer;
                 break;
-              case PRODUCT_CORE_ARM:
+            case PRODUCT_CORE_ARM:
                 m_nWinEdition = CoreArm;
                 break;
-              case PRODUCT_CORE_N:
+            case PRODUCT_CORE_N:
                 m_nWinEdition = CoreN;
                 break;
-              case PRODUCT_CORE_COUNTRYSPECIFIC:
+            case PRODUCT_CORE_COUNTRYSPECIFIC:
                 m_nWinEdition = CoreCountrySpecific;
                 break;
-              case PRODUCT_CORE_SINGLELANGUAGE:
+            case PRODUCT_CORE_SINGLELANGUAGE:
                 m_nWinEdition = CoreSingleLanguage;
                 break;
-              case PRODUCT_CORE:
+            case PRODUCT_CORE:
                 m_nWinEdition = Core;
                 break;
-              case PRODUCT_PROFESSIONAL_WMC:
+            case PRODUCT_PROFESSIONAL_WMC:
                 m_nWinEdition = ProfessionalWmc;
                 break;
-              case PRODUCT_MOBILE_CORE:
+            case PRODUCT_MOBILE_CORE:
                 m_nWinEdition = MobileCore;
                 break;
 #endif
 #if _WIN32_WINNT >= 0x0603 // windows 8.1, Windows 10, ...
-              case PRODUCT_EDUCATION:
+            case PRODUCT_EDUCATION:
                 m_nWinEdition = Education;
                 break;
-              case PRODUCT_EDUCATION_N:
+            case PRODUCT_EDUCATION_N:
                 m_nWinEdition = EducationN;
                 break;
-              case PRODUCT_ENTERPRISE_S:
+            case PRODUCT_ENTERPRISE_S:
                 m_nWinEdition = EnterpriseS;
                 break;
-              case PRODUCT_ENTERPRISE_S_N:
+            case PRODUCT_ENTERPRISE_S_N:
                 m_nWinEdition = EnterpriseSN;
                 break;
-              case PRODUCT_ENTERPRISE_S_EVALUATION:
+            case PRODUCT_ENTERPRISE_S_EVALUATION:
                 m_nWinEdition = EnterpriseSEvaluation;
                 break;
-              case PRODUCT_ENTERPRISE_S_N_EVALUATION:
+            case PRODUCT_ENTERPRISE_S_N_EVALUATION:
                 m_nWinEdition = EnterpriseSNEvaluation;
                 break;
-              case PRODUCT_MOBILE_ENTERPRISE:
+            case PRODUCT_MOBILE_ENTERPRISE:
                 m_nWinEdition = MobileEnterprise;
                 break;
 #endif
-              default:
-                fprintf(stderr, "Unknown Product type: %x\n", static_cast<unsigned int>(dwReturnedProductType));
+            default:
+                std::cerr << "Unknown Product type: " << std::hex << std::showbase << dwReturnedProductType << std::endl;
                 m_nWinEdition = EditionUnknown;
                 break;
             }
             break;
         }
+        m_szEditionName = WindowsEditionStr[m_nWinEdition];
     }
 }
 
@@ -788,25 +777,23 @@ void SystemInfo::DetectWindowsServicePack()
     /**
      * Display service pack (if any) and build number.
      */
-    if ((m_osvi.dwMajorVersion == 4) &&
-        (lstrcmpi(m_osvi.szCSDVersion, "Service Pack 6") == 0))
+    if ((m_Osvi.dwMajorVersion == 4) && ci_compare(m_Osvi.szCSDVersion, "Service Pack 6"))
     {
         HKEY hKey;
-        LONG lRet;
         /**
          * Test for SP6 versus SP6a.
          */
-        lRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                            "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Hotfix\\Q246009",
-                            0, KEY_QUERY_VALUE, &hKey);
-        if (lRet == ERROR_SUCCESS)
-            strcpy(m_szServicePack, "Service Pack 6a");
+        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Hotfix\\Q246009", 0,
+                         KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
+        {
+            m_szServicePack = "Service Pack 6a";
+        }
         else
         {
             /**
              * Windows NT 4.0 prior to SP6a
              */
-            strcpy(m_szServicePack, m_osvi.szCSDVersion);
+            m_szServicePack = m_Osvi.szCSDVersion;
         }
         RegCloseKey(hKey);
     }
@@ -815,167 +802,143 @@ void SystemInfo::DetectWindowsServicePack()
         /**
          * Windows NT 3.51 and earlier or Windows 2000 and later
          */
-        strcpy(m_szServicePack, m_osvi.szCSDVersion);
+        m_szServicePack = m_Osvi.szCSDVersion;
     }
 }
 
 void SystemInfo::DetectCurrentVersionKeys()
 {
-    const char *szPath = "Software\\Microsoft\\Windows NT\\CurrentVersion"; // Path of key
-    HKEY hKey = NULL; // Key used to hget value
-    DWORD dwSize; // To tell buff size and recieve actual size
-    int access = KEY_QUERY_VALUE; // access rights - we want to read
-    BYTE DigitalProductId[512];
+    const char *szPath = "Software\\Microsoft\\Windows NT\\CurrentVersion"; /**< Path of key */
+    HKEY hKey = NULL;                                                       /**< Key used to hget value */
+    DWORD dwSize;                 /**< To tell buff size and recieve actual size */
+    int access = KEY_QUERY_VALUE; /**< access rights - we want to read */
+    char buffer[BUFSIZE];
 
-    if ((m_osvi.dwMajorVersion >= 6) && Is64bitPlatform())
+    if ((m_Osvi.dwMajorVersion >= 6) && Is64bitPlatform())
     {
         access |= KEY_WOW64_64KEY;
     }
-    // First open a key to allow you to read the registry
+    /**
+     * First open a key to allow you to read the registry
+     */
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, // Main key to browse
-                     szPath, // sub key
-                     0,
-                     access,
+                     szPath,             // sub key
+                     0, access,
                      &hKey) != ERROR_SUCCESS) // Recieve the key we want to use
     {
-        m_dwUBR = -1;
-        *m_szReleaseId = '\0';
-        *m_szReleaseName = '\0';
-        *m_szCSDBuildNumber = '\0';
-        *m_szRegisteredOwner = '\0';
-        *m_szRegisteredOrganization = '\0';
-        *m_szProductId = '\0';
-        *m_szEncodedProductId = '\0';
         return;
     }
     /**
      * Get Registered Owner
      */
-    dwSize = sizeof(m_szRegisteredOwner);
-    if (RegQueryValueEx(hKey, // From previous call
+    dwSize = sizeof(buffer);
+    if (RegQueryValueEx(hKey,              // From previous call
                         "RegisteredOwner", // value we want to look at
                         0,
-                        NULL, // not needed,we know its a string
-                        (LPBYTE)m_szRegisteredOwner, // Put info here
-                        &dwSize) != ERROR_SUCCESS) // How big is the buffer?
+                        NULL,                             // not needed,we know its a string
+                        reinterpret_cast<LPBYTE>(buffer), // Put info here
+                        &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
     {
-        *m_szRegisteredOwner = '\0';
+        m_szRegisteredOwner = buffer;
     }
     /**
      * Get Registered Organization
      */
-    dwSize = sizeof(m_szRegisteredOwner);
-    if (RegQueryValueEx(hKey, // From previous call
+    dwSize = sizeof(buffer);
+    if (RegQueryValueEx(hKey,                     // From previous call
                         "RegisteredOrganization", // value we want to look at
                         0,
-                        NULL, // not needed,we know its a string
-                        (LPBYTE)m_szRegisteredOrganization, // Put info here
-                        &dwSize) != ERROR_SUCCESS) // How big is the buffer?
+                        NULL,                             // not needed,we know its a string
+                        reinterpret_cast<LPBYTE>(buffer), // Put info here
+                        &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
     {
-        *m_szRegisteredOrganization = '\0';
+        m_szRegisteredOrganization = buffer;
     }
     /**
      * Get Product ID
      */
-    dwSize = sizeof(m_szProductId);
-    if (RegQueryValueEx(hKey, // From previous call
+    dwSize = sizeof(buffer);
+    if (RegQueryValueEx(hKey,        // From previous call
                         "ProductId", // value we want to look at
                         0,
-                        NULL, // not needed,we know its a string
-                        (LPBYTE)m_szProductId, // Put info here
-                        &dwSize) != ERROR_SUCCESS) // How big is the buffer?
+                        NULL,                             // not needed,we know its a string
+                        reinterpret_cast<LPBYTE>(buffer), // Put info here
+                        &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
     {
-        *m_szProductId = '\0';
+        m_szProductId = buffer;
     }
     /**
      * Get Digital Product ID
      */
-    dwSize = sizeof(DigitalProductId);
-    if (RegQueryValueEx(hKey, // From previous call
+    dwSize = sizeof(buffer);
+    if (RegQueryValueEx(hKey,               // From previous call
                         "DigitalProductId", // value we want to look at
                         0,
-                        NULL, // not needed,we know its a string
-                        (LPBYTE)DigitalProductId, // Put info here
-                        &dwSize) != ERROR_SUCCESS) // How big is the buffer?
+                        NULL,                             // not needed,we know its a string
+                        reinterpret_cast<LPBYTE>(buffer), // Put info here
+                        &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
     {
-        *m_szEncodedProductId = '\0';
+        EncodeProductId(reinterpret_cast<LPBYTE>(buffer));
     }
-    else
+    /**
+     * Windows 10 extensions
+     */
+    if (m_Osvi.dwMajorVersion >= 10)
     {
-        EncodeProductId(DigitalProductId);
-    }
-    if (m_osvi.dwMajorVersion >= 10)
-    {
-        *m_szCSDBuildNumber = '\0';
-        /**
-         * Get ReleaaseId
-         */
-        dwSize = sizeof(m_szReleaseId);
-        if (RegQueryValueEx(hKey, // From previous call
-                            "ReleaseId", // value we want to look at
-                            0,
-                            NULL, // not needed,we know its a string
-                            (LPBYTE)m_szReleaseId, // Put info here
-                            &dwSize) != ERROR_SUCCESS) // How big is the buffer?
-        {
-            strcpy(m_szReleaseId, "1507");
-        }
-        /**
-         * Get Release Name if possible
-         */
-        if (strcmp(m_szReleaseId, "1507") == 0)
-            strcpy(m_szReleaseName, "Initial Update");
-        else if (strcmp(m_szReleaseId, "1511") == 0)
-            strcpy(m_szReleaseName, "November Update");
-        else if (strcmp(m_szReleaseId, "1607") == 0)
-            strcpy(m_szReleaseName, "Anniversary Update");
-        else if (strcmp(m_szReleaseId, "1703") == 0)
-            strcpy(m_szReleaseName, "Creators Update");
-        else if (strcmp(m_szReleaseId, "1709") == 0)
-            strcpy(m_szReleaseName, "Fall Creators Update");
-        else if (strcmp(m_szReleaseId, "1803") == 0)
-            strcpy(m_szReleaseName, "April 2018 Update");
-        else if (strcmp(m_szReleaseId, "1809") == 0)
-            strcpy(m_szReleaseName, "October 2018 Update");
-        else if (strcmp(m_szReleaseId, "1903") == 0)
-            strcpy(m_szReleaseName, "May 2019 Update");
-        else if (strcmp(m_szReleaseId, "1909") == 0)
-            strcpy(m_szReleaseName, "November 2019 Update");
-        else if (strcmp(m_szReleaseId, "2004") == 0)
-            strcpy(m_szReleaseName, "May 2020 Update");
-        else if (strcmp(m_szReleaseId, "2009") == 0)
-            strcpy(m_szReleaseName, "October 2020 Update");
         /**
          * Get UBR
          */
         dwSize = sizeof(DWORD);
-        if (RegQueryValueEx(hKey, // From previous call
-                            "UBR", // value we want to look at
+        RegQueryValueEx(hKey,  // From previous call
+                        "UBR", // value we want to look at
+                        0,
+                        NULL,                               // not needed,we know its a DWORD
+                        reinterpret_cast<LPBYTE>(&m_dwUBR), // Put info here
+                        &dwSize);                           // How big is the buffer?
+        /**
+         * Get ReleaaseId
+         */
+        dwSize = sizeof(buffer);
+        if (RegQueryValueEx(hKey,        // From previous call
+                            "ReleaseId", // value we want to look at
                             0,
-                            NULL, // not needed,we know its a DWORD
-                            (LPBYTE)(&m_dwUBR), // Put info here
-                            &dwSize) != ERROR_SUCCESS) // How big is the buffer?
+                            NULL,                             // not needed,we know its a string
+                            reinterpret_cast<LPBYTE>(buffer), // Put info here
+                            &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
         {
-            m_dwUBR = -1;
+            m_szReleaseId = buffer;
+        }
+        if (m_szReleaseId == "2009")
+        {
+            /**
+             * ReleaseID registry key is deprecated since 20H1
+             */
+            dwSize = sizeof(buffer);
+            if (RegQueryValueEx(hKey,             // From previous call
+                                "DisplayVersion", // value we want to look at
+                                0,
+                                NULL,                             // not needed,we know its a string
+                                reinterpret_cast<LPBYTE>(buffer), // Put info here
+                                &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
+            {
+                m_szReleaseId = buffer;
+            }
         }
     }
     else
     {
-        *m_szReleaseId = '\0';
-        *m_szReleaseName = '\0';
-        m_dwUBR = -1;
         /**
          * Get CSD Build Number
          */
-        dwSize = sizeof(m_szCSDBuildNumber);
-        if (RegQueryValueEx(hKey, // From previous call
+        dwSize = sizeof(buffer);
+        if (RegQueryValueEx(hKey,             // From previous call
                             "CSDBuildNumber", // value we want to look at
                             0,
-                            NULL, // not needed,we know its a DWORD
-                            (LPBYTE)(&m_szCSDBuildNumber), // Put info here
-                            &dwSize) != ERROR_SUCCESS) // How big is the buffer?
+                            NULL,                             // not needed,we know its a DWORD
+                            reinterpret_cast<LPBYTE>(buffer), // Put info here
+                            &dwSize) == ERROR_SUCCESS)        // How big is the buffer?
         {
-            *m_szCSDBuildNumber = '\0';
+            m_szCSDBuildNumber = buffer;
         }
     }
 }
@@ -986,7 +949,7 @@ void SystemInfo::EncodeProductId(LPBYTE Key)
     int i = 29;
     const char *Chars = "BCDFGHJKMPQRTVWXY2346789";
 
-    m_szEncodedProductId[i] = '\0';
+    m_szEncodedProductId.resize(29);
     do
     {
         int Cur = 0;
@@ -1002,10 +965,8 @@ void SystemInfo::EncodeProductId(LPBYTE Key)
         {
             m_szEncodedProductId[--i] = '-';
         }
-    }
-    while (i > 0);
+    } while (i > 0);
 }
-
 
 /**
  *  Mnemonic                                      Value      Meaning
@@ -1106,131 +1067,67 @@ DWORD SystemInfo::DetectProductInfo()
     DWORD dwProductInfo = PRODUCT_UNDEFINED;
 
 #if _WIN32_WINNT >= 0x0600
-    if (m_osvi.dwMajorVersion >= 6)
+    if (m_Osvi.dwMajorVersion >= 6)
     {
-        PGetProductInfo lpProducInfo = (PGetProductInfo)GetProcAddress(
-            GetModuleHandle(_T("kernel32.dll")), "GetProductInfo");
+        PGetProductInfo lpProducInfo =
+            reinterpret_cast<PGetProductInfo>(GetProcAddress(GetModuleHandle("kernel32.dll"), "GetProductInfo"));
         if (NULL != lpProducInfo)
         {
-            lpProducInfo(m_osvi.dwMajorVersion,
-                         m_osvi.dwMinorVersion,
-                         m_osvi.wServicePackMajor,
-                         m_osvi.wServicePackMinor,
-                         &dwProductInfo);
+            lpProducInfo(m_Osvi.dwMajorVersion, m_Osvi.dwMinorVersion, m_Osvi.wServicePackMajor,
+                         m_Osvi.wServicePackMinor, &dwProductInfo);
         }
     }
 #endif
     return dwProductInfo;
 }
 
-WindowsVersion SystemInfo::GetWindowsVersion() const
+#if __cplusplus >= 201103L
+void SystemInfo::Lookup()
 {
-    return m_nWinVersion;
+    WindowsBuildInfo version(m_Osvi.dwMajorVersion, m_Osvi.dwMinorVersion, m_Osvi.dwBuildNumber, IsNTPlatform(),
+                             m_bServer, m_dwPatch);
+
+    for (auto &it : WindowsVersions)
+    {
+        if (it.m_Version == version)
+        {
+            m_szCodeName = it.m_szCodeName;
+            m_szReleaseName = it.m_szReleaseName;
+            m_szReleaseDate = it.m_szReleaseDate;
+            m_szEolDate = it.m_szEolDate;
+            break;
+        }
+    }
 }
 
-const char *SystemInfo::GetWindowsVersionName() const
+const std::list<SystemInfo::VersionRef> SystemInfo::Find(const std::string &name, bool reverse) const
 {
-    return WindowsVersionStr[m_nWinVersion];
+    std::list<VersionRef> l;
+
+    for (auto &it : WindowsVersions)
+    {
+        if (!name.empty())
+        {
+            auto &s = it.FullName();
+            if (ci_find(s, name) == s.end())
+            {
+                continue;
+            }
+        }
+        l.push_back(it);
+    }
+    if (!l.empty())
+    {
+        if (reverse)
+        {
+            l.sort(std::greater<const WindowsVersionInfo &>());
+        }
+        else
+        {
+            l.sort(std::less<const WindowsVersionInfo &>());
+        }
+    }
+    return l;
 }
 
-WindowsEdition SystemInfo::GetWindowsEdition() const
-{
-    return m_nWinEdition;
-}
-
-const char *SystemInfo::GetWindowsEditionName() const
-{
-    return WindowsEditionStr[m_nWinEdition];
-}
-
-bool SystemInfo::IsNTPlatform() const
-{
-    return m_osvi.dwPlatformId == VER_PLATFORM_WIN32_NT;
-}
-
-bool SystemInfo::IsWindowsPlatform() const
-{
-    return m_osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
-}
-
-bool SystemInfo::IsWin32sPlatform() const
-{
-    return m_osvi.dwPlatformId == VER_PLATFORM_WIN32s;
-}
-
-DWORD SystemInfo::GetMajorVersion() const
-{
-    return m_osvi.dwMajorVersion;
-}
-
-DWORD SystemInfo::GetMinorVersion() const
-{
-    return m_osvi.dwMinorVersion;
-}
-
-DWORD SystemInfo::GetBuildNumber() const
-{
-    return m_osvi.dwBuildNumber;
-}
-
-DWORD SystemInfo::GetPlatformID() const
-{
-    return m_osvi.dwPlatformId;
-}
-
-const char *SystemInfo::GetServicePackInfo() const
-{
-    return (m_szServicePack);
-}
-
-const char *SystemInfo::GetReleaseId() const
-{
-    return (m_szReleaseId);
-}
-
-const char *SystemInfo::GetReleaseName() const
-{
-    return (m_szReleaseName);
-}
-
-const char *SystemInfo::GetCSDBuildNumber() const
-{
-    return (m_szCSDBuildNumber);
-}
-
-const char *SystemInfo::GetRegisteredOwner() const
-{
-    return (m_szRegisteredOwner);
-}
-
-const char *SystemInfo::GetRegisteredOrganization() const
-{
-    return (m_szRegisteredOrganization);
-}
-
-const char *SystemInfo::GetProductId() const
-{
-    return (m_szProductId);
-}
-
-const char *SystemInfo::GetEncodedProductId() const
-{
-    return (m_szEncodedProductId);
-}
-
-DWORD SystemInfo::GetUBR() const
-{
-    return (m_dwUBR);
-}
-
-bool SystemInfo::Is32bitPlatform() const
-{
-    return !Is64bitPlatform();
-}
-
-bool SystemInfo::Is64bitPlatform() const
-{
-    return ((m_SysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64) ||
-            (m_SysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) ||
-            (m_SysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_ALPHA64));
-}
+#endif

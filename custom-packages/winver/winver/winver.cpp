@@ -1,122 +1,296 @@
-// SystemVersion.cpp : Defines the entry point for the console application.
-//
+/**
+ * winver.cpp : Defines the entry point for the console application.
+ */
 
-#include <getopt.h>
-#include <cstdio>
-#include <libgen.h>
+/**
+ * Portion copyright (C) 2005 - 2010 Marius Bancila
+ * http://www.mariusbancila.ro
+ * http://www.mariusbancila.ro/blog
+ * http://www.codexpert.ro
+ * http://www.codeguru.com
+ * http://www.sharparena.com
+ *
+ * copyright <C) 2018 - 2023 Various WEB contributors
+ */
+
 #include "SystemInfo.h"
 
-int main(int argc, char* argv[])
+#include <getopt.h>
+#include <iomanip>
+#include <iostream>
+#include <libgen.h>
+
+void DisplayBrief(const SystemInfo &sysInfo)
+{
+    std::cout << sysInfo.GetWindowsVersionName();
+    if (!sysInfo.GetReleaseName().empty())
+    {
+        std::cout << " " << sysInfo.GetReleaseName();
+    }
+    else if (!sysInfo.GetReleaseId().empty())
+    {
+        std::cout << " " << sysInfo.GetReleaseId();
+    }
+    else if (!sysInfo.GetCSDBuildNumber().empty())
+    {
+        std::cout << " " << sysInfo.GetCSDBuildNumber();
+    }
+    std::cout << " " << sysInfo.GetWindowsEditionName() << " Edition";
+    if (!sysInfo.GetServicePackInfo().empty())
+    {
+        std::cout << " " << sysInfo.GetServicePackInfo();
+    }
+    std::cout << " Version " << sysInfo.GetMajorVersion() << "." << sysInfo.GetMinorVersion() << "."
+              << sysInfo.GetBuildNumber();
+    if (!sysInfo.GetCSDBuildNumber().empty())
+    {
+        std::cout << "." << sysInfo.GetCSDBuildNumber();
+    }
+    if (static_cast<int>(sysInfo.GetUBR()) != -1)
+    {
+        std::cout << "." << sysInfo.GetUBR();
+    }
+    std::cout << std::endl;
+}
+
+void DisplayLong(const SystemInfo &sysInfo)
+{
+    std::cout << "OS Name:\t\t " << sysInfo.GetWindowsVersionName();
+    if (!sysInfo.GetReleaseName().empty())
+    {
+        std::cout << " " << sysInfo.GetReleaseName();
+    }
+    std::cout << std::endl;
+    if (!sysInfo.GetReleaseId().empty())
+    {
+        std::cout << "Release ID:\t\t " << sysInfo.GetReleaseId() << std::endl;
+    }
+    if (!sysInfo.GetReleaseDate().empty())
+    {
+        std::cout << "Release Date:\t\t " << sysInfo.GetReleaseDate() << std::endl;
+    }
+    if (!sysInfo.GetEolDate().empty())
+    {
+        std::cout << "End of Support:\t\t " << sysInfo.GetEolDate() << std::endl;
+    }
+    if (!sysInfo.GetCodeName().empty())
+    {
+        std::cout << "Code Name:\t\t " << sysInfo.GetCodeName() << std::endl;
+    }
+    std::cout << "OS Edition:\t\t " << sysInfo.GetWindowsEditionName() << " Edition " << std::endl;
+    std::cout << "Service Pack:\t\t " << (!sysInfo.GetServicePackInfo().empty() ? sysInfo.GetServicePackInfo() : "none")
+              << std::endl;
+    std::cout << "Major version:\t\t " << sysInfo.GetMajorVersion() << std::endl;
+    std::cout << "Minor version:\t\t " << sysInfo.GetMinorVersion() << std::endl;
+    std::cout << "Build number:\t\t " << sysInfo.GetBuildNumber() << std::endl;
+    if (!sysInfo.GetCSDBuildNumber().empty())
+    {
+        std::cout << "CSD Build Number:\t " << sysInfo.GetCSDBuildNumber() << std::endl;
+    }
+    if (static_cast<int>(sysInfo.GetUBR()) != -1)
+    {
+        std::cout << "Update Build Revision:\t " << sysInfo.GetUBR() << std::endl;
+    }
+    std::cout << "Platform type:\t\t ";
+    if (sysInfo.IsNTPlatform())
+    {
+        std::cout << "NT" << std::endl;
+    }
+    else if (sysInfo.IsWindowsPlatform())
+    {
+        std::cout << "Windows" << std::endl;
+    }
+    else if (sysInfo.IsWin32sPlatform())
+    {
+        std::cout << "Win32s" << std::endl;
+    }
+    else
+    {
+        std::cout << "Unknown" << std::endl;
+    }
+    std::cout << "Architecture:\t\t " << (sysInfo.Is64bitPlatform() ? "64" : "32") << " bits Platform" << std::endl;
+    if (!sysInfo.GetProductId().empty())
+    {
+        std::cout << "Product ID:\t\t " << sysInfo.GetProductId();
+        if (!sysInfo.GetEncodedProductId().empty())
+        {
+            std::cout << " (" << sysInfo.GetEncodedProductId() << ")";
+        }
+        std::cout << std::endl;
+    }
+    if (!sysInfo.GetRegisteredOwner().empty())
+    {
+        std::cout << "Registered Owner:\t " << sysInfo.GetRegisteredOwner() << std::endl;
+    }
+    if (!sysInfo.GetRegisteredOrganization().empty())
+    {
+        std::cout << "Registered Organization: " << sysInfo.GetRegisteredOrganization() << std::endl;
+    }
+}
+
+#if __cplusplus >= 201103L
+void ShowBrief(const SystemInfo &sysInfo, const std::string &name, bool reverse)
+{
+    for (auto &it : sysInfo.Find(name, reverse))
+    {
+        std::cout << std::left << it.get().m_szReleaseDate << " " << std::setw(16) << it.get().m_Version
+                  << it.get().FullName() << std::endl;
+    }
+}
+
+void ShowLong(const SystemInfo &sysInfo, const std::string &name, bool reverse)
+{
+    for (auto &it : sysInfo.Find(name, reverse))
+    {
+        std::cout << "OS Name:\t\t " << it.get().FullName() << std::endl;
+        if (!it.get().m_szCodeName.empty())
+        {
+            std::cout << "Code Name:\t\t " << it.get().m_szCodeName << std::endl;
+        }
+        std::cout << "Release Date:\t\t " << it.get().m_szReleaseDate << std::endl;
+        std::cout << "End of Support:\t\t " << it.get().m_szEolDate << std::endl;
+        std::cout << "Major version:\t\t " << static_cast<WORD>(it.get().m_Version.m_nMajor) << std::endl;
+        std::cout << "Minor version:\t\t " << static_cast<WORD>(it.get().m_Version.m_nMinor) << std::endl;
+        if (it.get().m_Version.m_wBuild != 0)
+        {
+        std::cout << "Build number:\t\t " << it.get().m_Version.m_wBuild << std::endl;
+        }
+        std::cout << "Platform type:\t\t "
+                  << (it.get().m_Version.m_bIsServer ? "NT Server"
+                                                     : (it.get().m_Version.m_bIsNT ? "NT Workstation" : "MS-Dos"))
+                  << std::endl;
+        std::string prefix("OS Edition:\t\t ");
+        for (auto &i : it.get().m_Editions)
+        {
+            std::cout << prefix << i << std::endl;
+            prefix = "\t\t\t ";
+        }
+        std::cout << std::endl;
+    }
+}
+#endif
+
+void Usage(const std::string &name, const std::string &prefix)
+{
+    if (!prefix.empty())
+    {
+        std::cerr << prefix << std::endl << std::endl;
+    }
+    std::cerr << "Usage " << name << " -bhlsv" << std::endl;
+    std::cerr << "\t-b, --brief:\t\tPrint one line Windows version informations" << std::endl;
+    std::cerr << "\t-l, --long:\t\tPrint Detailled Windows version informations" << std::endl;
+    std::cerr << "\t-h, --help:\t\tPrint this above message" << std::endl;
+#if __cplusplus >= 201103L
+    std::cerr << "\t-r, --reverse:\tPrint version informations in reverse order" << std::endl;
+    std::cerr << "\t-s, --show <name>:\tPrint informations about a specific Windows Version" << std::endl;
+    std::cerr << "\t\t\t\tIf no <name> is specified informations about all known Windows versions are displayed"
+              << std::endl;
+    std::cout << "\t\t\t\tIf more than one Windows version is found, the display is sorted by dates" << std::endl;
+#endif
+    std::cerr << "\t-v, --version:\t\tPrint the version of this program" << std::endl;
+}
+
+void version(const std::string &name)
+{
+    std::cout << name << " Version 2.0" << std::endl << std::endl;
+    std::cout << "Portion Copyright <C> 2005 - 2010 Marius Bancila" << std::endl;
+    std::cout << "http://www.mariusbancila.ro" << std::endl;
+    std::cout << "http://www.mariusbancila.ro/blog" << std::endl;
+    std::cout << "From http://www.codexpert.ro" << std::endl;
+    std::cout << "From http://www.codeguru.com" << std::endl;
+    std::cout << "From http://www.sharparena.com" << std::endl << std::endl;
+    std::cout << "Copyright <C> 2018 - 2023 Various WEB Contributors" << std::endl;
+    std::cout << "From https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions" << std::endl;
+    std::cout << "from https://www.gaijin.at/en/infos/windows-version-numbers" << std::endl;
+}
+
+int main(int argc, char *argv[])
 {
     SystemInfo sysInfo;
-    const char *ServicePack = sysInfo.GetServicePackInfo();
-    const char *ReleaseId = sysInfo.GetReleaseId();
-    const char *ReleaseName = sysInfo.GetReleaseName();
-    const char *CSDBuildNumber = sysInfo.GetCSDBuildNumber();
-    const char *RegisteredOwner = sysInfo.GetRegisteredOwner();
-    const char *RegisteredOrganization = sysInfo.GetRegisteredOrganization();
-    const char *ProductId = sysInfo.GetProductId();
-    const char *EncodedProductId = sysInfo.GetEncodedProductId();
-    int ubr = sysInfo.GetUBR();
-    struct option opts[] = {
-        { "brief", no_argument, NULL, 'b' },
-        { "help", no_argument, NULL, 'h' },
-        { "long", no_argument, NULL, 'l' },
-        { NULL, no_argument, NULL, '\0' }
-    };
+    struct option opts[] = {{"brief", no_argument, NULL, 'b'},      {"help", no_argument, NULL, 'h'},
+                            {"long", no_argument, NULL, 'l'},       {"reverse", no_argument, NULL, 'r'},
+                            {"show", required_argument, NULL, 's'}, {"version", no_argument, NULL, 'v'},
+                            {NULL, no_argument, NULL, '\0'}};
     char c;
     bool brief = true;
+#if __cplusplus >= 201103L
+    bool show = false;
+    bool reverse = false;
+    std::string name;
+#endif
 
-    while ((c = getopt_long(argc, argv, "bhl", opts, NULL)) != -1)
+    while ((c = getopt_long(argc, argv, ":bhlrs:v", opts, NULL)) != -1)
     {
         switch (c)
         {
-          case 'b':
+        case 'b':
             brief = true;
             break;
-          case 'l':
+        case 'l':
             brief = false;
             break;
-          case 'h':
-            fprintf(stderr, "Print version informations about the currently running Windows Operating System\n");
-            /* fall through */
-          default:
-          usage:
-            fprintf(stderr, "Usage %s -bhl\n", basename(argv[0]));
-            fprintf(stderr, "\t-b, --brief: Print one line Windows version informations\n");
-            fprintf(stderr, "\t-l, --long:  Printf Detailled Windows version informations\n");
-            fprintf(stderr, "\t-h, --help:  Print this above message\n");
-            return (0);
+        case 'v':
+            version(basename(argv[0]));
+            return 0;
+        case 'h':
+            Usage(basename(argv[0]), "Print version informations about the currently running Windows Operating System");
+            return 0;
+#if __cplusplus >= 201103L
+        case 'r':
+            reverse = true;
+            break;
+        case 's':
+            show = true;
+            name = (optarg != NULL) ? optarg : "";
+            break;
+        case ':':
+            if (optopt == 's')
+            {
+                show = true;
+                break;
+            }
+            else
+            {
+                Usage(basename(argv[0]),
+                      std::string(basename(argv[0])) + ": Missing argument for option -" + static_cast<char>(optopt));
+                return 1;
+            }
+#endif
+        default:
+            optopt = c;
+            /* fallthrough */
+        case '?':
+            Usage(basename(argv[0]),
+                  std::string(basename(argv[0])) + ": Invalid command-line option -" + static_cast<char>(optopt));
+            return 1;
         }
     }
     if (optind != argc)
     {
-        fprintf(stderr, "%s: too many arguments\n", basename(argv[0]));
-        goto usage;
+        Usage(basename(argv[0]), std::string(basename(argv[0])) + std::string(": too many arguments"));
+        return 1;
     }
+#if __cplusplus >= 201103l
+    if (show)
+    {
+        if (brief)
+        {
+            ShowBrief(sysInfo, name, reverse);
+        }
+        else
+        {
+            ShowLong(sysInfo, name, reverse);
+        }
+        return 0;
+    }
+#endif
     if (brief)
     {
-        printf("%s",
-               sysInfo.GetWindowsVersionName());
-        if (*ReleaseName)
-            printf(" %s", ReleaseName);
-        else if (*ReleaseId)
-            printf(" %s", ReleaseId);
-        printf(" %s Edition",
-               sysInfo.GetWindowsEditionName());
-        if (*ServicePack)
-            printf(" %s", ServicePack);
-        printf(" Version %u.%u.%u",
-               static_cast<unsigned int>(sysInfo.GetMajorVersion() & 0XFFFF),
-               static_cast<unsigned int>(sysInfo.GetMinorVersion() & 0XFFFF),
-               static_cast<unsigned int>(sysInfo.GetBuildNumber() & 0xFFFF));
-        if (*CSDBuildNumber)
-            printf(".%s", CSDBuildNumber);
-        if (ubr != -1)
-            printf(".%u", static_cast<unsigned int>(ubr & 0xFFFF));
-        printf("\n");
+        DisplayBrief(sysInfo);
     }
     else
     {
-        printf("OS Name:\t\t %s\n", sysInfo.GetWindowsVersionName());
-        if (*ReleaseId)
-        {
-            printf("Release ID:\t\t %s", ReleaseId);
-            if (*ReleaseName)
-                printf(" (%s)", ReleaseName);
-            printf("\n");
-        }
-        printf("OS Edition:\t\t %s Edition\n", sysInfo.GetWindowsEditionName());
-        printf("Service Pack:\t\t %s\n", *ServicePack ? ServicePack : "none");
-        printf("Major version:\t\t %u\n", static_cast<unsigned int>(sysInfo.GetMajorVersion() & 0xFFFF));
-        printf("Minor version:\t\t %u\n", static_cast<unsigned int>(sysInfo.GetMinorVersion() & 0xFFFF));
-        printf("Build number:\t\t %u\n", static_cast<unsigned int>(sysInfo.GetBuildNumber() & 0xFFFF));
-        if (*CSDBuildNumber)
-            printf("CSD Build Number:\t %s\n", CSDBuildNumber);
-        if (ubr != -1)
-            printf("Update Build Revision:\t %u\n", static_cast<unsigned int>(ubr & 0xFFFF));
-        printf("Platform type:\t\t ");
-        if (sysInfo.IsNTPlatform())
-            printf("NT\n");
-        else if (sysInfo.IsWindowsPlatform())
-            printf("Windows\n");
-        else if (sysInfo.IsWin32sPlatform())
-            printf("Win32s\n");
-        else
-            printf("Unknown\n");
-        printf("Architecture:\t\t %s bits Platform\n", sysInfo.Is64bitPlatform() ? "64" : "32");
-        if (*ProductId)
-        {
-            printf("Product ID:\t\t %s", ProductId);
-            if (*EncodedProductId)
-                printf(" (%s)\n", EncodedProductId);
-            else
-                printf("\n");
-        }
-        if (*RegisteredOwner)
-            printf("Registered Owner:\t %s\n", RegisteredOwner);
-        if (*RegisteredOrganization)
-            printf("Registered Organization: %s\n", RegisteredOrganization);
+        DisplayLong(sysInfo);
     }
     return 0;
 }
