@@ -1,37 +1,41 @@
 # Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
 
-pkgbase=pysocks
-pkgname=("python-${pkgbase}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=1.7.0
+_pyname=PySocks
+_realname=pysocks
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=1.7.1
 pkgrel=1
 pkgdesc="SOCKS4, SOCKS5 or HTTP proxy (Anorov fork PySocks replaces socksipy) (msys)"
 arch=('any')
 url='https://github.com/Anorov/PySocks'
-license=('BSD')
-depends=('python')
-makedepends=('python-setuptools')
-options=('staticlibs' 'strip' '!debug')
-source=("${pkgbase}-${pkgver}.tar.gz"::"https://github.com/Anorov/PySocks/archive/${pkgver}.tar.gz")
-sha512sums=('280c9d1f147cd665a9989dc143e0b1f43bbc0575dc0b6b92472bc4b8cf2315f37dba74c5e77ff0b3c3ede49ee5c1e53d6a330bcb3c8d822023378c1cfb8cac0f')
-
-prepare() {
-  cd "${srcdir}"
-  rm -rf python-build | true
-  cp -a "${pkgbase}-${pkgver}" "python-build"
-}
+msys2_references=(
+  'archlinux: python-pysocks'
+  'pypi: PySocks'
+)
+license=('spdx:BSD-3-Clause')
+depends=("python")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel")
+source=("https://pypi.org/packages/source/${_pyname::1}/${_pyname}/${_pyname}-${pkgver}.tar.gz")
+sha512sums=('cef4a5ce8c67fb485644696a23bf68a721db47f3211212de2d4431eaf9ebd26077dd5a06f6dfa7fde2dcb9d7c1ed551facd014e999929cb4d7b504972c464016')
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cp -r "${_pyname}-${pkgver}" "python-build" && cd "python-build"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 package() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
