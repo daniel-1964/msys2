@@ -6,44 +6,41 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=3.0.12
+pkgver=3.15.4
 pkgrel=1
 pkgdesc="A platform independent file lock (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: filelock'
+)
 url='https://github.com/benediktschmitt/py-filelock'
 license=('custom:Unlicense')
 depends=("python")
-makedepends=("python-setuptools")
-options=('staticlibs' 'strip' '!debug')
-checkdepends=("python-pytest")
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/benediktschmitt/py-filelock/archive/v${pkgver}.tar.gz")
-sha512sums=('0f30b54b9de2540f023855effcc582b18fedcee6681f21e1733f1b60dbd39eb148e3830bc798a44c5e8c22e7ea8ca26b6d4547fae79dacc78c62b819a3d84683')
-
-prepare() {
-  cd "${srcdir}"
-  rm -rf python-build | true
-  cp -a "py-${_realname}-${pkgver}" "python-build"
-
-  # Set version for setuptools_scm
-  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
-}
+makedepends=("python-build"
+             "python-installer"
+             "python-hatchling"
+             "python-hatch-vcs")
+checkdepends=("python-pytest"
+              "python-pytest-timeout")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('2207938cbc1844345cb01a5a95524dae30f0ce089eba5b00378295a17e3e90cb')
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  msg "Python test for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/pytest test.py
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  PYTHONPATH=src ${MSYSTEM_PREFIX}/bin/pytest tests || warning "Tests failed"
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
