@@ -1,0 +1,52 @@
+# Contributor: Raed Rizqie <raed.rizqie@gmail.com>
+
+_realname=platformdirs
+pkgbase=python-${_realname}
+pkgname=python-${_realname}
+pkgver=4.2.2
+pkgrel=1
+pkgdesc='A small Python module for determining appropriate platform-specific dirs (msys)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: platformdirs'
+)
+license=('spdx:MIT')
+url='https://github.com/platformdirs/platformdirs'
+depends=("python")
+makedepends=(
+    "python-build"
+    "python-installer"
+    "python-hatchling"
+    "python-hatch-vcs"
+)
+checkdepends=(
+    "python-appdirs"
+    "python-pytest"
+    "python-pytest-cov"
+    "python-pytest-mock"
+)
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('38b7b51f512eed9e84a22788b4bce1de17c0adb134d6becb09836e37d8654cd3')
+
+build() {
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+check() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
