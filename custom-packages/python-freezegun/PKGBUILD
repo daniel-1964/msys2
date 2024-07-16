@@ -3,70 +3,43 @@
 _realname=freezegun
 pkgbase=python-${_realname}
 pkgname=("python-${_realname}")
-provides=("python3-${_realname}")
-conflicts=("python3-${_realname}")
-replaces=("python3-${_realname}")
-pkgver=1.0.0
+pkgver=1.5.1
 pkgrel=1
 pkgdesc="Let your Python tests travel through time (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://github.com/spulec/freezegun'
-license=('Apache')
-depends=('python'
-         'python-dateutil')
-makedepends=('python-setuptools')
-checkdepends=('python-nose'
-              'python-mock'
-              'python-coverage')
-options=('staticlibs' 'strip' '!debug')
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/spulec/freezegun/archive/${pkgver}.tar.gz")
-sha512sums=('38a2065f08d37bb5fd60dbb189385ad7106fb5459f22bcb6ce290f4de35d78199c046bc165f27ad6e86bd85cd071578348e5e5c8d959ac7a5e41b42e002655e7')
-
-# Helper macros to help make tasks easier #
-apply_patch_with_msg() {
-  for _patch in "$@"
-  do
-    msg2 "Applying ${_patch}"
-    patch -Nbp1 -i "${srcdir}/${_patch}"
-  done
-}
-
-del_file_exists() {
-  for _fname in "$@"
-  do
-    if [ -f ${_fname} ]; then
-      rm -rf ${_fname}
-    fi
-  done
-}
-# =========================================== #
-
-prepare() {
-  cd "${srcdir}"
-  rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
-
-  # Set version for setuptools_scm
-  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
-}
+msys2_references=(
+  'pypi: freezegun'
+)
+license=('spdx:Apache-2.0')
+depends=("python"
+         "python-dateutil")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel")
+checkdepends=("python-nose"
+              "python-mock"
+              "python-coverage")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('b29dedfcda6d5e8e083ce71b2b542753ad48cfec44037b3fc79702e2980a89e9')
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-      /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  msg "Python test for "
-  cd "${srcdir}/python-build"
-  # https://github.com/spulec/freezegun/issues/250
-     /usr/bin/nosetests || warning "Tests failed"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/nosetests || warning "Tests failed"
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
