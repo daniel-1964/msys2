@@ -6,69 +6,35 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=1.7.1
+pkgver=2.1.1
 pkgrel=1
 pkgdesc="Rapid multi-Python deployment (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://execnet.readthedocs.io/en/latest'
-license=('MIT')
-depends=("python"
-         "python-apipkg")
-makedepends=("python-setuptools")
-options=('staticlibs' 'strip' '!debug')
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/pytest-dev/execnet/archive/v${pkgver}.tar.gz")
-sha512sums=('65ec428ba1d1c1a67b9ed8ccbbde238d563edd6b79e5a1a824f2a74d34e303bf803a5eb2848a13bf77840d1203e09e450ca83fe5ce0a3ac8dab163553a07b069')
+msys2_references=(
+  'pypi: execnet'
+)
+license=('spdx:MIT')
+depends=("python")
+makedepends=("python-build"
+             "python-hatchling"
+             "python-hatch-vcs"
+             "python-installer")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha512sums=('486f906ad653d16cce7337d9085c36070fe3dd721a3723ca62ceb25862c3ff837120062df028d5aadec17f854c0d46204537e9d75d22079a677f08c50dd48d21')
 
-# Helper macros to help make tasks easier #
-apply_patch_with_msg() {
-  for _patch in "$@"
-  do
-    msg2 "Applying $_patch"
-    patch -Nbp1 -i "${srcdir}/$_patch"
-  done
-}
-
-del_file_exists() {
-  for _fname in "$@"
-  do
-    if [ -f $_fname ]; then
-      rm -rf $_fname
-    fi
-  done
-}
-# =========================================== #
-
-prepare() {
-  cd "${srcdir}"
-  rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
-
-  # Set version for setuptools_scm
-  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
-  export PBR_VERSION=${pkgver}
-}
-
-# Note that build() is sometimes skipped because it's done in
-# the packages setup.py install for simplicity if you can do so.
-# but sometimes, you want to do a check before install which would
-# also trigger the build.
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
-}
-
-check() {
-  msg2 "Python test for msys"
-  cd "${srcdir}/python-build"
-  local _cyp="$(pwd)"
-  PYTHONPATH="${_cyp}/build/lib;${PYTHONPATH}" /usr/bin/py.test testing || true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  cd "${srcdir}/python-build-${MSYSTEM}"
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
