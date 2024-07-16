@@ -7,9 +7,13 @@ provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
 pkgver=0.10.2
-pkgrel=1
+pkgrel=4
 pkgdesc="A Python library for parsing and creating TOML (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: toml'
+)
 url='https://github.com/uiri/toml'
 license=('MIT')
 depends=("python")
@@ -45,29 +49,30 @@ prepare() {
 
   cp -v test.toml "${_realname}-$pkgver"
   rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
+  cp -r "${_realname}-${pkgver}" "python-build"
 
   # Set version for setuptools_scm
   export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
 }
 
 build() {
-  msg "Python build for msys"
+  msg "Python build for ${CARCH}"
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
 }
 
 check() {
   # disable useless tests
-  msg "Python test for msys"
+  msg "Python test for ${CARCH}"
   cd "${srcdir}/python-build"
-  /usr/bin/py.test tests -k 'not test_invalid_tests and not test_valid_tests'
+  ${MSYSTEM_PREFIX}/bin/py.test tests -k 'not test_invalid_tests and not test_valid_tests'
 }
 
 package() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
