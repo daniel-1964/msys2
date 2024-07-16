@@ -6,42 +6,41 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=5.3
+pkgver=7.6.0
 pkgrel=1
 pkgdesc="Code coverage measurement for Python (msys)"
 arch=('any')
-url='https://coverage.readthedocs.io/'
-license=('Apache 2.0')
-depends=('python')
-makedepends=('python-setuptools'
-             'python-devel')
-#install=${_realname}3-${CARCH}.install
-source=("${_realname}-${pkgver}.tar.gz::https://github.com/nedbat/coveragepy/archive/coverage-${pkgver}.tar.gz")
-sha256sums=('f42337b9e44a643b64e231ce02a67fe0402d64b71be6f1304878d424bc3a3159')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: coverage'
+)
+url='https://github.com/nedbat/coveragepy'
+license=('spdx:Apache-2.0')
+depends=("python")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel"
+             "python-devel")
+options=(!strip)
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('289cc803fa1dc901f84701ac10c9ee873619320f2f9aff38794db4a4a0268d51')
 
-prepare() {
-  cd "${srcdir}"
-  rm -rf python-build | true
-  cp -a "coveragepy-${_realname}-${pkgver}" "python-build"
+prepare() { 
+  rm -rf python-build-${MSYSTEM} | true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}"
 }
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
 
-  install -Dm644 "LICENSE.txt" "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
-
-  #local PREFIX_WIN=$(cygpath -wm /usr)
-  # fix python command in files
-  #for _f in "${pkgdir}/usr"/bin/*.py; do
-  #  sed -e "s|/usr/bin/env |/usr|g" \
-  #      -e "s|${PREFIX_WIN}|/usr|g" -i ${_f}
-  #done
+  install -Dm644 "LICENSE.txt" "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
