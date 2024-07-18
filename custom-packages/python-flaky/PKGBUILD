@@ -6,31 +6,36 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=3.7.0
+pkgver=3.8.1
 pkgrel=1
 pkgdesc="Plugin for nose or py.test that automatically reruns flaky tests (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'archlinux: python-flaky'
+  'pypi: flaky'
+)
 url="https://github.com/box/flaky"
-license=('APACHE')
-depends=('python')
-makedepends=('python-setuptools')
-options=('staticlibs' 'strip' '!debug')
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/box/flaky/archive/v${pkgver}.tar.gz")
-sha256sums=('d2d0c482ef43211e9ef23213dd83ec1b2686c1510a5ac83624b7d6b41710c3eb')
-
-prepare() {
-  rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
-}
+license=('spdx:Apache-2.0')
+depends=("python")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('47204a81ec905f3d5acfbd61daeabcada8f9d4031616d9bcb0618461729699f5')
 
 build() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 package() {
-  cd "${srcdir}/python-build"
+  cd "${srcdir}/python-build-${MSYSTEM}"
 
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
