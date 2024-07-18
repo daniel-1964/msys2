@@ -6,90 +6,56 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=5.41.2
-pkgrel=1
+pkgver=6.108.2
+pkgrel=2
 pkgdesc="Advanced Quickcheck style testing library for Python (msys)"
 arch=('any')
-url='https://hypothesis.readthedocs.org'
-license=('MIT')
-depends=("python"
-         "python-attrs"
-         "python-coverage"
-         "python-sortedcontainers")
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'archlinux: python-hypothesis'
+  'pypi: hypothesis'
+)
+msys2_changelog_url='https://hypothesis.readthedocs.io/en/latest/changes.html'
+msys2_documentation_url='https://hypothesis.readthedocs.io/'
+msys2_issue_tracker_url='https://github.com/HypothesisWorks/hypothesis/issues/'
+msys2_repository_url='https://github.com/HypothesisWorks/hypothesis/tree/master/hypothesis-python/'
+url='https://hypothesis.works/'
+license=('spdx:MPL-2.0')
+depends=("python-attrs"
+         "python-sortedcontainers"
+         "python-exceptiongroup")
+if [[ ${CARCH} != i686 ]]; then
 optdepends=("python-pytz: for datetime and django module"
             "python-faker: for fakefactory and django module"
             "python-django: for django module"
             "python-numpy: for numpy module"
             "python-pytest: for pytest module")
-makedepends=("python-setuptools")
-checkdepends=("python-pytest-runner"
-              "python-flake8"
-              "python-pytz"
-              "python-numpy"
-              "python-faker"
-              "python-flaky"
-              "python-pytest-benchmark"
-              "python-django"
-              "python-pytest-xdist"
-              "python-mock"
-              "python-pandas")
-options=('staticlibs' 'strip' '!debug')
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/HypothesisWorks/hypothesis/archive/hypothesis-python-${pkgver}.tar.gz")
-sha512sums=('712a6b3a007e4b354e9ed2137b7dd53652abbbf0b324467ce540ca886fb956eae5d00f83cbc1c9b1799a4a3abc64f4d26d9aed85d5fb689e904e1125b87b88eb')
+fi
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-wheel")
+checkdepends=("python-pytest")
+options=('!strip')
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('62cf1c16bd98548b6a84007c5fb8cf6d9cb358dad870adb4f236c795ef162fdd')
 
-# Helper macros to help make tasks easier #
-apply_patch_with_msg() {
-  for _patch in "$@"
-  do
-    msg2 "Applying $_patch"
-    patch -Nbp1 -i "${srcdir}/$_patch"
-  done
-}
-
-del_file_exists() {
-  for _fname in "$@"
-  do
-    if [ -f $_fname ]; then
-      rm -rf $_fname
-    fi
-  done
-}
-# =========================================== #
-
-prepare() {
-  cd "${srcdir}"
-  sed -i "/FutureWarning/a \    filterwarnings('ignore', category=DeprecationWarning, module='pandas.core')" \
-       ${_realname}-${_realname}-python-$pkgver/hypothesis-python/tests/common/setup.py
-
-  rm -rf python-build | true
-  cp -a "${_realname}-${_realname}-python-${pkgver}" "python-build"
-
-  # Set version for setuptools_scm
-  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
-  export LC_CTYPE=en_US.UTF-8
-}
-
-# Note that build() is sometimes skipped because it's done in
-# the packages setup.py install for simplicity if you can do so.
-# but sometimes, you want to do a check before install which would
-# also trigger the build.
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build/hypothesis-python"
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  msg "Python test for msys"
-  cd "${srcdir}/python-build/hypothesis-python"
-  mv tests/django ../
-  /usr/bin/python setup.py pytest --addopts -n16
-  mv ../django tests/
-  PYTHONPATH="$PWD/build/lib:$PYTHONPATH" /usr/bin/python -m tests.django.manage test tests.django || warning "Tests failed"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
 }
 
 package() {
-  cd "${srcdir}/python-build/hypothesis-python"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE.txt "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE.txt"
 }
