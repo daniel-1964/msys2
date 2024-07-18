@@ -1,40 +1,50 @@
 # Contributor: Frederic Wang <fred.wang@free.fr>
 
-pkgbase=pycparser
-pkgname=("python-${pkgbase}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=2.20
+_realname=pycparser
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=2.22
 pkgrel=1
 pkgdesc='Complete parser of the C language, written in pure Python (msys)'
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://github.com/eliben/pycparser'
-license=('BSD')
-depends=('python'
-         'python-ply')
-makedepends=('python-setuptools')
-#_dtoken="be/64/1bb257ffb17d01f4a38d7ce686809a736837ad4371bcc5c42ba7a715c3ac"
-source=("${pkgbase}-${pkgver}.tar.gz::https://github.com/eliben/pycparser/archive/release_v${pkgver}.tar.gz")
-sha256sums=('1b895b4f6fb5195ce9c516ca7e28c9bd2f9ecd0f02755302b8a717454abea806')
+msys2_references=(
+  'pypi: pycparser'
+)
+license=('spdx:BSD-3-Clause')
+depends=("python")
+makedepends=("python-setuptools")
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/eliben/pycparser/archive/release_v${pkgver}.tar.gz")
+sha256sums=('b074c239ee828fcb9c97774b942f3ce51f0d2edc00809f49c3c3ef0f3baaf9c1')
 
 prepare() {
   cd "${srcdir}"
   rm -rf python-build | true
-  cp -a "${pkgbase}-release_v${pkgver}" "python-build"
+  cp -r "${_realname}-release_v${pkgver}" "python-build"
 }
 
 build() {
-  msg "Python build for msys"
+  msg "Python build for ${CARCH}"
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
   cd pycparser
-  /usr/bin/python _build_tables.py
+  ${MSYSTEM_PREFIX}/bin/python _build_tables.py
+}
+
+check() {
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python -m unittest discover
 }
 
 package() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${pkgbase}/LICENSE"
+  
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
