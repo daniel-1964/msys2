@@ -1,0 +1,49 @@
+# Maintainer: Sarah Ottinger <schalaalexiazeal@gmail.com>
+
+_realname=pytest-asyncio
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+pkgver=0.23.8
+pkgrel=1
+pkgdesc='Pytest support for asyncio (msys)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'archlinux: python-pytest-asyncio'
+  'pypi: pytest-asyncio'
+)
+msys2_documentation_url='https://pytest-asyncio.readthedocs.io/'
+url="https://github.com/pytest-dev/pytest-asyncio/"
+license=('spdx:Apache-2.0')
+depends=("python-pytest")
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-setuptools-scm"
+             "python-wheel")
+checkdepends=("python-flaky"
+              "python-hypothesis")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname/-/_}/${_realname/-/_}-${pkgver}.tar.gz")
+sha256sums=('759b10b33a6dc61cce40a8bd5205e302978bbbcc00e279a8b61d9a6a3c82e4d3')
+
+build() {
+  cp -r "${_realname/-/_}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+check() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
