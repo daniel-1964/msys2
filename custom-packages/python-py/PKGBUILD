@@ -1,0 +1,63 @@
+# Contributor: Frederic Wang <fred.wang@free.fr>
+
+_realname=py
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+pkgver=1.11.0
+pkgrel=4
+provides=("python3-${_realname}=${pkgver}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgdesc='library with cross-python path, ini-parsing, io, code, log facilities (msys)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+url='https://github.com/pytest-dev/py'
+msys2_references=(
+  "cpe: cpe:/a:pytest:py"
+  "pypi: py"
+)
+license=('MIT')
+depends=("python"
+         "python-iniconfig"
+         "python-apipkg")
+makedepends=("python-setuptools"
+             "python-setuptools-scm")
+checkdepends=("python-pytest")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/pytest-dev/py/archive/${pkgver}.tar.gz")
+sha256sums=('73845c6278da21cebd41d90e363da84aa93e9dd3485d00f7ced540fedbd41054')
+
+prepare() {
+  cd "${srcdir}"
+
+  cp ${_realname}-${pkgver}/LICENSE ${_realname}-${pkgver}/py/LICENSE
+  rm -r py-${pkgver}/py/_vendored_packages
+
+   rm -rf python-build | true
+  cp -r "${_realname}-${pkgver}" "python-build"
+
+  export LC_CTYPE=en_US.UTF-8
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for ${CARCH}"
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
+}
+
+  
+check() {
+  msg "Python test for ${CARCH}"
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py pytest || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
