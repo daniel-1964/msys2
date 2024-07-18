@@ -1,0 +1,9 @@
+#!/bin/sh
+sed -e '1,$s#\${MINGW_PREFIX}#${MSYSTEM_PREFIX}#g' \
+    -e '1,$s#\${MINGW_CHOST}#${MSYSTEM_CHOST}#g' \
+    -e '1,$s#\${MINGW_PACKAGE_PREFIX}-##g' \
+    -e '1,$s#-${CARCH}##g' \
+    -e '1,$s#(mingw-w64)#(msys)#g' \
+    -e '1,$s#mingw-w64-##g' \
+    -i $*
+ 
