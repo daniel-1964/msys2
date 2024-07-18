@@ -1,0 +1,51 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>.
+
+_realname=defusedxml
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=0.7.1
+pkgrel=4
+pkgdesc="XML bomb protection for Python stdlib modules (msys)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: defusedxml'
+)
+url='https://bitbucket.org/tiran/defusedxml'
+license=('PSF')
+depends=("python")
+makedepends=("python-setuptools")
+options=('staticlibs' 'strip' '!debug')
+source=("https://pypi.io/packages/source/d/defusedxml/${_realname}-${pkgver}.tar.gz")
+sha256sums=('1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69')
+
+prepare() {
+  rm -rf python-build | true
+  cp -r "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
+}
+
+check() {
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python tests.py
+}
+
+package() {
+  cd "${srcdir}/python-build"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
