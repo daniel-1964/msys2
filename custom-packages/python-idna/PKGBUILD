@@ -1,43 +1,56 @@
 # Maintainer: Frederic Wang <fred.wang@free.fr>
 
 _realname=idna
-pkgbase="python-${_realname}"
+pkgbase=python-${_realname}
 pkgname=("python-${_realname}")
-provides=("python3-${pkgbase}")
-conflicts=("python3-${pkgbase}")
-replaces=("python3-${pkgbase}")
-pkgver=3.1
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=3.7
 pkgrel=1
 pkgdesc='Internationalized Domain Names in Applications (msys)'
 url='https://github.com/kjd/idna'
 license=('BSD-like')
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: idna'
+)
 depends=("python")
-makedepends=("python-setuptools")
+makedepends=("python-build"
+             "python-installer"
+             "python-flit-core")
 _dtoken="d8/82/28a51052215014efc07feac7330ed758702fc0581347098a81699b5281cb"
 source=("https://pypi.io/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('c5b02147e01ea9920e6b0a3f1f7bb833612d507592c837a6c49552768f4054e1')
+sha256sums=('028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc')
 
 prepare() {
-  cd ${srcdir}
-  rm -rf python-build
-  cp -a ${_realname}-${pkgver} python-build
+  rm -rf python-build-${MSYSTEM}
+  find ${_realname}-${pkgver} -depth -name __pycache__ -exec rm -fr {} +
+  cp -r ${_realname}-${pkgver} python-build-${MSYSTEM}
 }
 
 build() {
-  msg "Python build for msys2"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  msg "Python build for ${MSYSTEM}"
+  cd "python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 check() {
-  msg "Python test for Msys2"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py test
+  msg "Python test for ${MSYSTEM}"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  ${MSYSTEM_PREFIX}/bin/python -m pytest
 }
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr --root="${pkgdir}"  --optimize=1 --skip-build
-  install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE.md" "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  msg "Python install for ${MSYSTEM}"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE.md "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
