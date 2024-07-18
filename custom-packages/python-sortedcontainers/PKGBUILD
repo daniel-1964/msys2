@@ -4,9 +4,13 @@ _realname=sortedcontainers
 pkgbase=python-${_realname}
 pkgname=("python-${_realname}")
 pkgver=2.4.0
-pkgrel=1
+pkgrel=4
 pkgdesc="Python Sorted Container Types: SortedList, SortedDict, and SortedSet (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: sortedcontainers'
+)
 url="http://www.grantjenks.com/docs/sortedcontainers/"
 license=('Apache')
 depends=("python")
@@ -17,14 +21,15 @@ sha256sums=('25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88')
 build() {
   cd "${srcdir}/${_realname}-${pkgver}"
 
-  /usr/bin/python setup.py build
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
 }
 
 package() {
   cd "${srcdir}/${_realname}-${pkgver}"
 
-  /usr/bin/python setup.py install --prefix=/usr \
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
         --root "${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  install -Dm644 "LICENSE" "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
