@@ -3,44 +3,48 @@
 _realname=pytest-mock
 pkgbase=python-${_realname}
 pkgname=("python-${_realname}")
-provides=("python3-${_realname}")
-conflicts=("python3-${_realname}")
-replaces=("python3-${_realname}")
-pkgver=3.3.1
-pkgrel=2
+pkgver=3.14.0
+pkgrel=1
 pkgdesc='Thin-wrapper around the mock package for easier use with py.test (msys)'
 arch=('any')
-url="https://github.com/pytest-dev/pytest-mock/"
-license=('LGPL3')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'archlinux: python-pytest-mock'
+  'pypi: pytest-mock'
+)
+msys2_repository_url='https://github.com/pytest-dev/pytest-mock/'
+url='https://pytest-mock.readthedocs.io/'
+license=('spdx:MIT')
 depends=("python-pytest")
-makedepends=("python-setuptools-scm")
-source=("${_realname}-$pkgver.tar.gz::https://github.com/pytest-dev/pytest-mock/archive/v$pkgver.tar.gz")
-sha256sums=('fc7168e284ee96c3b05cec84a7b2717a783f46485bb46e7fbd885fa0d8857b19')
-
-export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+makedepends=("python-build"
+             "python-installer"
+             "python-setuptools"
+             "python-setuptools-scm"
+             "python-wheel")
+checkdepends=("python-pytest-asyncio")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0')
 
 prepare() {
-  cd "$srcdir"
-  rm -rf python-build | true
-  cp -a "${_realname}-$pkgver" "python-build"
+  export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
 }
 
 build() {
-  msg "Python build for msys"
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+  ${MSYSTEM_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
 }
 
-# check() {
-#   cd "${srcdir}/python-build"
-#   /usr/bin/python setup.py install --prefix=/usr \
-#     --root="$PWD/tmp_install" --optimize=1 --skip-build
-#   PYTHONPATH="$PWD/tmp_install//usr/lib/python3.8/site-packages:$PYTHONPATH:$PWD/tests" /usr/bin/py.test
-# }
+check() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  PYTHONPATH=src ${MSYSTEM_PREFIX}/bin/python -m pytest || warning "Tests failed"
+}
 
 package() {
-  cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
-    --root="${pkgdir}" --optimize=1 --skip-build
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/LICENSE"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MSYSTEM_PREFIX}/bin/python -m installer --prefix=${MSYSTEM_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
 }
