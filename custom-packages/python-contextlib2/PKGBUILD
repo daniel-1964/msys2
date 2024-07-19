@@ -1,0 +1,46 @@
+# Maintainer: Christoph Reiter <reiter.christoph@gmail.com>
+#
+_realname=contextlib2
+pkgbase=python-${_realname}
+pkgname="python-${_realname}"
+provides=("python3-${_realname}")
+conflicts=("python3-${_realname}")
+replaces=("python3-${_realname}")
+pkgver=21.6.0
+pkgrel=3
+pkgdesc="contextlib2 is a backport of the standard library’s contextlib module to earlier Python versions (msys)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: contextlib2'
+)
+url="https://pypi.python.org/pypi/${_pypiname}"
+license=('PSF')
+depends=("python")
+makedepends=("python-setuptools")
+source=("https://pypi.io/packages/source/${_realname:0:1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha512sums=('a85cafaaf66c7c6a59a4e9ac757941b1a98c17e5a49e41573dc759fafbbf17928a21f582e8aaa0fdc60636413ec702e198bde19a78ac304237b6da1c3d47b730')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf python-build | true
+  cp -r "${_realname}-${pkgver}" "python-build"
+
+  # Set version for setuptools_scm
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+  export PBR_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for ${CARCH}"  
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} --root="${pkgdir}" --skip-build
+
+  install -Dm644 LICENSE.txt "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE.txt"
+}
