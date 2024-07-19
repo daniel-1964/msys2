@@ -1,0 +1,45 @@
+# Maintainer: @naveen521kk on Github, Naveen M K <naveen521kk@gmail.com>
+
+_pyname=pytest-fixture-config
+_realname=pytest-fixture-config
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+pkgver=1.7.0
+pkgrel=4
+pkgdesc='Fixture configuration utils for py.test (msys)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+msys2_references=(
+  'pypi: pytest-fixture-config'
+)
+url="https://github.com/manahl/pytest-plugins"
+license=('MIT')
+depends=(
+  "python-pytest"
+)
+makedepends=(
+  "python-setuptools"
+  "python-setuptools-git"
+)
+source=("${_pyname}-${pkgver}.tar.gz::https://pypi.org/packages/source/${_pyname::1}/${_pyname}/${_pyname}-${pkgver}.tar.gz")
+sha256sums=('41a17417721f6862ce6b40e3280fddd8e1659b2c306ec46b237d7021fec5218e')
+
+prepare() {  
+  cd "$srcdir"
+  rm -rf python-build | true
+  cp -r "${_pyname//_/-}-$pkgver" "python-build"
+}
+
+build() {
+  msg "Python build for ${CARCH}"  
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
