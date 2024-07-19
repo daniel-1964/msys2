@@ -6,44 +6,42 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=3.2.3
-pkgrel=1
+pkgver=4.0.0
+pkgrel=2
 pkgdesc="A py.test fixture for benchmarking code (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://github.com/ionelmc/pytest-benchmark'
+msys2_references=(
+  'pypi: pytest-benchmark'
+)
 license=('BSD')
 depends=("python"
          "python-py-cpuinfo"
          "python-pytest")
 makedepends=("python-setuptools")
 options=('staticlibs' 'strip' '!debug')
-#install=${_realname}3.install
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/ionelmc/pytest-benchmark/archive/v${pkgver}.tar.gz")
-sha256sums=('672822208aa14365478bf67566074c03e3493f0891cd43b43eed164e2362cbcb')
+sha256sums=('42ae209b04764022a286524f2ed32deb35432f997430b067105896f8a990c5f1')
 
 prepare() {
   rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
+  cp -r "${_realname}-${pkgver}" "python-build"
 
   export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
 }
 
 build() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
 }
 
 package() {
   cd "${srcdir}/python-build"
 
-  /usr/bin/python setup.py install --prefix=/usr \
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
-
-  #local PREFIX_WIN=$(cygpath -wm /usr)
-  ## fix python command in files
-  #for _f in "${pkgdir}/usr"/bin/*.py; do
-  #  sed -e "s|${PREFIX_WIN}|/usr|g" -i ${_f}
-  #done
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/COPYING"
 }
