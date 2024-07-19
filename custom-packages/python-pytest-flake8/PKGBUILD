@@ -1,0 +1,47 @@
+# Maintainer: Sarah Ottinger
+
+_realname=pytest-flake8
+pkgbase=python-${_realname}
+pkgname=("python-${_realname}")
+pkgver=1.1.1
+pkgrel=3
+pkgdesc='pytest plugin to check FLAKE8 requirements (msys)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+url="https://github.com/tholo/pytest-flake8"
+msys2_references=(
+  'pypi: pytest-flake8'
+)
+license=('MIT')
+depends=("python-pytest"
+         "python-flake8")
+makedepends=("python-setuptools")
+source=("https://github.com/tholo/pytest-flake8/archive/$pkgver.tar.gz")
+sha256sums=('21bfa72f9a0faca2b60b3926f69086094ddad6363ebcaee4824743d97478a16a')
+
+prepare() {  
+  cd "$srcdir"
+  rm -rf python-build | true
+  cp -r "${_realname}-${pkgver}" "python-build"
+  sed -i 's/ignore = E128/ignore = E128 W605/' "python-build/tox.ini"
+}
+
+build() {
+  msg "Python build for ${CARCH}"  
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
+}
+
+check() {
+  cd "${srcdir}/python-build"
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --root="$PWD/tmp_install" --optimize=1 || warning "Tests failed"
+  PYTHONPATH="$PWD/${MSYSTEM_PREFIX}/lib/python3.8/site-packages:$PYTHONPATH" ${MSYSTEM_PREFIX}/bin/py.test || warning "Tests failed"
+}
+
+package() {
+  cd "${srcdir}/python-build"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
