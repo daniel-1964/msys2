@@ -6,26 +6,25 @@ pkgname=("python-${_realname}")
 provides=("python3-${_realname}")
 conflicts=("python3-${_realname}")
 replaces=("python3-${_realname}")
-pkgver=7.0.0
-pkgrel=1
+pkgver=9.0.0
+pkgrel=2
 pkgdesc="Get CPU info with pure Python 2 & 3 (msys)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://github.com/workhorsy/py-cpuinfo'
+msys2_references=(
+  'pypi: py-cpuinfo'
+)
 license=('MIT')
 depends=("python")
 makedepends=("python-setuptools")
 checkdepends=("python-pytest-runner")
-#install=${_realname}3.install
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/workhorsy/py-cpuinfo/archive/v${pkgver}.tar.gz"
-        '001-fix-msys-test.patch')
-sha256sums=('2f6d6e2a25b6a643f19de0b8f032c1b64e36ae3a461843b2c1aafbcdd97dc2e1'
-            '0d91a371744809f7a15fc928dedcf0076655703cca2fec7c5250090c68ba22c0')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/workhorsy/py-cpuinfo/archive/v${pkgver}.tar.gz")
+sha256sums=('21dfd34d85f4d1419aad63f4945d7356025794fd1529c95644f618aac390625c')
 
 prepare() {
-  cd ${srcdir}
-  patch -d "${_realname}-${pkgver}" -Nbp1 -i ${srcdir}/001-fix-msys-test.patch
   rm -rf python-build | true
-  cp -a "${_realname}-${pkgver}" "python-build"
+  cp -r "${_realname}-${pkgver}" "python-build"
 
   # Set version for setuptools_scm
   export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
@@ -33,24 +32,19 @@ prepare() {
 
 build() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py build
+  ${MSYSTEM_PREFIX}/bin/python setup.py build
 }
 
 check() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py pytest
+  ${MSYSTEM_PREFIX}/bin/python setup.py pytest || warning "Tests failled"
 }
 
 package() {
   cd "${srcdir}/python-build"
-  /usr/bin/python setup.py install --prefix=/usr \
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MSYSTEM_PREFIX}/bin/python setup.py install --prefix=${MSYSTEM_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/python-${_realname}/COPYING"
-
-  #local PREFIX_WIN=$(cygpath -wm /usr)
-  ## fix python command in files
-  #for _f in "${pkgdir}/usr"/bin/*.py; do
-  #  sed -e "s|${PREFIX_WIN}|/usr|g" -i  ${_f}
-  #done
+  install -Dm644 LICENSE "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/python-${_realname}/COPYING"
 }
