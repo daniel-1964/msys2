@@ -1,0 +1,39 @@
+_realname="units"
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.23
+pkgrel=1
+pkgdesc="Console unit converter (mingw-64)"
+arch=('any')
+url="http://www.gnu.org/software/${_realname}/"
+license=('GPLV3')
+depends=("${MINGW_PACKAGE_PREFIX}-readline")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-python-requests")
+optdepends=("${MINGW_PACKAGE_PREFIX}-python-requests: Update currency units")
+options=('strip' 'staticlibs' '!makeflags' '!emptydirs')
+source=("https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('d957b451245925c9e614c4513397449630eaf92bd62b8495ba09bbe351a17370')
+
+build() {
+  msg2 "Compile ${_realname}"
+  [[ -d $srcdir/build-${MINGW_CHOST} ]] && rm -rf $srcdir/build-${MINGW_CHOST}
+  cp -a ${srcdir}/${_realname}-${pkgver} $srcdir/build-${MINGW_CHOST}
+  cd $srcdir/build-${MINGW_CHOST}
+  ./configure \
+    --prefix=${MINGW_PREFIX} \
+    --enable-relocation \
+    PYTHON=${MINGW_PREFIX}/bin/python
+  make
+}
+
+package() {
+  msg2 "Install ${_realname}"
+  cd $srcdir/build-${MINGW_CHOST}
+  make install DESTDIR=${pkgdir}
+  sed -i '64cfrom os.path import getmtime, abspath, dirname' ${pkgdir}/${MINGW_PREFIX}/bin/units_cur
+  sed -i "69coutput_dir=abspath(dirname(__file__) + '/../share/units') + '/'" ${pkgdir}/${MINGW_PREFIX}/bin/units_cur
+  mv -vf ${pkgdir}/${MINGW_PREFIX}/com/units/* ${pkgdir}/${MINGW_PREFIX}/share/units/
+  ${pkgdir}/${MINGW_PREFIX}/bin/units_cur
+  install -Dpm644 COPYING -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/"
+}
