@@ -1,0 +1,45 @@
+# Maintainer: Lukasz Pozarlik <lpozarlik at gmail dot com>
+# Contributor: Masutu Subric <masutu dot arch at gmail dot com>
+# Contributor: Michal Marek <reqamst at gmail dot com>
+
+_realname=pyephem
+pkgbase="mingw-w64-python-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+pkgver=4.1.5
+pkgrel=1
+pkgdesc="Provides a Python package for performing high-precision astronomy computations. (mingw-64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
+url="http://rhodesmill.org/pyephem/"
+msys2_references=(
+  'pypi: pyephem'
+)
+license=('MIT')
+depends=("${MINGW_PACKAGE_PREFIX}-python")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools"
+             "${MINGW_PACKAGE_PREFIX}-cc")
+options=(!emptydirs)
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/brandon-rhodes/${_realname}/archive/refs/tags/${pkgver}.tar.gz")
+sha256sums=('9cdca484fa52a3bbd8029bb4e54bda24aecaa87dd97320cfbb8c80dce5ab1cce')
+
+build() {
+  cd "${srcdir}"
+  rm -rf python-build-${MSYSTEM} | true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}"
+
+  msg "Python build for ${MSYSTEM}"  
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  ${MINGW_PREFIX}/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MINGW_PREFIX}/bin/python setup.py install --prefix=${MINGW_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/COPYING"
+}
