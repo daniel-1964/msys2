@@ -1,0 +1,33 @@
+From: Chris Lamb <lamby@debian.org>
+Subject: make the build reproducible
+
+The attached patch removes timestamps and randomness from the build
+system. Once applied, aft can be built reproducibly in our current
+experimental framework.
+--- aft-5.098.orig/compile.pl
++++ aft-5.098/compile.pl
+@@ -20,7 +20,7 @@
+ my $postfilter;
+ my $prefilter;
+ 
+-$date = scalar localtime;
++$date = $ENV{'BUILD_DATE'} || scalar localtime;
+ 
+ (@ARGV == 0) && do {
+     print (STDERR "Usage: aft-compile element_file.dat \n");
+@@ -129,13 +129,13 @@
+ 
+ $interpolate = ($element{"interpolate"} =~ 'no') ? 0 : 1;
+ print "\t\%pragma_postvar = (\n";
+-foreach $item (keys %postvar) {
++foreach $item (sort keys %postvar) {
+     print "\t\t'$item' =>\t '$postvar{$item}',\n";
+ }
+ print "\t);\n";
+ 
+ print "\t\%elem = (\n";
+-foreach $item  (keys %element) {
++foreach $item  (sort keys %element) {
+   if ($element{$item} =~ /^\<Undefined/) {
+     print (STDERR "Undefined element: [$item]\n");
+   }

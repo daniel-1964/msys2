@@ -1,0 +1,13 @@
+From: Robert Lemmen <robertle@semistable.com>
+Subject: fixed problem with xhtml output
+--- aft-5.098.orig/aft-xhtml.dat
++++ aft-5.098/aft-xhtml.dat
+@@ -9,7 +9,7 @@ ID	XHTML
+ # element markup. 
+ #
+ Preamble{
+-<?xml version=\'1.0\' encoding=\'iso-8859-1\'?>
++<?xml version='1.0' encoding='iso-8859-1'?>
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">

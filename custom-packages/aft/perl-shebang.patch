@@ -1,0 +1,37 @@
+Subject: The perl shebang shoud be #!/usr/bin/perl
+
+--- aft-5.098.orig/aft.in
++++ aft-5.098/aft.in
+@@ -1,6 +1,4 @@
+-: # use perl                                  -*- mode: Perl; -*-
+-	eval 'exec perl -S $0 "$@"'
+-		if $running_under_some_shell;
++#!/usr/bin/perl
+ 
+ use strict;
+ use lib "@prefix@/share/@PACKAGE@";
+--- aft-5.098.orig/compile.pl
++++ aft-5.098/compile.pl
+@@ -1,7 +1,4 @@
+-: # use perl                                  -*- mode: Perl; -*-
+-	eval 'exec perl -S $0 "$@"'
+-		if $running_under_some_shell;
+-
++#!/usr/bin/perl
+ #
+ # compile.pl - AFT element file compiler.
+ #
+--- aft-5.098.orig/postrtf.pl
++++ aft-5.098/postrtf.pl
+@@ -1,3 +1,4 @@
++#!/usr/bin/perl
+ #
+ # postrtf.pl - postprocessing of rtf-files generated from AFT
+ #
+@@ -149,4 +149,4 @@ $STR=~s/\{ /\{/g;
+
+ open(FILE, ">$rtffile") || die "postrtf: $rtffile couldn't be opened: $!\n";
+ print FILE $STR;
+-close (FILE);
+\ No newline at end of file
++close (FILE);

@@ -1,0 +1,52 @@
+# Maintainer: Jaroslav Lichtblau <dragonlord@aur.archlinux.org>
+# Contributor: Jeremy Cowgar <jeremy@cowgar.com>
+
+_realname="aft"
+pkgbase="${_realname}"
+pkgname="${_realname}"
+pkgver=5.098
+pkgrel=1
+pkgdesc="Almost Free Text: a document preparation system, mostly free from intrusive markup"
+arch=('any')
+DLAGENTS=("https::/usr/bin/curl -k -o %o %u")
+url="https://www.maplefish.com/todd/aft.html"
+license='custom: "The Clarified Artistic License"'
+depends=('perl')
+options=('!strip')
+source=("https://www.maplefish.com/todd/${_realname}-$pkgver.tar.gz"
+        "aft.1"
+        "reproducibility.patch"
+        "perl-shebang.patch"
+        "fixed-problem-with-xhtml-output.patch")
+sha256sums=('0c856fe1dbcef282ee39ab11041513cab966a5c6e4cce7154f374623d24c7419'
+            '67212c7706ea8650cbdd49da15031fb684837da42606c9ff729dcd57429f18f3'
+            '3d7aa9f5674ea46a6f4e0a140b6b0b304ae806c0a788252ec5314a5fb9aba010'
+            'fa08f89eb22f98985b22229681d408d54419aad43214833ca5af66c9c76acc13'
+            '03282b0282318b84a91c3b28ddcca2c89305aaba7690bf36337d806a80131a28')
+
+prepare() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  patch -Np1 -i "${srcdir}/reproducibility.patch"
+  patch -Np1 -i "${srcdir}/perl-shebang.patch"
+  patch -Np1 -i "${srcdir}/fixed-problem-with-xhtml-output.patch"
+}
+
+build() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  ./configure --prefix=/usr --sysconfdir=/etc
+  make
+}
+
+package() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  make DESTDIR="${pkgdir}" install
+  
+  # License
+  install -D -m644 COPYING ${pkgdir}/usr/share/licenses/${_realname}/COPYING
+  
+  # Manual pages
+  install -D -m644 ${srcdir}/aft.1 ${pkgdir}/usr/share/man/man1/aft.1
+}
