@@ -1,0 +1,55 @@
+_realname=docfrac
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
+         "${MINGW_PACKAGE_PREFIX}-${_realname}-qt5")
+pkgver=4.0.1
+pkgrel=1
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
+url='http://docfrac.sourceforge.net'
+license=('GPL')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-boost"
+             "${MINGW_PACKAGE_PREFIX}-qt5-base")
+source=("https://download.sourceforge.net//${_realname}/${_realname}-${pkgver}.src.tar.gz"
+        docfrac.patch)
+sha256sums=('8c2c70b69052daa582d546d4101e7127f30fd7957acc849c694421ca974d0962'
+            '52e27b67e4d0674e403c816db0c66f50fcf6384aa8b8f83eb217e10a3b279b0f')
+MAKEFLAGS=-j1
+
+prepare() {
+  patch -d "${srcdir}/${_realname}-${pkgver}" -Np1 -i "${srcdir}/docfrac.patch"
+}
+
+build() {
+  make install \
+       -C ${srcdir}/${_realname}-${pkgver} \
+       ROOT=${srcdir}/dist \
+       PREFIX=${MINGW_PREFIX}
+}
+
+package_docfrac() {
+  depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+  pkgdesc='Command line utility for converting between RTF, HTML and text (mingw-w64)'
+  mkdir -p "${pkgdir}/${MINGW_PREFIX}/bin"
+  cp -a "${srcdir}/dist${MINGW_PREFIX}/bin/docfrac.exe" "${pkgdir}/${MINGW_PREFIX}/bin"
+  cp -a "${srcdir}/dist${MINGW_PREFIX}/share" "${pkgdir}/${MINGW_PREFIX}/"
+}
+
+package_docfrac-qt5() {
+  depends=("${MINGW_PACKAGE_PREFIX}-boost"
+           "${MINGW_PACKAGE_PREFIX}-qt5-base")
+  pkgdesc='GUI utility for converting between RTF, HTML and text (mingw-w64)'
+  mkdir -p "${pkgdir}/${MINGW_PREFIX}/bin"
+  cp -a "${srcdir}/dist${MINGW_PREFIX}/bin/qt-docfrac.exe" "${pkgdir}/${MINGW_PREFIX}/bin"
+}
+
+# generate wrappers
+for _name in "${pkgname[@]}"
+do
+  _short="package_${_name#${MINGW_PACKAGE_PREFIX}-}"
+  _func="$(declare -f "${_short}")"
+  eval "${_func/#${_short}/package_${_name}}"
+done
+# template end;
+
