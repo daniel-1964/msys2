@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 """Creates a completely random cow with the cowsay program.
 
@@ -24,7 +24,13 @@ import subprocess
 import sys
 
 MODES = list("bdgpstwy")
-COWDIRS = os.getenv("COWPATH") or "/usr/share/cowsay/cows/"
+if sys.platform == 'win32':
+    pathsep=';'
+    COWDIRS = (os.getenv("COWPATH") or 
+        os.path.abspath(os.path.dirname(__file__) + "/../share/cowsay/cows/"))
+else:
+    pathsep=':'
+    COWDIRS = os.getenv("COWPATH") or "/usr/share/cowsay/cows/"
 FILES = []
 
 cow_bin = "cowsay" if random.random() < 0.5 else "cowthink"
@@ -32,10 +38,10 @@ cow_mode = "" if random.random() < 0.5 else "-" + random.choice(MODES)
 cow_file = ""
 
 if random.random() > 0.5:
-    for adir in COWDIRS.split(":"):
+    for adir in COWDIRS.split(pathsep):
         FILES += os.listdir(adir)
 
     cow_file = "-f " + random.choice(FILES)
 
 subprocess.call(
-    ("%(cow_bin)s %(cow_mode)s %(cow_file)s" % locals()).split() + sys.argv[1:])
+    ("perl /usr/bin/%(cow_bin)s %(cow_mode)s %(cow_file)s" % locals()).split() + sys.argv[1:])

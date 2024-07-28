@@ -2,10 +2,12 @@
 # Contributor: Eric Belanger <eric@archlinux.org>
 # Contributor: Sarah Hay <sarahhay@mb.sympatico.ca>
 
-pkgname=cowsay
+_realname=cowsay
+pkgbase="${_realname}"
+pkgname="${_realname}"
 pkgver=3.04
-pkgrel=2
-pkgdesc='Configurable talking cow (and a few other creatures)'
+pkgrel=3
+pkgdesc='Configurable talking cow (and a few other creatures) (msys)'
 groups=('games')
 arch=('any')
 url='http://www.nog.net/~tony/warez/'
@@ -13,6 +15,7 @@ license=('PerlArtistic' 'GPL')
 depends=('perl'
          'perl-Text-CharWidth')
 source=(https://github.com/tnalpgge/rank-amateur-cowsay/archive/cowsay-$pkgver.tar.gz
+        cowfiles.tar.gz::https://github.com/bkendzior/cowfiles/archive/master.tar.gz
         cowsay_random
         00-fix_paths
 	01-empty_messages_fix
@@ -36,7 +39,8 @@ source=(https://github.com/tnalpgge/rank-amateur-cowsay/archive/cowsay-$pkgver.t
 	snowman_cow
 	suse_cow)
 sha512sums=('99d21ef9a7c7c76056cb7acb2c771fbdabfedde4f6edb5d3035337c59f9e88944690d1b43282c32827ad79339199716366c8be73b0dea09063ec2d52220c1b51'
-            '95c97443083657064b7f7231b8ab94db9a83b80c55a0e3b345a020c9919af2484d0b1a4f79d3d14f5bf74ac7ad77f1e961024ee44adf087616362bb52f703642'
+            'b65cea417e328f460005e1fc491d9f137b740da99ba1352561a00463550afa02bad47b77e0256bc0e80536981e6a9815d273dd808b41196cc74e61f02b35db6e'
+            '69ff7ed6e92f4aaba99830e65f1d2c34b7fe62c9f4731f200f500a902b7b82ad6affebdede005718058c4b687403073e69bc7bfd719a1e1ce548bc181f89ece7'
             'c5b248ea122424be8e403d58e6080dac19c800c1a57392517b7b280f1579326385b950cb7ea3533081942fa78403df5f4b3f5b6eb5f341610639be1f6a5177c7'
             '8d0bb0a4dc35453b9df2a83ef96d343da1465f3820c367bf7e9e1a182638f6145f25510f342ce394c2da19378369d28602f8f2772c616a82b06585ab7e767ab4'
             '0b2d6c92f6d801a679f1b1a92ea7612956d6ba92f11c1399655203dbd8ee5e1c48f05fe412e0f04443d1492005a44aa3aa4d3c4c42ea426c7923d9d8bfb10020'
@@ -87,7 +91,10 @@ del_file_exists() {
 }
 
 prepare() {
-  cd rank-amateur-cowsay-${pkgname}-${pkgver}
+  cp -af \
+    ${srcdir}/cowfiles-master/cowfiles/*.cow \
+    ${srcdir}/rank-amateur-${_realname}-${_realname}-${pkgver}/cows/
+  cd ${srcdir}/rank-amateur-${_realname}-${_realname}-${pkgver}
   apply_patch_with_msg 00-fix_paths \
 	01-empty_messages_fix \
 	02-remove_trailing_spaces \
@@ -98,8 +105,10 @@ prepare() {
 	07-elephants-in-snake_flip \
 	08-luke-koala_typo \
 	09-moofasa-tabs
-  msg2 "Adding 11 extra cows"
-  add_cow_with_msg apt_cow \
+  if false
+  then
+    msg2 "Adding 11 extra cows"
+    add_cow_with_msg apt_cow \
 	calvin_cow \
 	cock_cow \
 	duck_cow \
@@ -110,12 +119,13 @@ prepare() {
 	ponies_cow \
 	snowman_cow \
 	suse_cow
+  fi
   sed -i 's|/man/|/share/man/|' install.sh
   mv cowsay.1 cowsay.6
 }
 
 package() {
-  cd rank-amateur-cowsay-${pkgname}-${pkgver}
+  cd ${srcdir}/rank-amateur-${_realname}-${_realname}-${pkgver}
   # echo "${pkgdir}/usr" | ./install.sh
   ## This one is not a valid '.cow' file
   # rm ${pkgdir}/usr/share/cows/mech-and-cow
