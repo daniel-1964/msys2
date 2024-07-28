@@ -1,0 +1,35 @@
+# Maintainer: Daniel M. Capella <polyzen@archlinux.org>
+# Contributor: Eric Bailey <nerflad@gmail.com>
+# Contributor: Bruno Pagani <bruno.n.pagani@gmail.com>
+
+_realname=toilet
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+_commit=3eb9d58037afb0a1baec6dca82caa045fb2217c0
+pkgver=0.3.r155.${_commit:0:7}
+pkgrel=1
+pkgdesc='Free replacement for the FIGlet utility'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
+url=https://github.com/cacalabs/toilet
+license=(WTFPL)
+depends=("${MINGW_PACKAGE_PREFIX}-libcaca")
+makedepends=(git
+             make
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools")
+source=("${_realname}-${pkgver}.tar.gz::$url/archive/${_commit}.tar.gz")
+sha256sums=('a16b3a6217852d4ec5e9fa94c5600b900710d652910ac041bf1c5c61524a03d4')
+
+build() {
+  cd "${_realname}-${_commit}"
+  ./bootstrap
+  ./configure --prefix=${MINGW_PREFIX}
+  make
+}
+
+package() {
+  cd "${_realname}-${_commit}"
+  make DESTDIR="$pkgdir" install
+  install -Dm644 -t "$pkgdir"/${MINGW_PREFIX}/share/licenses/${_realname} COPYING
+}
