@@ -1,0 +1,118 @@
+--- lolcat-1.4.orig/lolcat	2024-03-03 22:53:24.000000000 +0100
++++ lolcat-1.4/lolcat	2024-08-03 15:12:45.303499700 +0200
+@@ -16,9 +16,7 @@ import re
+ import sys
+ import time
+ 
+-import platform
+-
+-if platform.system() != 'Windows':
++if os.name != 'nt':
+     from signal import signal, SIGPIPE, SIG_DFL
+ 
+     # override default handler so no exceptions on SIGPIPE
+@@ -47,30 +45,29 @@ COLOR_ANSI = (
+ )
+ 
+ 
+-class stdoutWin():
+-    def __init__(self):
+-        self.output = sys.stdout
+-        self.string = ''
+-        self.i = 0
+-
+-    def isatty(self):
+-        return self.output.isatty()
+-
+-    def write(self,s):
+-        self.string = self.string + s
+-
+-    def flush(self):
+-        return self.output.flush()
+-
+-    def prints(self):
+-        string = 'echo|set /p="%s"' %(self.string)
+-        os.system(string)
+-        self.i += 1
+-        self.string = ''
+-
+-    def println(self):
+-        print()
+-        self.prints()
++if os.name == 'nt':
++    class stdoutWin():
++        def __init__(self):
++            self.output = sys.stdout
++            self.string = ''
++
++        def isatty(self):
++            return self.output.isatty()
++
++        def write(self,s):
++            self.string = self.string + s
++
++        def flush(self):
++            return self.output.flush()
++
++        def prints(self):
++            string = 'echo|set /p="%s"' %(self.string)
++            os.system(string)
++            self.string = ''
++
++        def println(self):
++            print()
++            self.prints()
+ 
+ 
+ class LolCat(object):
+@@ -143,7 +140,7 @@ class LolCat(object):
+ 
+         self.output.write('\n')
+         self.output.flush()
+-        if os.name == 'nt':
++        if options.windows:
+             self.output.println()
+ 
+     def println_ani(self, s, options):
+@@ -164,11 +161,8 @@ class LolCat(object):
+                 self.wrap(self.ansi(rgb)),
+                 c if PY3 else c.encode(options.charset_py2, 'replace'),
+             ]))
+-        if os.name == 'nt':
+-            if platform.system() == 'Windows':
+-                self.output.prints()
+-            else:
+-                self.output.print()
++        if options.windows:
++            self.output.prints()
+ 
+ 
+ def detect_mode(term_hint='xterm-256color'):
+@@ -208,6 +202,13 @@ def run():
+         help='Animation speed')
+     parser.add_option('-f', '--force', action='store_true', default=False,
+         help='Force colour even when stdout is not a tty')
++    if os.name == 'nt':
++        if os.getenv('TERM') is None:
++            parser.add_option('-w', '--windows', action='store_false', default=True,
++                help='Disable specific processings for old Windows console hosts')
++        else:
++            parser.add_option('-w', '--windows', action='store_true', default=False,
++                help='Enable specific processings for old Windows console hosts')
+ 
+     parser.add_option('-3', action='store_const', dest='mode', const=8,
+         help='Force 3 bit colour mode')
+@@ -220,10 +221,12 @@ def run():
+             help='Manually set a charset to convert from, for python 2.7')
+ 
+     options, args = parser.parse_args()
++    if os.name != 'nt':
++        options.windows = False
+     options.os = random.randint(0, 256) if options.seed == 0 else options.seed
+     options.mode = options.mode or detect_mode()
+ 
+-    if os.name == 'nt':
++    if options.windows:
+         lolcat = LolCat(mode=options.mode,output=stdoutWin())
+     else:
+         lolcat = LolCat(mode=options.mode)

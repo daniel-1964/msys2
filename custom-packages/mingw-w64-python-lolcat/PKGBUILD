@@ -1,0 +1,70 @@
+# Maintainer: ramen <hendrik@hndrkk.sh>
+# Contributor: George Rawlinson <george@rawlinson.net.nz>
+# Contributor: Gore Liu <goreliu@126.com>
+
+_realname=lolcat
+pkgbase="mingw-w64-python-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-lolcat")
+conflicts=("${MINGW_PACKAGE_PREFIX}-lolcat")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+pkgver=1.4
+pkgrel=1
+pkgdesc="Rainbows and unicorns (without Ruby! jay!)"
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
+url="https://github.com/tehmaze/lolcat"
+arch=('any')
+msys2_references=(
+  'pypi: lolcat'
+)
+license=('custom:beerware')
+depends=("${MINGW_PACKAGE_PREFIX}-python")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
+_sha1="1182a5d74325511d15a6985cc0e49badc0b1806b"
+source=("${_realname}-${pkgver}.tar.gz::$url/archive/${_sha1}.tar.gz"
+        "${_realname}.6"
+        "lolcat.patch"
+        "setup.patch")
+sha512sums=('c43f3d0f44df16b677a49eeeb193c7926d766f2fa7aedab74c8f49abba24bad3f4299e4c03c05c7f77fe959c45833e53b043f77cf50aa09f43051fe53985f423'
+            'e22a853f588517a83649bceb18fb15842f6e0ed76490cad832389b0f9e5d52f4c45ab7eee78210f200d2d77d9a14c9c6eb669bee65afb79a973849f9f35b76fb'
+            '4b349a510c759adfe7043c284093b0b8d53919a6f6caaeedea2de4f4bf743c3d1eb6a83dd63f3bf8ff73572d4850dbd544d6865fa00486a1deb1e2c37a806672'
+            '861e7eae836372eb0cbb658053ce85a03bbb9391045bfa5408afb322a23be12ba7f31a66076bebd71951bbb842a6891cc300729152cfe06d51765e7875ea0f19')
+
+prepare()
+{
+  cd "${_realname}-${_sha1}"
+  patch -Np1 -i ${srcdir}/lolcat.patch
+  patch -Np1 -i ${srcdir}/setup.patch
+  
+  sed -n 's/^#[ ]*//;3,7p;' lolcat > LICENSE
+  sed -i 's#http.*/lolcat.png#./lolcat.png#g' README.md
+
+  mv lolcat __main__.py
+  mkdir lolcat
+  mv __main__.py lolcat
+}
+
+build() {
+  cd "${_realname}-${_sha1}"
+  ${MINGW_PREFIX}/bin/python setup.py build
+}
+
+check() {
+  cd "${_realname}-${_sha1}"
+  ${MINGW_PREFIX}/bin/python setup.py test
+}
+
+package() {
+  cd "${_realname}-${_sha1}"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MINGW_PREFIX}/bin/python setup.py install --prefix=${MINGW_PREFIX} \
+      --root="$pkgdir" --optimize=1 --skip-build
+
+  install -Dm644 -t "$pkgdir/${MINGW_PREFIX}/share/man/man6" ${srcdir}/${_realname}.6
+  install -Dm644 -t "$pkgdir/${MINGW_PREFIX}/share/licenses/${_realname}" LICENSE
+  install -Dm644 -t "$pkgdir/${MINGW_PREFIX}/share/doc/${_realname}" README.md lolcat.png
+}
+
+# vim: set ts=2 sw=2 et:
