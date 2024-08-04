@@ -4,7 +4,7 @@ _realname=musicxml
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgrel=1
-pkgver=3.18.60
+pkgver=3.22
 pkgdesc="library and tools for the MusicXML format (git version)"
 arch=('x86_64' 'i686')
 url="https://github.com/dfober/libmusicxml"
@@ -18,18 +18,13 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
 options=(!libtool strip staticlibs)
 conflicts=("${MINGW_PACKAGE_PREFIX}-libmusicxml")
-source=("$_realname::git+https://github.com/dfober/libmusicxml"
+source=("$_realname-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
         "$_realname.patch")
-sha256sums=('SKIP'
-            'f9ae047a363a764e7a080041329e11661b308bc3bf846e59bcc1d9b47f944917')
-
-pkgver() {
-    cd $srcdir/$_realname
-    echo $(git describe --tag | sed 's/v\([[:digit:]]\+\)\.\([[:digit:]]\+\)-\([[:digit:]]\+\)-.*/\1.\2.\3/')
-}
+sha256sums=('083e87f33ee504f95ca637cc24b19d2d650abc97984778ff9eeb03194f30c97c'
+            '3db36bac862aa26255dff59bc33c0ee57f2f39e87bed11952050d2e95f07e9a1')
 
 prepare() {
-    cd ${srcdir}/${_realname}
+    cd ${srcdir}/lib${_realname}-${pkgver}
     patch -p1 -i "${srcdir}/$_realname.patch"
 }
 
@@ -41,7 +36,7 @@ build() {
         ${MINGW_PREFIX}/bin/cmake \
             -GNinja \
             -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
-            ../${_realname}/build
+            ../lib${_realname}-${pkgver}/build
 
     ${MINGW_PREFIX}/bin/cmake --build .
 }
@@ -54,4 +49,6 @@ package() {
     mv doc/* .
     rmdir doc
     mv ../../../README.html ../../../CHANGELOG.txt .
+    find ${srcdir}/lib${_realname}-${pkgver}/doc -name '*.pdf' -exec cp -a --target ${PWD} {} +
+    #disabled cp -a ${srcdir}/lib${_realname}-${pkgver}/files/samples .
 }
