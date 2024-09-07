@@ -4,9 +4,9 @@
 _realname=ecl
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=21.2.1
+pkgver=24.5.10
 # Remember to rebuild sagemath when the soname changes
-pkgrel=3
+pkgrel=1
 pkgdesc="Embeddable Common Lisp"
 arch=('any')
 url="https://common-lisp.net/project/ecl/"
@@ -16,28 +16,29 @@ depends=('bash'
          "${MINGW_PACKAGE_PREFIX}-gmp"
          "${MINGW_PACKAGE_PREFIX}-libatomic_ops"
          "${MINGW_PACKAGE_PREFIX}-libffi")
-makedepends=('texinfo')
+makedepends=('texinfo'
+            "${MINGW_PACKAGE_PREFIX}-cc")
 provides=("${MINGW_PACKAGE_PREFIX}-common-lisp"
           "${MINGW_PACKAGE_PREFIX}-cl-asdf")
 options=('!makeflags')
 source=("https://common-lisp.net/project/ecl/static/files/release/${_realname}-${pkgver}.tgz"
       "ecl-mingw.patch")
-sha256sums=('b15a75dcf84b8f62e68720ccab1393f9611c078fcd3afdd639a1086cad010900'
-            '1b26aa24f3a934a761e0b055d0f6034093fc4037cf067e71e858605de55e095e')
+sha256sums=('e4ea65bb1861e0e495386bfa8bc673bd014e96d3cf9d91e9038f91435cbe622b'
+            '232845b91d7a614f2247442a16c6b303c72983e05a6a42b5d66c8a7a7b146ef5')
 
 prepare() {
   cd $_realname-$pkgver
-  sed -i 's|-Wl,--rpath,~A|-Wl,--rpath,/usr/lib/ecl|' src/configure
   patch -Np1 -i "${srcdir}/ecl-mingw.patch"
 }
 
 build() {
   cd $_realname-$pkgver
   unset ECLDIR || true
-  CFLAGS+=" -fcommon -ffat-lto-objects" \
+  CFLAGS+=" -Wno-array-bounds -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -fcommon -ffat-lto-objects" \
   ./configure \
     --build=${MINGW_CHOST} \
     --prefix=${MINGW_PREFIX} \
+    --disable-rpath \
     --enable-boehm=system \
     --enable-gmp=system \
     --enable-libatomic=system \
@@ -52,10 +53,9 @@ build() {
     --with-serve-event \
     --with-sse \
     --with-tcp \
-    --with-win32 \
-    --with-system-gmp \
     --without-cxx \
     --without-x \
+    --with-libffi-prefix=${MINGW_PREFIX}
 
   make
 }

@@ -1,7 +1,43 @@
-diff -pur ecl-21.2.1.orig/src/cmp/cmpmain.lsp ecl-21.2.1/src/cmp/cmpmain.lsp
---- ecl-21.2.1.orig/src/cmp/cmpmain.lsp	2021-02-01 13:59:46.000000000 +0100
-+++ ecl-21.2.1/src/cmp/cmpmain.lsp	2022-11-14 18:53:21.454629300 +0100
-@@ -956,6 +956,8 @@ from the C language code.  NIL means \"d
+diff -pur ecl-24.5.10.orig/src/c/ffi/mmap.d ecl-24.5.10/src/c/ffi/mmap.d
+--- ecl-24.5.10.orig/src/c/ffi/mmap.d	2024-05-10 13:13:55.000000000 +0200
++++ ecl-24.5.10/src/c/ffi/mmap.d	2024-09-07 15:28:05.439633700 +0200
+@@ -91,7 +91,7 @@
+       if (Null(length))
+         length = ecl_file_length(stream);
+       else
+-        length = ecl_to_unsigned_integer(length);
++        length = ecl_make_fixnum(ecl_to_unsigned_integer(length));
+       output = si_make_vector(element_type, length, ECL_NIL,
+                               ECL_NIL, ECL_NIL, ECL_NIL);
+       cl_read_sequence(2, output, stream);
+diff -pur ecl-24.5.10.orig/src/c/tcp.d ecl-24.5.10/src/c/tcp.d
+--- ecl-24.5.10.orig/src/c/tcp.d	2024-05-10 13:13:55.000000000 +0200
++++ ecl-24.5.10/src/c/tcp.d	2024-09-07 15:44:17.527888800 +0200
+@@ -395,7 +395,7 @@ si_lookup_host_entry(cl_object host_or_a
+       address[1] = (l >> 8) & 0xFF;
+       address[2] = (l >> 16) & 0xFF;
+       address[3] = (l >> 24) & 0xFF;
+-      he = gethostbyaddr(&address, 4, AF_INET);
++      he = gethostbyaddr(address, 4, AF_INET);
+       break;
+     default:
+       FEerror("LOOKUP-HOST-ENTRY: Number or string expected, got ~S",
+diff -pur ecl-24.5.10.orig/src/c/unixint.d ecl-24.5.10/src/c/unixint.d
+--- ecl-24.5.10.orig/src/c/unixint.d	2024-05-10 13:13:55.000000000 +0200
++++ ecl-24.5.10/src/c/unixint.d	2024-09-07 14:45:35.593914600 +0200
+@@ -1023,7 +1023,7 @@ static VOID CALLBACK
+ wakeup_function(ULONG_PTR foo)
+ {
+   cl_env_ptr env = ecl_process_env();
+-  volatile i = env->nvalues;
++  volatile int i = env->nvalues;
+   env->nvalues = i;
+ }
+ 
+diff -pur ecl-24.5.10.orig/src/cmp/cmpbackend-cxx/cmpbackend-cxx.lsp ecl-24.5.10/src/cmp/cmpbackend-cxx/cmpbackend-cxx.lsp
+--- ecl-24.5.10.orig/src/cmp/cmpbackend-cxx/cmpbackend-cxx.lsp	2024-05-10 13:13:55.000000000 +0200
++++ ecl-24.5.10/src/cmp/cmpbackend-cxx/cmpbackend-cxx.lsp	2024-09-07 11:30:47.487139300 +0200
+@@ -274,6 +274,8 @@ the environment variable TMPDIR to a dif
           *ecl-include-directory*)
          ((probe-file "SYS:ecl;config.h")
           (setf *ecl-include-directory* (namestring (translate-logical-pathname "SYS:"))))
@@ -10,7 +46,7 @@ diff -pur ecl-21.2.1.orig/src/cmp/cmpmain.lsp ecl-21.2.1/src/cmp/cmpmain.lsp
          ((error "Unable to find include directory"))))
  
  (defun ecl-library-directory ()
-@@ -968,6 +970,11 @@ from the C language code.  NIL means \"d
+@@ -286,6 +288,11 @@ the environment variable TMPDIR to a dif
           *ecl-library-directory*)
          ((probe-file "SYS:BUILD-STAMP")
           (setf *ecl-library-directory* (namestring (translate-logical-pathname "SYS:"))))
@@ -21,4 +57,97 @@ diff -pur ecl-21.2.1.orig/src/cmp/cmpmain.lsp ecl-21.2.1/src/cmp/cmpmain.lsp
 +         (setf *ecl-library-directory* (namestring (truename (translate-logical-pathname "SYS:..;..;bin")))))
          ((error "Unable to find library directory"))))
  
- (defun compiler-cc (c-pathname o-pathname)
+ (defun guess-kind (pathname)
+diff -pur ecl-24.5.10.orig/src/configure ecl-24.5.10/src/configure
+--- ecl-24.5.10.orig/src/configure	2024-05-10 13:13:55.000000000 +0200
++++ ecl-24.5.10/src/configure	2024-09-07 11:30:46.732028000 +0200
+@@ -6107,7 +6107,7 @@ case "${host_os}" in
+ #               THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH='-Wl,--rpath,~A'
++                ECL_LDRPATH='-Wl,--rpath,${libdir}/ecl'
+                 clibs="-ldl ${clibs}"
+                 # Maybe CFLAGS="-D_ISOC99_SOURCE ${CFLAGS}" ???
+                 CFLAGS="-D_GNU_SOURCE -DPLATFORM_ANDROID -DUSE_GET_STACKBASE_FOR_MAIN -DIGNORE_DYNAMIC_LOADING ${CFLAGS}"
+@@ -6125,7 +6125,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH='-Wl,--rpath,~A'
++                ECL_LDRPATH='-Wl,--rpath,${libdir}/ecl'
+                 clibs="-ldl ${clibs}"
+                 # Maybe CFLAGS="-D_ISOC99_SOURCE ${CFLAGS}" ???
+                 CFLAGS="-D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 ${CFLAGS}"
+@@ -6138,7 +6138,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH='-Wl,--rpath,~A'
++                ECL_LDRPATH='-Wl,--rpath,${libdir}/ecl'
+                 clibs="-ldl ${clibs}"
+                 CFLAGS="-D_GNU_SOURCE ${CFLAGS}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+@@ -6150,7 +6150,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH='-Wl,--rpath,~A'
++                ECL_LDRPATH='-Wl,--rpath,${libdir}/ecl'
+                 clibs="-ldl ${clibs}"
+                 CFLAGS="-D_GNU_SOURCE ${CFLAGS}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+@@ -6161,7 +6161,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH="-Wl,--rpath,~A"
++                ECL_LDRPATH="-Wl,--rpath,${libdir}/ecl"
+                 clibs="${clibs}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+                 SONAME_LDFLAGS="-Wl,-soname,SONAME"
+@@ -6171,7 +6171,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH="-Wl,--rpath,~A"
++                ECL_LDRPATH="-Wl,--rpath,${libdir}/ecl"
+ 		GC_CFLAGS="-DGC_PTHREAD_SIGMASK_NEEDED"                 clibs="${clibs}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+                 SONAME_LDFLAGS="-Wl,-soname,SONAME"
+@@ -6181,7 +6181,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH="-Wl,--rpath,~A"
++                ECL_LDRPATH="-Wl,--rpath,${libdir}/ecl"
+ 		GC_CFLAGS="-DGC_PTHREAD_SIGMASK_NEEDED"                 clibs="${clibs}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+                 SONAME_LDFLAGS="-Wl,-soname,SONAME"
+@@ -6192,7 +6192,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS=''
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH="-Wl,--rpath,~A"
++                ECL_LDRPATH="-Wl,--rpath,${libdir}/ecl"
+ 		GC_CFLAGS="-DGC_PTHREAD_SIGMASK_NEEDED"                 clibs="-lpthread ${clibs}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+                 SONAME_LDFLAGS="-Wl,-soname,SONAME"
+@@ -6298,7 +6298,7 @@ LSP_FEATURES="(cons :android ${LSP_FEATU
+                 THREAD_LIBS=''
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH="-Wl,--rpath,~A"
++                ECL_LDRPATH="-Wl,--rpath,${libdir}/ecl"
+                 clibs="-lnetwork"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+                 SONAME_LDFLAGS="-Wl,-soname,SONAME"
+@@ -6326,7 +6326,7 @@ case "${host}" in
+                 THREAD_LIBS='-lpthread'
+                 SHARED_LDFLAGS="-shared ${LDFLAGS}"
+                 BUNDLE_LDFLAGS="-shared ${LDFLAGS}"
+-                ECL_LDRPATH='-Wl,--rpath,~A'
++                ECL_LDRPATH='-Wl,--rpath,${libdir}/ecl'
+                 CFLAGS="-D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 ${CFLAGS}"
+                 SONAME="${SHAREDPREFIX}ecl.${SHAREDEXT}.SOVERSION"
+                 SONAME_LDFLAGS="-Wl,-soname,SONAME"
