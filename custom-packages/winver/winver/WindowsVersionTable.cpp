@@ -779,7 +779,7 @@ const std::list<WindowsVersionInfo> SystemInfo::WindowsVersions = {
      */
     {.m_szVersionName = "Windows 11",
      .m_szReleaseName = "21H2",
-     .m_szCodeName = "Sun Valley",
+     .m_szCodeName = "Cobalt/Sun Valley",
      .m_szReleaseDate = "2021-10-05",
      .m_szEolDate = "2023-10-10",
      .m_Editions = {"Windows 11 Home", "Windows 11 Pro", "Windows 11 Pro for Workstations", "Windows 11 Pro Education",
@@ -787,7 +787,7 @@ const std::list<WindowsVersionInfo> SystemInfo::WindowsVersions = {
      .m_Version = WindowsBuildInfo(10, 0, 22000, true)},
     {.m_szVersionName = "Windows 11",
      .m_szReleaseName = "22H2",
-     .m_szCodeName = "Sun Valley 2",
+     .m_szCodeName = "Nickel/Sun Valley 2",
      .m_szReleaseDate = "2022-09-20",
      .m_szEolDate = "2024-10-08",
      .m_Editions = {"Windows 11 Home", "Windows 11 Pro", "Windows 11 Pro for Workstations", "Windows 11 Pro Education",
@@ -795,12 +795,20 @@ const std::list<WindowsVersionInfo> SystemInfo::WindowsVersions = {
      .m_Version = WindowsBuildInfo(10, 0, 22621, true)},
     {.m_szVersionName = "Windows 11",
      .m_szReleaseName = "23H2",
-     .m_szCodeName = "Sun Valley 3",
+     .m_szCodeName = "Nickel",
      .m_szReleaseDate = "2023-10-31",
      .m_szEolDate = "2025-11-11",
      .m_Editions = {"Windows 11 Home", "Windows 11 Pro", "Windows 11 Pro for Workstations", "Windows 11 Pro Education",
                     "Windows 11 Education", "Windows 11 Enterprise", "Windows 11 SE"},
      .m_Version = WindowsBuildInfo(10, 0, 22631, true)},
+    {.m_szVersionName = "Windows 11",
+     .m_szReleaseName = "24H2",
+     .m_szCodeName = "Germanium",
+     .m_szReleaseDate = "2024-10-01",
+     .m_szEolDate = "2026-10-13",
+     .m_Editions = {"Windows 11 Home", "Windows 11 Pro", "Windows 11 Pro for Workstations", "Windows 11 Pro Education",
+                    "Windows 11 Education", "Windows 11 Enterprise", "Windows 11 SE"},
+     .m_Version = WindowsBuildInfo(10, 0, 26100, true)},
 
     /**
      * Windows 10 Server Versions
@@ -867,4 +875,11 @@ const std::list<WindowsVersionInfo> SystemInfo::WindowsVersions = {
      .m_szReleaseDate = "2021-08-18",
      .m_szEolDate = "2031-10-14",
      .m_Editions = {"Windows Server Essentials[s]", "Windows Server Standard", "Windows Server Datacenter"},
-     .m_Version = WindowsBuildInfo(10, 0, 20348, true, true)}};
+     .m_Version = WindowsBuildInfo(10, 0, 20348, true, true)},
+    {.m_szVersionName = "Windows Server",
+     .m_szReleaseName = "23H2",
+     .m_szCodeName = "",
+     .m_szReleaseDate = "2023-10-14",
+     .m_szEolDate = "2025-10-24",
+     .m_Editions = {"Windows Server Essentials[s]", "Windows Server Standard", "Windows Server Datacenter"},
+     .m_Version = WindowsBuildInfo(10, 0, 25398, true, true)}};

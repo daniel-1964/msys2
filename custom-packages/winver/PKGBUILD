@@ -9,7 +9,7 @@ else
     pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
     prefix="${MINGW_PREFIX}"
 fi
-pkgver=2.0
+pkgver=2.0.1
 pkgrel=1
 pkgdesc="Display detailled Windows Version informations"
 arch=('any')

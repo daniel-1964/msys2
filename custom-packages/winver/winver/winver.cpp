@@ -192,7 +192,7 @@ void Usage(const std::string &name, const std::string &prefix)
 
 void version(const std::string &name)
 {
-    std::cout << name << " Version 2.0" << std::endl << std::endl;
+    std::cout << name << " Version 2.0.1" << std::endl << std::endl;
     std::cout << "Portion Copyright <C> 2005 - 2010 Marius Bancila" << std::endl;
     std::cout << "http://www.mariusbancila.ro" << std::endl;
     std::cout << "http://www.mariusbancila.ro/blog" << std::endl;
