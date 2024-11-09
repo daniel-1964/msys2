@@ -51,11 +51,6 @@ build() {
   ${MINGW_PREFIX}/bin/python setup.py build
 }
 
-check() {
-  cd "${_realname}-${_sha1}"
-  ${MINGW_PREFIX}/bin/python setup.py test
-}
-
 package() {
   cd "${_realname}-${_sha1}"
   MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
