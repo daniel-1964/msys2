@@ -7,7 +7,7 @@ _realname=sbcl
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-sources")
-pkgver=2.4.8
+pkgver=2.5.0
 pkgrel=1
 pkgdesc="Steel Bank Common Lisp"
 url="http://www.sbcl.org/"
@@ -22,7 +22,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-sbcl"
              "${MINGW_PACKAGE_PREFIX}-cc")
 source=("https://downloads.sourceforge.net/project/sbcl/sbcl/$pkgver/$_realname-$pkgver-source.tar.bz2"
         "sbcl.patch")
-sha256sums=('fc6ecdcc538e80a14a998d530ccc384a41790f4f4fc6cd7ffe8cb126a677694c'
+sha256sums=('2e18afd088e4a2df21b77bae2e170ce570d11da6d27607292265f1cc6a8a19b1'
             '65cd45b137502e132c63d73b9b0f339b0665461f285aabc701856b8bee553eb9')
 
 prepare() {
