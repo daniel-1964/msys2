@@ -1,7 +1,7 @@
 _realname="calc"
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=2.14.1.0
+pkgver=2.15.1.0
 pkgrel=1
 pkgdesc="C-style arbitrary precision calculator (mingw)"
 arch=('any')
@@ -9,18 +9,18 @@ url="http://www.isthe.com/chongo/tech/comp/calc/"
 license=('LGPL', 'GPL')
 depends=("${MINGW_PACKAGE_PREFIX}-readline"
          'less')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             make)
 options=('staticlibs' 'strip')
 set -o pipefail
 source=("https://github.com/lcn2/${_realname}/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.bz2"
 	'calc-mingw.patch'
-        'comma.cal.patch'
         'random.c'
         'random.h'
         'getrusage.c'
         'resource.h')
-sha512sums=('58c2bcbb696cf51381a6da047e4e8004c40ed3be51a469685cf2c5db012c86411098f119491e82e244d86cbbd2b9434c335bdb6841312155831fffebe296fd79'
-            'fe1a2b3052ea03ad953093a52734444baf992a212be140f26e21243e889c7aa8f766d2fac6898bd7247548684869aead8ad926f44e095a93d39ecefb7c4d4404'
-            '751fddaa02c4361553eb5fd8ce6764a3d2f0988842221e60828dac73eea83b3c70d5a32b71e4ecd870f57d54f8c50fe1aa6fda70117c43675524582891c572cd'
+sha512sums=('9d2670fdd02a7e8adea34db1fb9c1729845a62900790f7dee0bc53a6180be9ac20ffd6d557b343ae83526f62e7e4ad49bcf75fe52fae72531a0921d973d6b3a3'
+            '091c7d310f39e1ebba10ed71659f2bb6f145edc450e19429a710164ff31d34e9935f634a05baae173a8386dcd9097c38ea01ca07d23f201d97ad7d2c7de1cdfe'
             '719df4823ce78ca0bc21ef5d92d9bfb570c272146cfb0d4107916f4fd1807d6fc0b94f905fbc366a15d2a5f99e9f47ae52a2dc499d2a1a5eecd488b21035dab6'
             '9efb57f957923d769b6aaf28e16ab57d13dffc37e2d72241a053e47a9d63ec6cc02382ef2ad192fcad4ee04b3a89713970651884b6b8f4809ffbca95667e304a'
             '794b0b2bd7f3c58313bd41b325c9ee8dea0c8b97630730ce0e3c5dbf231faaba69b39ae6232bc41106fd795c4057878a566c162717a15d2c2a56a400da3bffbf'
@@ -29,7 +29,6 @@ sha512sums=('58c2bcbb696cf51381a6da047e4e8004c40ed3be51a469685cf2c5db012c8641109
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
   patch -Np1 -i ${srcdir}/calc-mingw.patch
-  patch -Np1 -i ${srcdir}/comma.cal.patch
   cp -p ${srcdir}/random.[ch] ${srcdir}/getrusage.c .
   mkdir sys
   cp -p ${srcdir}/resource.h ./sys  

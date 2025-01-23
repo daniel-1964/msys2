@@ -1,37 +1,37 @@
-diff -pur calc-2.14.1.0.orig/addop.c calc-2.14.1.0/addop.c
---- calc-2.14.1.0.orig/addop.c	2022-01-22 11:24:49.000000000 +0100
-+++ calc-2.14.1.0/addop.c	2022-11-03 18:21:05.120399900 +0100
+diff -pur calc-2.15.1.0.orig/addop.c calc-2.15.1.0/addop.c
+--- calc-2.15.1.0.orig/addop.c	2024-07-12 06:56:29.000000000 +0200
++++ calc-2.15.1.0/addop.c	2025-01-22 13:35:58.163374700 +0100
 @@ -658,12 +658,8 @@ addoptwo(long op, long arg1, long arg2)
  void
  addopptr(long op, char *ptr)
  {
--	char **ptraddr;
+-        char **ptraddr;
 -
- 	addop(op);
--	ptraddr = (char **) &curfunc->f_opcodes[curfunc->f_opcodecount];
--	*ptraddr = ptr;
--	curfunc->f_opcodecount += PTR_SIZE;
-+	curfunc->f_opcodes[curfunc->f_opcodecount++] = (size_t)ptr;
+         addop(op);
+-        ptraddr = (char **) &curfunc->f_opcodes[curfunc->f_opcodecount];
+-        *ptraddr = ptr;
+-        curfunc->f_opcodecount += PTR_SIZE;
++        curfunc->f_opcodes[curfunc->f_opcodecount++] = (size_t)ptr;
  }
  
  
-diff -pur calc-2.14.1.0.orig/byteswap.c calc-2.14.1.0/byteswap.c
---- calc-2.14.1.0.orig/byteswap.c	2022-01-22 08:10:22.000000000 +0100
-+++ calc-2.14.1.0/byteswap.c	2022-11-03 10:00:06.357526100 +0100
-@@ -540,7 +540,8 @@ swap_HALF_in_ZVALUE(ZVALUE *dest, ZVALUE
- 		/*
- 		 * copy storage because we are dealing with HALFs
- 		 */
--		dest->v = (HALF *) zcopyval(*src, *dest);
-+		dest->v = alloc(src->len);
+diff -pur calc-2.15.1.0.orig/byteswap.c calc-2.15.1.0/byteswap.c
+--- calc-2.15.1.0.orig/byteswap.c	2024-07-12 06:56:29.000000000 +0200
++++ calc-2.15.1.0/byteswap.c	2025-01-22 13:35:58.191146300 +0100
+@@ -584,7 +584,8 @@ swap_HALF_in_ZVALUE(ZVALUE *dest, ZVALUE
+                 /*
+                  * copy storage because we are dealing with HALFs
+                  */
+-                dest->v = (HALF *) zcopyval(*src, *dest);
++                dest->v = alloc(src->len);
 +                zcopyval(*src, *dest);
  
- 	} else {
+         } else {
  
-diff -pur calc-2.14.1.0.orig/calc.c calc-2.14.1.0/calc.c
---- calc-2.14.1.0.orig/calc.c	2022-01-22 08:11:37.000000000 +0100
-+++ calc-2.14.1.0/calc.c	2022-11-03 08:02:51.581682400 +0100
-@@ -37,7 +37,9 @@
+diff -pur calc-2.15.1.0.orig/calc.c calc-2.15.1.0/calc.c
+--- calc-2.15.1.0.orig/calc.c	2024-07-12 06:56:29.000000000 +0200
++++ calc-2.15.1.0/calc.c	2025-01-22 14:06:33.692686500 +0100
+@@ -35,7 +35,9 @@
  
  #if defined(_WIN32) || defined(_WIN64)
  # include <io.h>
@@ -42,35 +42,97 @@ diff -pur calc-2.14.1.0.orig/calc.c calc-2.14.1.0/calc.c
  /*
   * getopt.h file is from the Cygwin GNU library
   *
-diff -pur calc-2.14.1.0.orig/calc.h calc-2.14.1.0/calc.h
---- calc-2.14.1.0.orig/calc.h	2021-12-08 21:04:46.000000000 +0100
-+++ calc-2.14.1.0/calc.h	2022-11-03 08:02:51.597316300 +0100
-@@ -229,6 +229,10 @@ EXTERN char *calcbindings;	/* $CALCBINDI
- EXTERN char *home;		/* $HOME or default */
- EXTERN char *shell;		/* $SHELL or default */
+@@ -543,9 +545,15 @@ main(int argc, char **argv)
+                 cmdbuf[cmdlen++] = '\n';
+                 cmdbuf[cmdlen] = '\0';
+                 if (p_flag != true) {
++#if defined(_WIN32) || defined(_WIN64)
++                        if (freopen("nul", "r", stdin) == NULL) {
++                                perror("in main: freopen(\"nul\", \"r\", stdin) failed:");
++                        }
++#else
+                         if (freopen("/dev/null", "r", stdin) == NULL) {
+                                 perror("in main: freopen(\"/dev/null\", \"r\", stdin) failed:");
+                         }
++#endif
+                         stdin_closed = true;
+                 }
+         }
+diff -pur calc-2.15.1.0.orig/calc.h calc-2.15.1.0/calc.h
+--- calc-2.15.1.0.orig/calc.h	2024-07-12 06:56:29.000000000 +0200
++++ calc-2.15.1.0/calc.h	2025-01-22 13:35:58.225712500 +0100
+@@ -230,6 +230,10 @@ EXTERN char *calcbindings;      /* $CALC
+ EXTERN char *home;              /* $HOME or default */
+ EXTERN char *shell;             /* $SHELL or default */
  
 +#if defined(_WIN32) || defined(_WIN64)
-+EXTERN char *calc_exepath;	/* calc executable path */
++EXTERN char *calc_exepath;      /* calc executable path */
 +#endif
 +
- EXTERN int no_env;	/* TRUE (-e) => ignore env vars on startup */
- EXTERN long errmax;	/* if >= 0, error when errcount exceeds errmax */
- EXTERN int use_old_std;	/* TRUE (-O) => use classic configuration */
-diff -pur calc-2.14.1.0.orig/custom/c_help.c calc-2.14.1.0/custom/c_help.c
---- calc-2.14.1.0.orig/custom/c_help.c	2022-01-22 08:11:50.000000000 +0100
-+++ calc-2.14.1.0/custom/c_help.c	2022-11-03 08:02:51.597316300 +0100
-@@ -77,7 +77,7 @@ c_help(char *UNUSED(name), int UNUSED(co
- 	/*
- 	 * give the help
- 	 */
--	customhelp((char *)vals[0]->v_str);
-+	customhelp(vals[0]->v_str->s_str);
+ EXTERN int no_env;      /* true (-e) => ignore env vars on startup */
+ EXTERN long errmax;     /* if >= 0, error when errcount exceeds errmax */
+ EXTERN int use_old_std; /* true (-O) => use classic configuration */
+diff -pur calc-2.15.1.0.orig/chk_c.c calc-2.15.1.0/chk_c.c
+--- calc-2.15.1.0.orig/chk_c.c	2024-07-12 06:56:29.000000000 +0200
++++ calc-2.15.1.0/chk_c.c	2025-01-23 11:31:09.502526600 +0100
+@@ -325,18 +325,18 @@ main(int argc, char *argv[])
+         printf("INTMAX_MAX: %"PRIXMAX"\n", (intmax_t)INTMAX_MAX);
  
- 	/*
- 	 * return NULL
-diff -pur calc-2.14.1.0.orig/decl.h calc-2.14.1.0/decl.h
---- calc-2.14.1.0.orig/decl.h	2022-01-22 11:34:57.000000000 +0100
-+++ calc-2.14.1.0/decl.h	2022-11-03 08:02:51.612941600 +0100
+         printf("\nsizes\n");
+-        printf("sizeof(int8_t): %lu\n", sizeof(int8_t));
+-        printf("sizeof(uint8_t): %lu\n", sizeof(uint8_t));
+-        printf("sizeof(int16_t): %lu\n", sizeof(int16_t));
+-        printf("sizeof(uint16_t): %lu\n", sizeof(uint16_t));
+-        printf("sizeof(int32_t): %lu\n", sizeof(int32_t));
+-        printf("sizeof(uint32_t): %lu\n", sizeof(uint32_t));
+-        printf("sizeof(int64_t): %lu\n", sizeof(int64_t));
+-        printf("sizeof(uint64_t): %lu\n", sizeof(uint64_t));
+-        printf("sizeof(intptr_t): %lu\n", sizeof(intptr_t));
+-        printf("sizeof(uintptr_t): %lu\n", sizeof(uintptr_t));
+-        printf("sizeof(intmax_t): %lu\n", sizeof(intmax_t));
+-        printf("sizeof(uintmax_t): %lu\n", sizeof(uintmax_t));
++        printf("sizeof(int8_t): %zu\n", sizeof(int8_t));
++        printf("sizeof(uint8_t): %zu\n", sizeof(uint8_t));
++        printf("sizeof(int16_t): %zu\n", sizeof(int16_t));
++        printf("sizeof(uint16_t): %zu\n", sizeof(uint16_t));
++        printf("sizeof(int32_t): %zu\n", sizeof(int32_t));
++        printf("sizeof(uint32_t): %zu\n", sizeof(uint32_t));
++        printf("sizeof(int64_t): %zu\n", sizeof(int64_t));
++        printf("sizeof(uint64_t): %zu\n", sizeof(uint64_t));
++        printf("sizeof(intptr_t): %zu\n", sizeof(intptr_t));
++        printf("sizeof(uintptr_t): %zu\n", sizeof(uintptr_t));
++        printf("sizeof(intmax_t): %zu\n", sizeof(intmax_t));
++        printf("sizeof(uintmax_t): %zu\n", sizeof(uintmax_t));
+     }
+ 
+     /*
+diff -pur calc-2.15.1.0.orig/const.c calc-2.15.1.0/const.c
+--- calc-2.15.1.0.orig/const.c	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/const.c	2025-01-22 13:35:58.247803200 +0100
+@@ -45,7 +45,7 @@ initconstants(void)
+ {
+         int i;
+ 
+-        consttable = (NUMBER **) calloc(sizeof(NUMBER *), CONSTALLOCSIZE);
++        consttable = (NUMBER **) calloc(CONSTALLOCSIZE, sizeof(NUMBER *));
+         if (consttable == NULL) {
+                 math_error("Unable to allocate constant table");
+                 not_reached();
+diff -pur calc-2.15.1.0.orig/custom/c_help.c calc-2.15.1.0/custom/c_help.c
+--- calc-2.15.1.0.orig/custom/c_help.c	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/custom/c_help.c	2025-01-22 13:35:58.266489000 +0100
+@@ -88,7 +88,7 @@ c_help(char *UNUSED(name), int UNUSED(co
+         /*
+          * give the help
+          */
+-        customhelp((char *)vals[0]->v_str);
++        customhelp(vals[0]->v_str->s_str);
+ 
+         /*
+          * return NULL
+diff -pur calc-2.15.1.0.orig/decl.h calc-2.15.1.0/decl.h
+--- calc-2.15.1.0.orig/decl.h	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/decl.h	2025-01-22 13:35:58.286515500 +0100
 @@ -58,7 +58,7 @@
  
  
@@ -80,9 +142,44 @@ diff -pur calc-2.14.1.0.orig/decl.h calc-2.14.1.0/decl.h
  #  if defined(_EXPORTING)
  #   define DLL __declspec(dllexport)
  #  else
-diff -pur calc-2.14.1.0.orig/func.c calc-2.14.1.0/func.c
---- calc-2.14.1.0.orig/func.c	2022-01-22 09:28:26.000000000 +0100
-+++ calc-2.14.1.0/func.c	2022-11-05 11:42:27.923812400 +0100
+diff -pur calc-2.15.1.0.orig/errtbl.c calc-2.15.1.0/errtbl.c
+--- calc-2.15.1.0.orig/errtbl.c	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/errtbl.c	2025-01-22 13:35:58.304729300 +0100
+@@ -1432,8 +1432,8 @@ verify_error_table(void)
+                  * check errnum - must be consecutive starting with E__BASE
+                  */
+                 if ((size_t)error_table[i].errnum != E__BASE+i) {
+-                        fprintf(stderr, "**** %s ERROR: error_table[%zu].errnum: %d != %lu\n",
+-                                program, i, error_table[i].errnum, (unsigned long)E__BASE+i);
++                        fprintf(stderr, "**** %s ERROR: error_table[%zu].errnum: %d != %zu\n",
++                                program, i, error_table[i].errnum, E__BASE+i);
+                         exit(16);
+                 }
+ 
+diff -pur calc-2.15.1.0.orig/fposval.c calc-2.15.1.0/fposval.c
+--- calc-2.15.1.0.orig/fposval.c	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/fposval.c	2025-01-22 13:35:58.315998600 +0100
+@@ -138,7 +138,7 @@ main(int UNUSED(argc), char **argv)
+         /*
+          * Little Endian
+          */
+-#if defined(HAVE_FILEPOS_SCALAR)
++#if !defined(_WIN32) && !defined(_WIN64) && defined(HAVE_FILEPOS_SCALAR)
+         printf("#define SWAP_HALF_IN_FILEPOS(dest, src) \\\n"
+                "\t(*((HALF *)(dest)) = *((HALF *)(src)))\n");
+ #else /* HAVE_FILEPOS_SCALAR */
+@@ -186,7 +186,7 @@ main(int UNUSED(argc), char **argv)
+          * Normally a "(*(dest) = *(src))" would do, but on some
+          * systems an off_t is not a scalar hence we must memcpy.
+          */
+-#if defined(HAVE_OFF_T_SCALAR)
++#if !defined(_WIN32) && !defined(_WIN64) && defined(HAVE_OFF_T_SCALAR)
+         printf("#define SWAP_HALF_IN_OFF_T(dest, src)\t\t%s\n",
+             "(*(dest) = *(src))");
+ #else /* HAVE_OFF_T_SCALAR */
+diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
+--- calc-2.15.1.0.orig/func.c	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/func.c	2025-01-22 13:35:58.344691900 +0100
 @@ -88,6 +88,8 @@
  #include "have_rusage.h"
  #if defined(HAVE_GETRUSAGE)
@@ -92,51 +189,51 @@ diff -pur calc-2.14.1.0.orig/func.c calc-2.14.1.0/func.c
  #endif
  
  #include "have_const.h"
-@@ -6822,7 +6824,7 @@ f_listremove(VALUE *vp)
+@@ -7688,7 +7690,7 @@ f_listremove(VALUE *vp)
  S_FUNC NUMBER *
  f_usertime(void)
  {
 -#if defined(HAVE_GETRUSAGE)
 +#if defined(__MINGW32__) || defined(HAVE_GETRUSAGE)
- 	struct rusage usage;		/* system resource usage */
- 	int who = RUSAGE_SELF;		/* obtain time for just this process */
- 	int status;			/* getrusage() return code */
-@@ -6861,7 +6863,7 @@ f_usertime(void)
+         struct rusage usage;            /* system resource usage */
+         int who = RUSAGE_SELF;          /* obtain time for just this process */
+         int status;                     /* getrusage() return code */
+@@ -7727,7 +7729,7 @@ f_usertime(void)
  S_FUNC NUMBER *
  f_systime(void)
  {
 -#if defined(HAVE_GETRUSAGE)
 +#if defined(__MINGW32__) || defined(HAVE_GETRUSAGE)
- 	struct rusage usage;		/* system resource usage */
- 	int who = RUSAGE_SELF;		/* obtain time for just this process */
- 	int status;			/* getrusage() return code */
-@@ -6899,7 +6901,7 @@ f_systime(void)
+         struct rusage usage;            /* system resource usage */
+         int who = RUSAGE_SELF;          /* obtain time for just this process */
+         int status;                     /* getrusage() return code */
+@@ -7765,7 +7767,7 @@ f_systime(void)
  S_FUNC NUMBER *
  f_runtime(void)
  {
 -#if defined(HAVE_GETRUSAGE)
 +#if defined(__MINGW32__) || defined(HAVE_GETRUSAGE)
- 	struct rusage usage;		/* system resource usage */
- 	int who = RUSAGE_SELF;		/* obtain time for just this process */
- 	int status;			/* getrusage() return code */
-@@ -9068,7 +9070,7 @@ f_sleep(int count, VALUE **vals)
+         struct rusage usage;            /* system resource usage */
+         int who = RUSAGE_SELF;          /* obtain time for just this process */
+         int status;                     /* getrusage() return code */
+@@ -10137,7 +10139,7 @@ f_sleep(int count, VALUE **vals)
  
- 	res.v_type = V_NULL;
- 	res.v_subtype = V_NOSUBTYPE;
+         res.v_type = V_NULL;
+         res.v_subtype = V_NOSUBTYPE;
 -#if !defined(_WIN32) && !defined(_WIN64)
 +#if defined(__MINGW32__) || (!defined(_WIN32) && !defined(_WIN64))
- 	if (count > 0) {
- 		if (vals[0]->v_type != V_NUM || qisneg(vals[0]->v_num))
- 				return error_value(E_SLEEP);
-diff -pur calc-2.14.1.0.orig/func.h calc-2.14.1.0/func.h
---- calc-2.14.1.0.orig/func.h	2021-11-08 03:58:52.000000000 +0100
-+++ calc-2.14.1.0/func.h	2022-11-05 11:59:58.607359800 +0100
+         if (count > 0) {
+                 if (vals[0]->v_type != V_NUM || qisneg(vals[0]->v_num))
+                                 return error_value(E_SLEEP);
+diff -pur calc-2.15.1.0.orig/func.h calc-2.15.1.0/func.h
+--- calc-2.15.1.0.orig/func.h	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/func.h	2025-01-22 13:35:58.363953600 +0100
 @@ -49,20 +49,20 @@ struct func {
- 	unsigned int f_paramcount;	/* max number of parameters */
- 	char *f_name;			/* function name */
- 	VALUE f_savedvalue;		/* saved value of last expression */
--	unsigned long f_opcodes[1];	/* array of opcodes (variable length) */
-+	size_t f_opcodes[1];	/* array of opcodes (variable length) */
+         unsigned int f_paramcount;      /* max number of parameters */
+         char *f_name;                   /* function name */
+         VALUE f_savedvalue;             /* saved value of last expression */
+-        unsigned long f_opcodes[1];     /* array of opcodes (variable length) */
++        size_t f_opcodes[1];            /* array of opcodes (variable length) */
  };
  
  
@@ -155,8 +252,8 @@ diff -pur calc-2.14.1.0.orig/func.h calc-2.14.1.0/func.h
  
  
  /*
-@@ -84,7 +84,7 @@ E_FUNC long getuserfunc(char *name);
- E_FUNC void beginfunc(char *name, BOOL newflag);
+@@ -85,7 +85,7 @@ E_FUNC long getuserfunc(char *name);
+ E_FUNC void beginfunc(char *name, bool newflag);
  E_FUNC int builtinopcode(long index);
  E_FUNC char *builtinname(long index);
 -E_FUNC int dumpop(unsigned long *pc);
@@ -164,12 +261,13 @@ diff -pur calc-2.14.1.0.orig/func.h calc-2.14.1.0/func.h
  E_FUNC void addop(long op);
  E_FUNC void endfunc(void);
  E_FUNC void addopone(long op, long arg);
-diff -pur calc-2.14.1.0.orig/hash.c calc-2.14.1.0/hash.c
---- calc-2.14.1.0.orig/hash.c	2022-01-22 08:12:30.000000000 +0100
-+++ calc-2.14.1.0/hash.c	2022-11-03 08:02:51.612941600 +0100
+Only in calc-2.15.1.0: getrusage.c
+diff -pur calc-2.15.1.0.orig/hash.c calc-2.15.1.0/hash.c
+--- calc-2.15.1.0.orig/hash.c	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/hash.c	2025-01-22 13:35:58.376601300 +0100
 @@ -55,10 +55,10 @@ E_FUNC void MD5_init_state(HASH*);
  /*
-  * hash_long can deal with BOOL's, int's, FLAGS's and LEN's
+  * hash_long can deal with bool's, int's, FLAGS's and LEN's
   */
 -#define hash_bool(type, val, state) (hash_long((type), (long)(val), (state)))
 -#define hash_int(type, val, state) (hash_long((type), (long)(val), (state)))
@@ -189,14 +287,14 @@ diff -pur calc-2.14.1.0.orig/hash.c calc-2.14.1.0/hash.c
 -hash_long(int type, long longval, HASH *state)
 +hash_long(int type, size_t longval, HASH *state)
  {
--	long lval[64/LONG_BITS];	/* 64 bits of longs */
-+	size_t lval[64/(sizeof(size_t)*8)];	/* 64 bits of longs */
+-        long lval[64/LONG_BITS];        /* 64 bits of longs */
++        size_t lval[64/(sizeof(size_t)*8)];        /* 64 bits of longs */
  
- 	/*
- 	 * initialize if state is NULL
-diff -pur calc-2.14.1.0.orig/hash.h calc-2.14.1.0/hash.h
---- calc-2.14.1.0.orig/hash.h	2021-11-08 03:58:52.000000000 +0100
-+++ calc-2.14.1.0/hash.h	2022-11-03 08:02:51.959418800 +0100
+         /*
+          * initialize if state is NULL
+diff -pur calc-2.15.1.0.orig/hash.h calc-2.15.1.0/hash.h
+--- calc-2.15.1.0.orig/hash.h	2024-07-12 06:56:30.000000000 +0200
++++ calc-2.15.1.0/hash.h	2025-01-22 13:35:58.410113300 +0100
 @@ -119,7 +119,7 @@ E_FUNC HASH* hash_copy(HASH*);
  E_FUNC int hash_cmp(HASH*, HASH*);
  E_FUNC void hash_print(HASH*);
@@ -206,10 +304,10 @@ diff -pur calc-2.14.1.0.orig/hash.h calc-2.14.1.0/hash.h
  E_FUNC HASH* hash_zvalue(int, ZVALUE, HASH*);
  E_FUNC HASH* hash_number(int, void*, HASH*);
  E_FUNC HASH* hash_complex(int, void*, HASH*);
-diff -pur calc-2.14.1.0.orig/help/Makefile calc-2.14.1.0/help/Makefile
---- calc-2.14.1.0.orig/help/Makefile	2022-01-22 09:07:45.000000000 +0100
-+++ calc-2.14.1.0/help/Makefile	2022-11-03 11:16:56.601367200 +0100
-@@ -712,7 +712,7 @@ builtin: builtin.top builtin.end ../func
+diff -pur calc-2.15.1.0.orig/help/Makefile calc-2.15.1.0/help/Makefile
+--- calc-2.15.1.0.orig/help/Makefile	2024-07-12 06:58:22.000000000 +0200
++++ calc-2.15.1.0/help/Makefile	2025-01-22 13:35:58.426339100 +0100
+@@ -570,7 +570,7 @@ builtin: builtin.top builtin.end ../func
  	${Q} ${RM} -f funclist.c
  	${Q} ${SED} -n -f funclist.sed ../func.c > funclist.c
  	${Q} ${RM} -f funclist.o funclist${EXT}
@@ -218,9 +316,9 @@ diff -pur calc-2.14.1.0.orig/help/Makefile calc-2.14.1.0/help/Makefile
  	    -I.. funclist.c -c ${S}
  	${Q} ${LCC} ${ILDFLAGS} funclist.o -o funclist${EXT} ${S}
  	${Q} ${RM} -f builtin
-diff -pur calc-2.14.1.0.orig/help.c calc-2.14.1.0/help.c
---- calc-2.14.1.0.orig/help.c	2021-12-13 05:01:37.000000000 +0100
-+++ calc-2.14.1.0/help.c	2022-11-03 08:02:52.037502900 +0100
+diff -pur calc-2.15.1.0.orig/help.c calc-2.15.1.0/help.c
+--- calc-2.15.1.0.orig/help.c	2024-07-12 06:56:33.000000000 +0200
++++ calc-2.15.1.0/help.c	2025-01-22 13:35:58.440258400 +0100
 @@ -29,7 +29,7 @@
  #include <ctype.h>
  #include <sys/types.h>
@@ -230,9 +328,9 @@ diff -pur calc-2.14.1.0.orig/help.c calc-2.14.1.0/help.c
  
  #include "calc.h"
  #include "conf.h"
-diff -pur calc-2.14.1.0.orig/input.c calc-2.14.1.0/input.c
---- calc-2.14.1.0.orig/input.c	2022-01-22 08:12:38.000000000 +0100
-+++ calc-2.14.1.0/input.c	2022-11-03 11:02:30.667925300 +0100
+diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
+--- calc-2.15.1.0.orig/input.c	2024-07-12 06:56:33.000000000 +0200
++++ calc-2.15.1.0/input.c	2025-01-22 13:35:58.460095100 +0100
 @@ -46,8 +46,13 @@
  
  #if defined(_WIN32) || defined(_WIN64)
@@ -248,121 +346,121 @@ diff -pur calc-2.14.1.0.orig/input.c calc-2.14.1.0/input.c
  #include "calc.h"
  #include "conf.h"
 @@ -141,6 +146,10 @@ opensearchfile(char *name, char *pathlis
- 	char *cp;
- 	char *path;		/* name being searched for */
- 	size_t path_alloc;	/* length of malloced path */
+         char *cp;
+         char *path;             /* name being searched for */
+         size_t path_alloc;      /* length of malloced path */
 +#if defined(_WIN32) || defined(_WIN64)
-+	char *path2;		/* name being searched for relative to the executable */
-+	size_t path2_alloc;	/* length of malloced path2 */
++        char *path2;            /* name being searched for relative to the executable */
++        size_t path2_alloc;     /* length of malloced path2 */
 +#endif /* Windows free systems */
- 	struct stat statbuf;	/* stat of the path */
- 	size_t namelen;	/* length of name */
- 	size_t extlen;	/* length of the extension if non-NULL or 0 */
+         struct stat statbuf;    /* stat of the path */
+         size_t namelen; /* length of name */
+         size_t extlen;  /* length of the extension if non-NULL or 0 */
 @@ -196,6 +205,16 @@ opensearchfile(char *name, char *pathlis
- 	path[0] = '\0';	/* paranoia */
- 	path[path_alloc] = '\0';	/* paranoia */
+         path[0] = '\0'; /* paranoia */
+         path[path_alloc] = '\0';        /* paranoia */
  
 +#if defined(_WIN32) || defined(_WIN64)
-+	path2_alloc = path_alloc+1+strlen(calc_exepath)+1;
-+	path2 = malloc(path2_alloc);
-+	if (path2 == NULL) {
-+		math_error("Cannot allocate filename path buffer");
-+		not_reached();
-+	}
-+	path2[0] = '\0';	/* paranoia */
++        path2_alloc = path_alloc+1+strlen(calc_exepath)+1;
++        path2 = malloc(path2_alloc);
++        if (path2 == NULL) {
++                math_error("Cannot allocate filename path buffer");
++                not_reached();
++        }
++        path2[0] = '\0';        /* paranoia */
 +#endif /* Windows free systems */
 +
- 	/*
- 	 * Don't try the extension if the filename already contains it.
- 	 */
+         /*
+          * Don't try the extension if the filename already contains it.
+          */
 @@ -217,13 +236,42 @@ opensearchfile(char *name, char *pathlis
- 			*cp++ = PATHCHAR;
- 		strlcpy(cp, name, namelen+1);
- 		i = openfile(path);
+                         *cp++ = PATHCHAR;
+                 strlcpy(cp, name, namelen+1);
+                 i = openfile(path);
 +#if defined(_WIN32) || defined(_WIN64)
-+		if ((*path == '.') && (i < 0)) {
-+			snprintf(path2, path2_alloc, "%s/%s", calc_exepath, path);
-+			i = openfile(path2);
-+			if (i >= 0) {
-+				/* exchange path and path2 to simplify free'ing */
-+				char *tmp = path;
-+				path = path2;
-+				path2 = tmp;
-+			}
-+		}
++                if ((*path == '.') && (i < 0)) {
++                        snprintf(path2, path2_alloc, "%s/%s", calc_exepath, path);
++                        i = openfile(path2);
++                        if (i >= 0) {
++                                /* exchange path and path2 to simplify free'ing */
++                                char *tmp = path;
++                                path = path2;
++                                path2 = tmp;
++                        }
++                }
 +#endif /* Windows free systems */
- 		if ((i < 0) &&
- 		    (extension != NULL && extension[0] != '\0')) {
- 			strlcat(path, extension, path_alloc+1);
- 			i = openfile(path);
+                 if ((i < 0) &&
+                     (extension != NULL && extension[0] != '\0')) {
+                         strlcat(path, extension, path_alloc+1);
+                         i = openfile(path);
 +#if defined(_WIN32) || defined(_WIN64)
-+			if ((*path == '.') && (i < 0)) {
-+				strlcat(path2, extension, path2_alloc+1);
-+				i = openfile(path2);
-+				if (i >= 0) {
-+					/* exchange path and path2 to simplify free'ing */
-+					char *tmp = path;
-+					path = path2;
-+					path2 = tmp;
-+				}
-+			}
++                        if ((*path == '.') && (i < 0)) {
++                                strlcat(path2, extension, path2_alloc+1);
++                                i = openfile(path2);
++                                if (i >= 0) {
++                                        /* exchange path and path2 to simplify free'ing */
++                                        char *tmp = path;
++                                        path = path2;
++                                        path2 = tmp;
++                                }
++                        }
 +#endif /* Windows free systems */
- 		}
- 	} while ((i < 0) && *pathlist);
+                 }
+         } while ((i < 0) && *pathlist);
  
 +#if defined(_WIN32) || defined(_WIN64)
-+	/* path2 always point to the bad path */
-+	free(path2);
++        /* path2 always point to the bad path */
++        free(path2);
 +#endif /* Windows free systems */
 +
- 	/* examine what our search produced */
- 	if (i < 0) {
- 		free(path);
+         /* examine what our search produced */
+         if (i < 0) {
+                 free(path);
 @@ -407,18 +455,14 @@ f_pathopen(char *name, char *mode, char
  S_FUNC char *
  homeexpand(char *name)
  {
 -#if defined(_WIN32) || defined(_WIN64)
 -
--	return NULL;
+-        return NULL;
 -
 -#else /* Windows free systems */
 -
 +#if !defined(_WIN32) && !defined(_WIN64)
- 	struct passwd *ent;	/* password entry */
-+	char *username;		/* extracted username */
-+	size_t fullpath_len;	/* length of fullpath */
+         struct passwd *ent;     /* password entry */
++        char *username;         /* extracted username */
++        size_t fullpath_len;    /* length of fullpath */
 +#endif /* Windows free systems */
- 	char *home2;		/* fullpath of the home directory */
- 	char *fullpath;		/* the malloced expanded path */
- 	char *after;		/* after the ~user or ~ */
--	char *username;		/* extracted username */
--	size_t fullpath_len;	/* length of fullpath */
- 	size_t snprintf_len;	/* malloced snprintf buffer length */
+         char *home2;            /* fullpath of the home directory */
+         char *fullpath;         /* the malloced expanded path */
+         char *after;            /* after the ~user or ~ */
+-        char *username;         /* extracted username */
+-        size_t fullpath_len;    /* length of fullpath */
+         size_t snprintf_len;    /* malloced snprintf buffer length */
  
- 	/* firewall */
+         /* firewall */
 @@ -436,6 +480,9 @@ homeexpand(char *name)
- 		break;
- 	default:		/* ~username or ~username/... */
+                 break;
+         default:                /* ~username or ~username/... */
  
 +#if defined(_WIN32) || defined(_WIN64)
-+		return NULL;
++                return NULL;
 +#else /* Windows free systems */
- 		/* extract the username after the ~ */
- 		after = (char *)strchr(name+2, PATHCHAR);
- 		if (after == NULL) {
+                 /* extract the username after the ~ */
+                 after = (char *)strchr(name+2, PATHCHAR);
+                 if (after == NULL) {
 @@ -470,6 +517,7 @@ homeexpand(char *name)
- 		}
- 		home2 = ent->pw_dir;
- 		break;
+                 }
+                 home2 = ent->pw_dir;
+                 break;
 +#endif /* Windows free systems */
- 	}
+         }
  
- 	/*
+         /*
 @@ -483,7 +531,6 @@ homeexpand(char *name)
- 	snprintf(fullpath, snprintf_len, "%s%s", home2, after);
- 	fullpath[snprintf_len] = '\0';	/* paranoia */
- 	return fullpath;
+         snprintf(fullpath, snprintf_len, "%s%s", home2, after);
+         fullpath[snprintf_len] = '\0';  /* paranoia */
+         return fullpath;
 -#endif /* Windows free systems */
  }
  
@@ -370,53 +468,53 @@ diff -pur calc-2.14.1.0.orig/input.c calc-2.14.1.0/input.c
 @@ -927,6 +974,9 @@ void
  runrcfiles(void)
  {
- 	char path[MAX_CALCRC+1+1];	/* name being searched for */
+         char path[MAX_CALCRC+1+1];      /* name being searched for */
 +#if defined(_WIN32) || defined(_WIN64)
-+	char path2[MAX_CALCRC+3+1];	/* name being searched for, relative to the executable */
++        char path2[MAX_CALCRC+3+1];     /* name being searched for, relative to the executable */
 +#endif /* Windows free systems */
- 	char *cp;
- 	char *p;
+         char *cp;
+         char *p;
  
 @@ -943,11 +993,18 @@ runrcfiles(void)
- 		}
+                 }
  
- 		/* find the start of the path */
--		p = (path[0] == ':') ? path + 1 : path;
-+		p = (path[0] == LISTCHAR) ? path + 1 : path;
- 		if (p[0] == '\0') {
- 			continue;
- 		}
+                 /* find the start of the path */
+-                p = (path[0] == ':') ? path + 1 : path;
++                p = (path[0] == LISTCHAR) ? path + 1 : path;
+                 if (p[0] == '\0') {
+                         continue;
+                 }
  
 +#if defined(_WIN32) || defined(_WIN64)
-+		if ((*p == '.') && (_access(p, 0) == -1)) {
-+			snprintf(path2, MAX_CALCRC+3, "%s/%s", calc_exepath, p);
-+			p = path2;
-+		}
++                if ((*p == '.') && (_access(p, 0) == -1)) {
++                        snprintf(path2, MAX_CALCRC+3, "%s/%s", calc_exepath, p);
++                        p = path2;
++                }
 +#endif /* Windows free systems */
 +
- 		/* process the current file in the list */
- 		if (openfile(p) < 0) {
- 			/* Unable to open rcfile */
+                 /* process the current file in the list */
+                 if (openfile(p) < 0) {
+                         /* Unable to open rcfile */
 @@ -1093,7 +1150,6 @@ addreadset(char *name, char *path, struc
  {
- 	int ret;		/* index to return */
- 	size_t name_len;	/* length of read set name */
--	size_t path_len;	/* length of path to read set name */
+         int ret;                /* index to return */
+         size_t name_len;        /* length of read set name */
+-        size_t path_len;        /* length of path to read set name */
  
- 	/* find the inode */
- 	ret = isinoderead(sbuf);
+         /* find the inode */
+         ret = isinoderead(sbuf);
 @@ -1135,7 +1191,7 @@ addreadset(char *name, char *path, struc
- 		}
- 	 }
+                 }
+          }
  #else /* Windows free systems */
--	path_len = strlen(path);
-+	size_t path_len = strlen(path);
- 	readset[ret].path = (char *)malloc(path_len+1);
- 	if (readset[ret].path == NULL) {
- 		return -1;
-diff -pur calc-2.14.1.0.orig/lib_calc.c calc-2.14.1.0/lib_calc.c
---- calc-2.14.1.0.orig/lib_calc.c	2022-01-22 08:12:40.000000000 +0100
-+++ calc-2.14.1.0/lib_calc.c	2022-11-03 11:03:12.811699100 +0100
+-        path_len = strlen(path);
++        size_t path_len = strlen(path);
+         readset[ret].path = (char *)malloc(path_len+1);
+         if (readset[ret].path == NULL) {
+                 return -1;
+diff -pur calc-2.15.1.0.orig/lib_calc.c calc-2.15.1.0/lib_calc.c
+--- calc-2.15.1.0.orig/lib_calc.c	2024-07-12 06:56:33.000000000 +0200
++++ calc-2.15.1.0/lib_calc.c	2025-01-23 10:02:54.248565800 +0100
 @@ -31,6 +31,16 @@
  
  #if !defined(_WIN32) && !defined(_WIN64)
@@ -451,146 +549,268 @@ diff -pur calc-2.14.1.0.orig/lib_calc.c calc-2.14.1.0/lib_calc.c
  #else
  
  typedef struct {int fd;} ttystruct;
-@@ -152,6 +163,9 @@ char *calcbindings = NULL;	/* $CALCBINDI
- char *home = NULL;		/* $HOME or default */
- char *pager = NULL;		/* $PAGER or default */
- char *shell = NULL;		/* $SHELL or default */
+@@ -152,6 +163,9 @@ char *calcbindings = NULL;      /* $CALC
+ char *home = NULL;              /* $HOME or default */
+ char *pager = NULL;             /* $PAGER or default */
+ char *shell = NULL;             /* $SHELL or default */
 +#if defined(_WIN32) || defined(_WIN64)
-+char *calc_exepath = NULL;	/* path of calc.exe file */
++char *calc_exepath = NULL;      /* path of calc.exe file */
 +#endif
- char *calc_history = NULL;	/* $CALCHISTFILE or ~/.calc_history */
- char *calc_helpdir = NULL;	/* $CALCHELP or /usr/local/share/calc/help */
+ char *calc_history = NULL;      /* $CALCHISTFILE or ~/.calc_history */
+ char *calc_helpdir = NULL;      /* $CALCHELP or /usr/local/share/calc/help */
  /* $CALCCUSTOMHELP or /usr/local/share/calc/custhelp */
-@@ -484,9 +498,18 @@ initenv(void)
+@@ -490,31 +504,22 @@ initenv(void)
  {
  #if !defined(_WIN32) && !defined(_WIN64)
- 	struct passwd *ent;		/* our password entry */
-+#else
-+	char fullpath[MAX_PATH];
- #endif
- 	char *c;
+         struct passwd *ent;             /* our password entry */
+-#endif
++#else /* Windows free systems */
++        char fullpath[MAX_PATH];
++#endif /* Windows free systems */
+         char *c;
  
+-        /* determine the $CALCPATH value */
+-        c = (no_env ? NULL : getenv(CALCPATH));
+-        calcpath = (c ? strdup(c) : NULL);
+-        if (calcpath == NULL)
+-                calcpath = DEFAULTCALCPATH;
+-
+-        /* determine the $CALCRC value */
+-        c = (no_env ? NULL : getenv(CALCRC));
+-        calcrc = (c ? strdup(c) : NULL);
+-        if (calcrc == NULL)
+-                calcrc = DEFAULTCALCRC;
+-        if (strlen(calcrc) > MAX_CALCRC) {
+-                math_error("The $CALCRC variable is longer than %d chars",
+-                           MAX_CALCRC);
+-                not_reached();
+-        }
+-
+-        /* determine the $CALCBINDINGS value */
+-        c = (no_env ? NULL : getenv(CALCBINDINGS));
+-        calcbindings = (c ? strdup(c) : NULL);
+-        if (calcbindings == NULL)
+-                calcbindings = DEFAULTCALCBINDINGS;
 +#if defined(_WIN32) || defined(_WIN64)
-+	/* determine the running executable path value */
-+	GetModuleFileName(NULL, fullpath, MAX_PATH);
-+	if ((c = strrchr(fullpath, '\\')) != NULL)
-+		*c = '\0';
-+	calc_exepath = strdup(fullpath);
-+#endif
- 	/* determine the $CALCPATH value */
- 	c = (no_env ? NULL : getenv(CALCPATH));
- 	calcpath = (c ? strdup(c) : NULL);
-@@ -519,8 +542,12 @@ initenv(void)
- 		if (home != NULL) {
- 			free(home);
- 		}
--		/* just assume . is home if all else fails */
--		home = strdup(".");
-+		if (SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, fullpath) == 0) {
-+			home = strdup(fullpath);
-+		} else {
-+			/* just assume . is home if all else fails */
-+			home = strdup(".");
-+		}
- 	}
++        /* determine the running executable path value */
++        GetModuleFileName(NULL, fullpath, MAX_PATH);
++        if ((c = strstr(fullpath, "\\bin\\")) != NULL)
++                *c = '\0';
++        else if ((c = strrchr(fullpath, '\\')) != NULL)
++                *c = '\0';
++        else
++                strlcpy(fullpath, ".", MAX_PATH);
++        calc_exepath = strdup(fullpath);
++#endif /* Windows free systems */
+ 
+         /* determine the $HOME value */
+         c = (no_env ? NULL : getenv(HOME));
+@@ -525,8 +530,12 @@ initenv(void)
+                 if (home != NULL) {
+                         free(home);
+                 }
+-                /* just assume . is home if all else fails */
+-                home = strdup(".");
++                if (SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, fullpath) == 0) {
++                        home = strdup(fullpath);
++                } else {
++                        /* just assume . is home if all else fails */
++                        home = strdup(".");
++                }
+         }
  #else /* Windows free systems */
- 	if (home == NULL || home[0] == '\0') {
-@@ -568,8 +595,18 @@ initenv(void)
- 	c = (no_env ? NULL : getenv(CALCHELP));
- 	calc_helpdir = (c ? strdup(c) : NULL);
- 	if (calc_helpdir == NULL || *calc_helpdir == '\0') {
+         if (home == NULL || home[0] == '\0') {
+@@ -552,6 +561,52 @@ initenv(void)
+                 not_reached();
+         }
+ 
++        /* determine the $CALCPATH value */
++        c = (no_env ? NULL : getenv(CALCPATH));
++        calcpath = (c ? strdup(c) : NULL);
 +#if defined(_WIN32) || defined(_WIN64)
-+		if (*HELPDIR == '.') {
-+			snprintf(fullpath, MAX_PATH - 1, "%s/" HELPDIR, calc_exepath);
-+                        calc_helpdir = _fullpath(NULL, fullpath, MAX_PATH);
-+		} else {
-+			/* will use /usr/local/share/calc/help */
-+			calc_helpdir = HELPDIR;
-+		}
-+#else
- 		/* will use /usr/local/share/calc/help */
- 		calc_helpdir = HELPDIR;
-+#endif
- 	}
++        if (calcpath == NULL) {
++                snprintf(fullpath, 
++                         MAX_PATH - 1,
++                         DEFAULTCALCPATH,
++                         home,
++                         calc_exepath,
++                         calc_exepath);
++                calcpath = strdup(fullpath);
++        }
++#else /* Windows free systems */
++        if (calcpath == NULL)
++                calcpath = DEFAULTCALCPATH;
++#endif /* Windows free systems */
++
++        /* determine the $CALCRC value */
++        c = (no_env ? NULL : getenv(CALCRC));
++        calcrc = (c ? strdup(c) : NULL);
++#if defined(_WIN32) || defined(_WIN64)
++        if (calcrc == NULL) {
++                snprintf(fullpath, 
++                         MAX_PATH - 1,
++                         DEFAULTCALCRC,
++                         home,
++                         calc_exepath);
++                calcrc = strdup(fullpath);
++        }
++#else /* Windows free systems */
++        if (calcrc == NULL)
++                calcrc = DEFAULTCALCRC;
++#endif /* Windows free systems */
++        if (strlen(calcrc) > MAX_CALCRC) {
++                math_error("The $CALCRC variable is longer than %d chars",
++                           MAX_CALCRC);
++                not_reached();
++        }
++
++        /* determine the $CALCBINDINGS value */
++        c = (no_env ? NULL : getenv(CALCBINDINGS));
++        calcbindings = (c ? strdup(c) : NULL);
++        if (calcbindings == NULL)
++                calcbindings = DEFAULTCALCBINDINGS;
++
+         /* determine the $PAGER value */
+         c = (no_env ? NULL : getenv(PAGER));
+         pager = (c ? strdup(c) : NULL);
+@@ -573,19 +628,37 @@ initenv(void)
+         /* determine the $CALCHELP value */
+         c = (no_env ? NULL : getenv(CALCHELP));
+         calc_helpdir = (c ? strdup(c) : NULL);
++#if defined(_WIN32) || defined(_WIN64)
+         if (calc_helpdir == NULL || *calc_helpdir == '\0') {
++                snprintf(fullpath, 
++                         MAX_PATH - 1,
++                         HELPDIR,
++                         calc_exepath);
++                 calc_helpdir = strdup(fullpath);
++        }
++#else /* Windows free systems */
++        if (calc_helpdir == NULL || *calc_helpdir == '\0')
+                 /* will use /usr/local/share/calc/help */
+                 calc_helpdir = HELPDIR;
+-        }
++#endif /* Windows free systems */
  
  #if defined(CUSTOM)
-@@ -577,8 +614,18 @@ initenv(void)
- 	c = (no_env ? NULL : getenv(CALCCUSTOMHELP));
- 	calc_customhelpdir = (c ? strdup(c) : NULL);
- 	if (calc_customhelpdir == NULL || *calc_customhelpdir == '\0') {
+         /* determine the $CALCCUSTOMHELP value */
+         c = (no_env ? NULL : getenv(CALCCUSTOMHELP));
+         calc_customhelpdir = (c ? strdup(c) : NULL);
 +#if defined(_WIN32) || defined(_WIN64)
-+		if (*CUSTOMHELPDIR == '.') {
-+			snprintf(fullpath, MAX_PATH - 1, "%s/" CUSTOMHELPDIR, calc_exepath);
-+			calc_customhelpdir = _fullpath(NULL, fullpath, MAX_PATH);
-+		} else {
-+			/* will use /usr/local/share/calc/custhelp */
-+			calc_customhelpdir = CUSTOMHELPDIR;
-+		}
-+#else
- 		/* will use /usr/local/share/calc/custhelp */
- 		calc_customhelpdir = CUSTOMHELPDIR;
-+#endif
- 	}
+         if (calc_customhelpdir == NULL || *calc_customhelpdir == '\0') {
++                snprintf(fullpath, 
++                         MAX_PATH - 1,
++                         CUSTOMHELPDIR,
++                         calc_exepath);
++                 calc_customhelpdir = strdup(fullpath);
++        }
++#else /* Windows free systems */
++        if (calc_customhelpdir == NULL || *calc_customhelpdir == '\0')
+                 /* will use /usr/local/share/calc/custhelp */
+                 calc_customhelpdir = CUSTOMHELPDIR;
+-        }
++#endif /* Windows free systems */
  #endif /* CUSTOM */
  }
-@@ -802,7 +849,7 @@ find_tty_state(int fd)
- 		return -1;
- 	}
- 	new_fd_setup[fd_setup_len] = -1;
--	new_fd_orig = (ttystruct *)realloc(fd_setup, sizeof(fd_orig[0]) *
-+	new_fd_orig = (ttystruct *)realloc(fd_orig, sizeof(fd_orig[0]) *
- 					    (fd_setup_len+1));
- 	if (new_fd_orig == NULL) {
- 		return -1;
-diff -pur calc-2.14.1.0.orig/Makefile calc-2.14.1.0/Makefile
---- calc-2.14.1.0.orig/Makefile	2022-04-08 09:00:02.000000000 +0200
-+++ calc-2.14.1.0/Makefile	2022-11-05 11:47:33.548763700 +0100
-@@ -2025,10 +2025,10 @@ V=@:
+ 
+diff -pur calc-2.15.1.0.orig/Makefile calc-2.15.1.0/Makefile
+--- calc-2.15.1.0.orig/Makefile	2024-07-12 06:58:22.000000000 +0200
++++ calc-2.15.1.0/Makefile	2025-01-23 13:38:39.634319200 +0100
+@@ -127,10 +127,10 @@ V=@:
  #
  LIBSRC= addop.c assocfunc.c blkcpy.c block.c byteswap.c \
  	codegen.c comfunc.c commath.c config.c const.c custom.c \
--	file.c func.c hash.c help.c hist.c input.c jump.c label.c \
-+	file.c func.c getrusage.c hash.c help.c hist.c input.c jump.c label.c \
- 	lib_calc.c lib_util.c listfunc.c matfunc.c math_error.c \
+-	errtbl.c file.c func.c hash.c help.c hist.c input.c jump.c label.c \
+-	lib_calc.c lib_util.c listfunc.c matfunc.c math_error.c \
++	errtbl.c file.c func.c getrusage.c hash.c help.c hist.c input.c jump.c \
++	label.c lib_calc.c lib_util.c listfunc.c matfunc.c math_error.c \
  	obj.c opcodes.c pix.c poly.c prime.c qfunc.c qio.c \
 -	qmath.c qmod.c qtrans.c quickhash.c seed.c sha1.c size.c \
 +	qmath.c qmod.c qtrans.c quickhash.c random.c seed.c sha1.c size.c \
  	str.c strl.c symbol.c token.c value.c version.c zfunc.c zio.c \
  	zmath.c zmod.c zmul.c zprime.c zrand.c zrandom.c
  
-@@ -2039,10 +2039,10 @@ LIBSRC= addop.c assocfunc.c blkcpy.c blo
+@@ -141,10 +141,10 @@ LIBSRC= addop.c assocfunc.c blkcpy.c blo
  #
- LIBOBJS= addop.o assocfunc.o blkcpy.o block.o byteswap.o calcerr.o \
+ LIBOBJS= addop.o assocfunc.o blkcpy.o block.o byteswap.o \
  	codegen.o comfunc.o commath.o config.o const.o custom.o \
--	file.o func.o hash.o help.o hist.o input.o jump.o label.o \
-+	file.o func.o getrusage.o hash.o help.o hist.o input.o jump.o label.o \
- 	lib_calc.o lib_util.o listfunc.o matfunc.o math_error.o \
+-	errtbl.o file.o func.o hash.o help.o hist.o input.o jump.o label.o \
+-	lib_calc.o lib_util.o listfunc.o matfunc.o math_error.o \
++	errtbl.o file.o func.o getrusage.o hash.o help.o hist.o input.o jump.o \
++	label.o lib_calc.o lib_util.o listfunc.o matfunc.o math_error.o \
  	obj.o opcodes.o pix.o poly.o prime.o qfunc.o qio.o \
 -	qmath.o qmod.o qtrans.o quickhash.o seed.o sha1.o size.o \
 +	qmath.o qmod.o qtrans.o quickhash.o random.o seed.o sha1.o size.o \
  	str.o strl.o symbol.o token.o value.o version.o zfunc.o zio.o \
  	zmath.o zmod.o zmul.o zprime.o zrand.o zrandom.o
  
-@@ -2676,10 +2676,18 @@ sample_many${EXT}: sample_many.o ${CALC_
+@@ -569,10 +569,18 @@ sample_many${EXT}: sample_many.o ${CALC_
  #
  ###
  
-+getrusage.o: getrusage.c ${MAKE_FILE} ${LOC_MKF}
++getrusage.o: getrusage.c ${MK_SET}
 +	${CC} ${CFLAGS} ${WNO_IMPLICT} ${WNO_ERROR_LONG_LONG} \
 +	    ${WNO_LONG_LONG} -I. -c getrusage.c
 +
- hist.o: hist.c ${MAKE_FILE} ${LOC_MKF}
- 	${CC} ${CFLAGS} ${TERMCONTROL} ${USE_READLINE} ${READLINE_INCLUDE} \
+ hist.o: hist.c ${MK_SET}
+ 	${CC} ${CFLAGS} -Wno-strict-prototypes ${TERMCONTROL} ${USE_READLINE} ${READLINE_INCLUDE} \
  	    -c hist.c
  
-+random.o: random.c ${MAKE_FILE} ${LOC_MKF}
++random.o: random.c ${MK_SET}
 +	${CC} ${CFLAGS} ${WNO_IMPLICT} ${WNO_ERROR_LONG_LONG} \
 +	    ${WNO_LONG_LONG} -I. -c random.c
 +
- seed.o: seed.c ${MAKE_FILE} ${LOC_MKF}
+ seed.o: seed.c ${MK_SET}
  	${CC} ${CFLAGS} ${WNO_IMPLICT} ${WNO_ERROR_LONG_LONG} \
  	    ${WNO_LONG_LONG} -c seed.c
-@@ -6208,6 +6216,7 @@ func.o: value.h
+@@ -616,30 +624,46 @@ conf.h: ${MK_SET}
+ 	${Q} echo '' >> $@
+ 	${Q} echo '/* the default :-separated search path */' >> $@
+ 	${Q} echo '#if !defined(DEFAULTCALCPATH)' >> $@
++	${Q} echo '#if !defined(_WIN32) && !defined(_WIN64)' >> $@
+ 	${Q} echo '#define DEFAULTCALCPATH "${CALCPATH}"' >> $@
++	${Q} echo '#else /* Windows */' >> $@
++	${Q} echo '#define DEFAULTCALCPATH ".;.\\cal;%s\\.cal;%s\\share\\calc;%s\\share\\calc\\custom"' >> $@
++	${Q} echo '#endif /* Windows */' >> $@
+ 	${Q} echo '#endif /* DEFAULTCALCPATH */' >> $@
+ 	${Q} echo '' >> $@
+ 	${Q} echo '/* the default :-separated startup file list */' >> $@
+ 	${Q} echo '#if !defined(DEFAULTCALCRC)' >> $@
++	${Q} echo '#if !defined(_WIN32) && !defined(_WIN64)' >> $@
+ 	${Q} echo '#define DEFAULTCALCRC "${CALCRC}"' >> $@
++	${Q} echo '#else /* Windows */' >> $@
++	${Q} echo '#define DEFAULTCALCRC ".\\.calcinit;%s\\.calcrc;%s\\share\\calc\\startup"' >> $@
++	${Q} echo '#endif /* Windows */' >> $@
+ 	${Q} echo '#endif /* DEFAULTCALCRC */' >> $@
+ 	${Q} echo '' >> $@
+ 	${Q} echo '/* the location of the help directory */' >> $@
+ 	${Q} echo '#if !defined(HELPDIR)' >> $@
++	${Q} echo '#if !defined(_WIN32) && !defined(_WIN64)' >> $@
+ ifdef RPM_TOP
+ 	${Q} echo '#define HELPDIR "${HELPDIR}"' >> $@
+ else	# RPM_TOP
+ 	${Q} echo '#define HELPDIR "${T}${HELPDIR}"' >> $@
+ endif	# RPM_TOP
++	${Q} echo '#else /* Windows */' >> $@
++	${Q} echo '#define HELPDIR "%s\\share\\calc\\help"' >> $@
++	${Q} echo '#endif /* Windows */' >> $@
+ 	${Q} echo '#endif /* HELPDIR */' >> $@
+ 	${Q} echo '' >> $@
+ 	${Q} echo '/* the location of the custom help directory */' >> $@
+ 	${Q} echo '#if !defined(CUSTOMHELPDIR)' >> $@
++	${Q} echo '#if !defined(_WIN32) && !defined(_WIN64)' >> $@
+ ifdef RPM_TOP
+ 	${Q} echo '#define CUSTOMHELPDIR "${CUSTOMHELPDIR}"' >> $@
+ else	# RPM_TOP
+ 	${Q} echo '#define CUSTOMHELPDIR "${T}${CUSTOMHELPDIR}"' >> $@
+ endif	# RPM_TOP
++	${Q} echo '#else /* Windows */' >> $@
++	${Q} echo '#define CUSTOMHELPDIR "%s\\share\\calc\\custhelp"' >> $@
++	${Q} echo '#endif /* Windows */' >> $@
+ 	${Q} echo '#endif /* CUSTOMHELPDIR */' >> $@
+ 	${Q} echo '' >> $@
+ 	${Q} echo '/* the default pager to use */' >> $@
+@@ -4638,6 +4662,7 @@ func.o: version.h
  func.o: zmath.h
  func.o: zrand.h
  func.o: zrandom.h
@@ -598,7 +818,7 @@ diff -pur calc-2.14.1.0.orig/Makefile calc-2.14.1.0/Makefile
  hash.o: alloc.h
  hash.o: attribute.h
  hash.o: banned.h
-@@ -6849,6 +6858,7 @@ quickhash.o: value.h
+@@ -5416,6 +5441,7 @@ quickhash.o: version.h
  quickhash.o: zmath.h
  quickhash.o: zrand.h
  quickhash.o: zrandom.h
@@ -606,165 +826,97 @@ diff -pur calc-2.14.1.0.orig/Makefile calc-2.14.1.0/Makefile
  sample_many.o: alloc.h
  sample_many.o: attribute.h
  sample_many.o: banned.h
-diff -pur calc-2.14.1.0.orig/Makefile.simple calc-2.14.1.0/Makefile.simple
---- calc-2.14.1.0.orig/Makefile.simple	2022-04-08 09:00:02.000000000 +0200
-+++ calc-2.14.1.0/Makefile.simple	2022-11-05 11:49:17.307702100 +0100
-@@ -1432,10 +1432,10 @@ V=@:
- #
- LIBSRC= addop.c assocfunc.c blkcpy.c block.c byteswap.c \
- 	codegen.c comfunc.c commath.c config.c const.c custom.c \
--	file.c func.c hash.c help.c hist.c input.c jump.c label.c \
-+	file.c func.c getrusage.c hash.c help.c hist.c input.c jump.c label.c \
- 	lib_calc.c lib_util.c listfunc.c matfunc.c math_error.c \
- 	obj.c opcodes.c pix.c poly.c prime.c qfunc.c qio.c \
--	qmath.c qmod.c qtrans.c quickhash.c seed.c sha1.c size.c \
-+	qmath.c qmod.c qtrans.c quickhash.c random.c seed.c sha1.c size.c \
- 	str.c strl.c symbol.c token.c value.c version.c zfunc.c zio.c \
- 	zmath.c zmod.c zmul.c zprime.c zrand.c zrandom.c
+diff -pur calc-2.15.1.0.orig/opcodes.c calc-2.15.1.0/opcodes.c
+--- calc-2.15.1.0.orig/opcodes.c	2024-07-12 06:56:33.000000000 +0200
++++ calc-2.15.1.0/opcodes.c	2025-01-22 13:35:58.515518700 +0100
+@@ -4172,12 +4172,12 @@ calculate(FUNC *fp, int argcount)
+                         break;
  
-@@ -1446,10 +1446,10 @@ LIBSRC= addop.c assocfunc.c blkcpy.c blo
- #
- LIBOBJS= addop.o assocfunc.o blkcpy.o block.o byteswap.o calcerr.o \
- 	codegen.o comfunc.o commath.o config.o const.o custom.o \
--	file.o func.o hash.o help.o hist.o input.o jump.o label.o \
-+	file.o func.o getrusage.o hash.o help.o hist.o input.o jump.o label.o \
- 	lib_calc.o lib_util.o listfunc.o matfunc.o math_error.o \
- 	obj.o opcodes.o pix.o poly.o prime.o qfunc.o qio.o \
--	qmath.o qmod.o qtrans.o quickhash.o seed.o sha1.o size.o \
-+	qmath.o qmod.o qtrans.o quickhash.o random.o seed.o sha1.o size.o \
- 	str.o strl.o symbol.o token.o value.o version.o zfunc.o zio.o \
- 	zmath.o zmod.o zmul.o zprime.o zrand.o zrandom.o
+                 case OPONE:     /* one extra integer argument */
+-                        (*op->o_func.func_one)(fp, fp->f_opcodes[pc++]);
++                        (*op->o_func.func_one)(fp, (long)fp->f_opcodes[pc++]);
+                         break;
  
-@@ -2024,10 +2024,18 @@ sample_many${EXT}: sample_many.o ${CALC_
- #
- ###
+                 case OPTWO:     /* two extra integer arguments */
+-                        (*op->o_func.func_two)(fp, fp->f_opcodes[pc],
+-                                fp->f_opcodes[pc+1]);
++                        (*op->o_func.func_two)(fp, (long)fp->f_opcodes[pc],
++                                (long)fp->f_opcodes[pc+1]);
+                         pc += 2;
+                         break;
  
-+getrusage.o: getrusage.c ${MAKE_FILE} ${LOC_MKF}
-+	${CC} ${CFLAGS} ${WNO_IMPLICT} ${WNO_ERROR_LONG_LONG} \
-+	    ${WNO_LONG_LONG} -I. -c getrusage.c
-+
- hist.o: hist.c ${MAKE_FILE} ${LOC_MKF}
- 	${CC} ${CFLAGS} ${TERMCONTROL} ${USE_READLINE} ${READLINE_INCLUDE} \
- 	    -c hist.c
+@@ -4196,11 +4196,11 @@ calculate(FUNC *fp, int argcount)
+                         break;
  
-+random.o: random.c ${MAKE_FILE} ${LOC_MKF}
-+	${CC} ${CFLAGS} ${WNO_IMPLICT} ${WNO_ERROR_LONG_LONG} \
-+	    ${WNO_LONG_LONG} -I. -c random.c
-+
- seed.o: seed.c ${MAKE_FILE} ${LOC_MKF}
- 	${CC} ${CFLAGS} ${WNO_IMPLICT} ${WNO_ERROR_LONG_LONG} \
- 	    ${WNO_LONG_LONG} -c seed.c
-@@ -5476,6 +5484,7 @@ func.o: value.h
- func.o: zmath.h
- func.o: zrand.h
- func.o: zrandom.h
-+getrusage.o: sys/resource.h
- hash.o: alloc.h
- hash.o: attribute.h
- hash.o: banned.h
-@@ -6117,6 +6126,7 @@ quickhash.o: value.h
- quickhash.o: zmath.h
- quickhash.o: zrand.h
- quickhash.o: zrandom.h
-+random.o: random.h
- sample_many.o: alloc.h
- sample_many.o: attribute.h
- sample_many.o: banned.h
-diff -pur calc-2.14.1.0.orig/opcodes.c calc-2.14.1.0/opcodes.c
---- calc-2.14.1.0.orig/opcodes.c	2022-01-22 08:12:53.000000000 +0100
-+++ calc-2.14.1.0/opcodes.c	2022-11-05 12:13:15.949523000 +0100
-@@ -3916,12 +3916,12 @@ calculate(FUNC *fp, int argcount)
- 			break;
+                 case OPLOC:     /* local variable reference */
+-                        (*op->o_func.func_loc)(fp, locals, fp->f_opcodes[pc++]);
++                        (*op->o_func.func_loc)(fp, locals, (long)fp->f_opcodes[pc++]);
+                         break;
  
- 		case OPONE:	/* one extra integer argument */
--			(*op->o_func)(fp, fp->f_opcodes[pc++]);
-+			(*op->o_func)(fp, (long)fp->f_opcodes[pc++]);
- 			break;
+                 case OPPAR:     /* parameter variable reference */
+-                        (*op->o_func.func_par)(fp, argcount, args, fp->f_opcodes[pc++]);
++                        (*op->o_func.func_par)(fp, argcount, args, (long)fp->f_opcodes[pc++]);
+                         break;
  
- 		case OPTWO:	/* two extra integer arguments */
--			(*op->o_func)(fp, fp->f_opcodes[pc],
--				fp->f_opcodes[pc+1]);
-+			(*op->o_func)(fp, (long)fp->f_opcodes[pc],
-+				(long)fp->f_opcodes[pc+1]);
- 			pc += 2;
- 			break;
- 
-@@ -3937,16 +3937,16 @@ calculate(FUNC *fp, int argcount)
- 		case OPGLB:	/* global symbol reference (pointer arg) */
- 			/* ignore Saber-C warning #68 - benign type mismatch */
- 			/*	  OK to ignore in proc calculate */
--			(*op->o_func)(fp, *(&fp->f_opcodes[pc]));
-+			(*op->o_func)(fp, fp->f_opcodes[pc]);
- 			pc += PTR_SIZE;
- 			break;
- 
- 		case OPLOC:	/* local variable reference */
--			(*op->o_func)(fp, locals, fp->f_opcodes[pc++]);
-+			(*op->o_func)(fp, locals, (long)fp->f_opcodes[pc++]);
- 			break;
- 
- 		case OPPAR:	/* parameter variable reference */
--			(*op->o_func)(fp, argcount, args, fp->f_opcodes[pc++]);
-+			(*op->o_func)(fp, argcount, args, (long)fp->f_opcodes[pc++]);
- 			break;
- 
- 		case OPARG:	/* parameter variable reference */
-@@ -4007,7 +4007,7 @@ calculate(FUNC *fp, int argcount)
-  *	pc		location of the opcode
+                 case OPARG:     /* parameter variable reference */
+@@ -4261,7 +4261,7 @@ calculate(FUNC *fp, int argcount)
+  *      pc              location of the opcode
   */
  int
 -dumpop(unsigned long *pc)
 +dumpop(size_t *pc)
  {
- 	GLOBAL *sp;
- 	unsigned long op;	/* opcode number */
-@@ -4022,7 +4022,7 @@ dumpop(unsigned long *pc)
- 		if (dumpnames)
- 			printf(" %s\n", localname((long)*pc));
- 		else
--			printf(" %ld\n", *pc);
-+			printf(" %zd\n", *pc);
- 		return 2;
- 	case OP_GLOBALADDR: case OP_GLOBALVALUE:
- 		sp = * (GLOBAL **) pc;
-@@ -4035,7 +4035,7 @@ dumpop(unsigned long *pc)
- 		if (dumpnames)
- 			printf(" %s\n", paramname((long)*pc));
- 		else
--			printf(" %ld\n", *pc);
-+			printf(" %zd\n", *pc);
- 		return 2;
- 	case OP_PRINTSTRING: case OP_STRING:
- 		printf(" \"%s\"\n", findstring((long)(*pc))->s_str);
-@@ -4046,14 +4046,14 @@ dumpop(unsigned long *pc)
- 		putchar('\n');
- 		return 2;
- 	case OP_INDEXADDR:
--		printf(" %ld %ld\n", pc[0], pc[1]);
-+		printf(" %zd %zd\n", pc[0], pc[1]);
- 		return 3;
- 	case OP_PRINT: case OP_JUMPZ: case OP_JUMPNZ: case OP_JUMP:
- 	case OP_CONDORJUMP: case OP_CONDANDJUMP: case OP_CASEJUMP:
- 	case OP_INITSTATIC: case OP_MATCREATE:
- 	case OP_SHOW: case OP_ELEMINIT: case OP_ELEMADDR:
- 	case OP_ELEMVALUE: case OP_JUMPNN:
--		printf(" %ld\n", *pc);
-+		printf(" %zd\n", *pc);
- 		return 2;
- 	case OP_OBJCREATE:
- 		printf(" %s\n", objtypename(*pc));
-@@ -4063,7 +4063,7 @@ dumpop(unsigned long *pc)
- 		printf("\n");
- 		return 2;
- 	case OP_DEBUG:
--		printf(" line %ld\n", *pc);
-+		printf(" line %zd\n", *pc);
- 		return 2;
- 	case OP_CALL:
- 		printf(" %s with %ld args\n",
-diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
---- calc-2.14.1.0.orig/seed.c	2021-12-09 10:38:42.000000000 +0100
-+++ calc-2.14.1.0/seed.c	2022-11-03 11:11:15.808082000 +0100
+         GLOBAL *sp;
+         unsigned long op;       /* opcode number */
+@@ -4276,7 +4276,7 @@ dumpop(unsigned long *pc)
+                 if (dumpnames)
+                         printf(" %s\n", localname((long)*pc));
+                 else
+-                        printf(" %ld\n", *pc);
++                        printf(" %zd\n", *pc);
+                 return 2;
+         case OP_GLOBALADDR: case OP_GLOBALVALUE:
+                 sp = * (GLOBAL **) pc;
+@@ -4289,7 +4289,7 @@ dumpop(unsigned long *pc)
+                 if (dumpnames)
+                         printf(" %s\n", paramname((long)*pc));
+                 else
+-                        printf(" %ld\n", *pc);
++                        printf(" %zd\n", *pc);
+                 return 2;
+         case OP_PRINTSTRING: case OP_STRING:
+                 printf(" \"%s\"\n", findstring((long)(*pc))->s_str);
+@@ -4300,14 +4300,14 @@ dumpop(unsigned long *pc)
+                 putchar('\n');
+                 return 2;
+         case OP_INDEXADDR:
+-                printf(" %ld %ld\n", pc[0], pc[1]);
++                printf(" %zd %zd\n", pc[0], pc[1]);
+                 return 3;
+         case OP_PRINT: case OP_JUMPZ: case OP_JUMPNZ: case OP_JUMP:
+         case OP_CONDORJUMP: case OP_CONDANDJUMP: case OP_CASEJUMP:
+         case OP_INITSTATIC: case OP_MATCREATE:
+         case OP_SHOW: case OP_ELEMINIT: case OP_ELEMADDR:
+         case OP_ELEMVALUE: case OP_JUMPNN:
+-                printf(" %ld\n", *pc);
++                printf(" %zd\n", *pc);
+                 return 2;
+         case OP_OBJCREATE:
+                 printf(" %s\n", objtypename(*pc));
+@@ -4317,7 +4317,7 @@ dumpop(unsigned long *pc)
+                 printf("\n");
+                 return 2;
+         case OP_DEBUG:
+-                printf(" line %ld\n", *pc);
++                printf(" line %zd\n", *pc);
+                 return 2;
+         case OP_CALL:
+                 printf(" %s with %ld args\n",
+Only in calc-2.15.1.0: random.c
+Only in calc-2.15.1.0: random.h
+diff -pur calc-2.15.1.0.orig/seed.c calc-2.15.1.0/seed.c
+--- calc-2.15.1.0.orig/seed.c	2024-07-12 06:56:33.000000000 +0200
++++ calc-2.15.1.0/seed.c	2025-01-22 14:13:26.685772600 +0100
 @@ -50,6 +50,9 @@
  #if defined(_WIN32) || defined(_WIN64)
  # include <process.h>
@@ -775,37 +927,53 @@ diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
  #endif
  
  /*
-@@ -427,7 +430,7 @@ pseudo_seed(void)
- 	struct rusage rusage;		/* resource utilization */
- 	struct rusage rusage_child;	/* resource utilization of children */
+@@ -405,6 +408,7 @@ pseudo_seed(void)
+         gid_t getgid;                   /* real group ID */
+         gid_t getegid;                  /* effective group ID */
+ #endif
++#if !defined(_WIN32) && !defined(_WIN64)
+         struct stat stat_dot;           /* stat of "." */
+         struct stat stat_dotdot;        /* stat of ".." */
+         struct stat stat_tmp;           /* stat of "/tmp" */
+@@ -422,6 +426,7 @@ pseudo_seed(void)
+         struct stat stat_system;
+         /* stat of "/var/log/messages" */
+         struct stat stat_messages;
++#endif
+ #if defined(HAVE_USTAT)
+         struct ustat ustat_dot;         /* usage stat of "." */
+         struct ustat ustat_dotdot;      /* usage stat of ".." */
+@@ -470,7 +475,7 @@ pseudo_seed(void)
+         struct rusage rusage;           /* resource utilization */
+         struct rusage rusage_child;     /* resource utilization of children */
  #endif
 -#if defined(HAVE_SYS_TIME_H)
 +#if !defined(_WIN32) && !defined(_WIN64) && defined(HAVE_SYS_TIME_H)
- 	struct timeval tp2;		/* time of day again */
- 	struct tms times;		/* process times */
- 	struct timeval times_dot[2];	/* access & mod files of "." */
-@@ -468,17 +471,17 @@ pseudo_seed(void)
-     unsigned long tmp;			/* temp holder of 31-bit random() */
-     unsigned past_hash;			/* prev hash or xor-folded prev hash */
-     long random_before[RANDOM_CNT];	/* random() pre initstate() */
--    char *initstate_ret;		/* return from initstate() call */
-+    const char *initstate_ret;		/* return from initstate() call */
-     char initstate_tbl[INITSTATE_SIZE];	/* initstate pool */
-     long random_after[RANDOM_CNT];	/* random() post initstate() */
--    char *setstate_ret;			/* return from setstate() call */
-+    const char *setstate_ret;			/* return from setstate() call */
+         struct timeval tp2;             /* time of day again */
+         struct tms times;               /* process times */
+         struct timeval times_dot[2];    /* access & mod files of "." */
+@@ -511,17 +516,17 @@ pseudo_seed(void)
+     unsigned long tmp;                  /* temp holder of 31-bit random() */
+     unsigned past_hash;                 /* prev hash or xor-folded prev hash */
+     long random_before[RANDOM_CNT];     /* random() pre initstate() */
+-    char *initstate_ret;                /* return from initstate() call */
++    const char *initstate_ret;                /* return from initstate() call */
+     char initstate_tbl[INITSTATE_SIZE]; /* initstate pool */
+     long random_after[RANDOM_CNT];      /* random() post initstate() */
+-    char *setstate_ret;                 /* return from setstate() call */
++    const char *setstate_ret;                 /* return from setstate() call */
      int j;
  #endif /* HAVE_STDLIB_H */
  #if defined(HAVE_ENVIRON)
      int i;
-     size_t envlen;			/* length of an environment variable */
+     size_t envlen;                      /* length of an environment variable */
  #endif
--    hash64 hash_val;			/* fnv64 hash of sdata */
-+    volatile hash64 hash_val;			/* fnv64 hash of sdata */
-     ZVALUE hash;			/* hash_val as a ZVALUE */
-     NUMBER *ret;			/* return seed as a NUMBER */
+-    hash64 hash_val;                    /* fnv64 hash of sdata */
++    volatile hash64 hash_val;                    /* fnv64 hash of sdata */
+     ZVALUE hash;                        /* hash_val as a ZVALUE */
+     NUMBER *ret;                        /* return seed as a NUMBER */
  
-@@ -503,7 +506,7 @@ pseudo_seed(void)
+@@ -546,7 +551,7 @@ pseudo_seed(void)
  #if defined(HAVE_GETPRID)
      sdata.getprid = getprid();
  #endif
@@ -813,9 +981,9 @@ diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
 +#if !defined(_WIN32) && !defined(_WIN64) && defined(HAVE_URANDOM)
      sdata.urandom_fd = open(DEV_URANDOM, O_NONBLOCK|O_RDONLY);
      if (sdata.urandom_fd >= 0) {
- 	sdata.urandom_ret = read(sdata.urandom_fd,
-@@ -514,7 +517,7 @@ pseudo_seed(void)
- 	sdata.urandom_ret = EOF;
+         sdata.urandom_ret = read(sdata.urandom_fd,
+@@ -557,7 +562,7 @@ pseudo_seed(void)
+         sdata.urandom_ret = EOF;
      }
  #endif /* HAVE_URANDOM */
 -#if defined(HAVE_SYS_TIME_H)
@@ -823,7 +991,7 @@ diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
      (void) gettimeofday(&sdata.tp, NULL);
  #endif
      sdata.getpid = getpid();
-@@ -527,6 +530,7 @@ pseudo_seed(void)
+@@ -570,6 +575,7 @@ pseudo_seed(void)
      sdata.getgid = getgid();
      sdata.getegid = getegid();
  #endif
@@ -831,7 +999,7 @@ diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
      (void) stat(".", &sdata.stat_dot);
      (void) stat("..", &sdata.stat_dotdot);
      (void) stat("/tmp", &sdata.stat_tmp);
-@@ -542,6 +546,7 @@ pseudo_seed(void)
+@@ -585,6 +591,7 @@ pseudo_seed(void)
      (void) stat("/bin/ls", &sdata.stat_ls);
      (void) stat("/var/log/system.log", &sdata.stat_system);
      (void) stat("/var/log/messages", &sdata.stat_messages);
@@ -839,7 +1007,7 @@ diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
  #if defined(HAVE_USTAT)
      (void) ustat(sdata.stat_dotdot.st_dev, &sdata.ustat_dotdot);
      (void) ustat(sdata.stat_dot.st_dev, &sdata.ustat_dot);
-@@ -569,7 +574,7 @@ pseudo_seed(void)
+@@ -629,7 +636,7 @@ pseudo_seed(void)
      (void) getrusage(RUSAGE_SELF, &sdata.rusage);
      (void) getrusage(RUSAGE_CHILDREN, &sdata.rusage_child);
  #endif
@@ -848,15 +1016,16 @@ diff -pur calc-2.14.1.0.orig/seed.c calc-2.14.1.0/seed.c
      (void) gettimeofday(&sdata.tp2, NULL);
      (void) times(&sdata.times);
      (void) utimes(".", sdata.times_dot);
-diff -pur calc-2.14.1.0.orig/value.h calc-2.14.1.0/value.h
---- calc-2.14.1.0.orig/value.h	2021-12-07 11:25:34.000000000 +0100
-+++ calc-2.14.1.0/value.h	2022-11-03 09:46:11.320633000 +0100
-@@ -86,7 +86,7 @@ struct value {
- 	short v_type;			/* type of value */
- 	unsigned short v_subtype;	/* other data related to some types */
- 	union {				/* types of values (see V_XYZ below) */
--		long vv_int;		/* 1: small integer value */
-+		ssize_t vv_int;		/* 1: small integer value */
- 		NUMBER *vv_num;		/* 2, 21: real number */
- 		COMPLEX *vv_com;	/* 3: complex number */
- 		VALUE *vv_addr;		/* 4, 18: address of variable value */
+Only in calc-2.15.1.0: sys
+diff -pur calc-2.15.1.0.orig/value.h calc-2.15.1.0/value.h
+--- calc-2.15.1.0.orig/value.h	2024-07-12 06:56:33.000000000 +0200
++++ calc-2.15.1.0/value.h	2025-01-22 13:35:58.543996200 +0100
+@@ -89,7 +89,7 @@ struct value {
+         short v_type;                   /* type of value - IMPORTANT: v_type < 0 is an error code */
+         unsigned short v_subtype;       /* other data related to some types */
+         union {                         /* types of values (see V_XYZ below) */
+-                long vv_int;            /* 1: small integer value */
++                size_t vv_int;            /* 1: small integer value */
+                 NUMBER *vv_num;         /* 2, 21: real number */
+                 COMPLEX *vv_com;        /* 3: complex number */
+                 VALUE *vv_addr;         /* 4, 18: address of variable value */
