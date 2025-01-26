@@ -1,6 +1,6 @@
 diff -pur calc-2.15.1.0.orig/addop.c calc-2.15.1.0/addop.c
 --- calc-2.15.1.0.orig/addop.c	2024-07-12 06:56:29.000000000 +0200
-+++ calc-2.15.1.0/addop.c	2025-01-22 13:35:58.163374700 +0100
++++ calc-2.15.1.0/addop.c	2025-01-25 13:45:10.566707800 +0100
 @@ -658,12 +658,8 @@ addoptwo(long op, long arg1, long arg2)
  void
  addopptr(long op, char *ptr)
@@ -17,7 +17,7 @@ diff -pur calc-2.15.1.0.orig/addop.c calc-2.15.1.0/addop.c
  
 diff -pur calc-2.15.1.0.orig/byteswap.c calc-2.15.1.0/byteswap.c
 --- calc-2.15.1.0.orig/byteswap.c	2024-07-12 06:56:29.000000000 +0200
-+++ calc-2.15.1.0/byteswap.c	2025-01-22 13:35:58.191146300 +0100
++++ calc-2.15.1.0/byteswap.c	2025-01-25 13:45:10.613724600 +0100
 @@ -584,7 +584,8 @@ swap_HALF_in_ZVALUE(ZVALUE *dest, ZVALUE
                  /*
                   * copy storage because we are dealing with HALFs
@@ -30,7 +30,7 @@ diff -pur calc-2.15.1.0.orig/byteswap.c calc-2.15.1.0/byteswap.c
  
 diff -pur calc-2.15.1.0.orig/calc.c calc-2.15.1.0/calc.c
 --- calc-2.15.1.0.orig/calc.c	2024-07-12 06:56:29.000000000 +0200
-+++ calc-2.15.1.0/calc.c	2025-01-22 14:06:33.692686500 +0100
++++ calc-2.15.1.0/calc.c	2025-01-25 13:45:10.631707500 +0100
 @@ -35,7 +35,9 @@
  
  #if defined(_WIN32) || defined(_WIN64)
@@ -60,7 +60,7 @@ diff -pur calc-2.15.1.0.orig/calc.c calc-2.15.1.0/calc.c
          }
 diff -pur calc-2.15.1.0.orig/calc.h calc-2.15.1.0/calc.h
 --- calc-2.15.1.0.orig/calc.h	2024-07-12 06:56:29.000000000 +0200
-+++ calc-2.15.1.0/calc.h	2025-01-22 13:35:58.225712500 +0100
++++ calc-2.15.1.0/calc.h	2025-01-25 13:45:10.650736900 +0100
 @@ -230,6 +230,10 @@ EXTERN char *calcbindings;      /* $CALC
  EXTERN char *home;              /* $HOME or default */
  EXTERN char *shell;             /* $SHELL or default */
@@ -74,7 +74,7 @@ diff -pur calc-2.15.1.0.orig/calc.h calc-2.15.1.0/calc.h
  EXTERN int use_old_std; /* true (-O) => use classic configuration */
 diff -pur calc-2.15.1.0.orig/chk_c.c calc-2.15.1.0/chk_c.c
 --- calc-2.15.1.0.orig/chk_c.c	2024-07-12 06:56:29.000000000 +0200
-+++ calc-2.15.1.0/chk_c.c	2025-01-23 11:31:09.502526600 +0100
++++ calc-2.15.1.0/chk_c.c	2025-01-25 13:45:10.706288400 +0100
 @@ -325,18 +325,18 @@ main(int argc, char *argv[])
          printf("INTMAX_MAX: %"PRIXMAX"\n", (intmax_t)INTMAX_MAX);
  
@@ -108,7 +108,7 @@ diff -pur calc-2.15.1.0.orig/chk_c.c calc-2.15.1.0/chk_c.c
      /*
 diff -pur calc-2.15.1.0.orig/const.c calc-2.15.1.0/const.c
 --- calc-2.15.1.0.orig/const.c	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/const.c	2025-01-22 13:35:58.247803200 +0100
++++ calc-2.15.1.0/const.c	2025-01-25 13:45:10.732281900 +0100
 @@ -45,7 +45,7 @@ initconstants(void)
  {
          int i;
@@ -120,7 +120,7 @@ diff -pur calc-2.15.1.0.orig/const.c calc-2.15.1.0/const.c
                  not_reached();
 diff -pur calc-2.15.1.0.orig/custom/c_help.c calc-2.15.1.0/custom/c_help.c
 --- calc-2.15.1.0.orig/custom/c_help.c	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/custom/c_help.c	2025-01-22 13:35:58.266489000 +0100
++++ calc-2.15.1.0/custom/c_help.c	2025-01-25 13:45:10.762412800 +0100
 @@ -88,7 +88,7 @@ c_help(char *UNUSED(name), int UNUSED(co
          /*
           * give the help
@@ -132,7 +132,7 @@ diff -pur calc-2.15.1.0.orig/custom/c_help.c calc-2.15.1.0/custom/c_help.c
           * return NULL
 diff -pur calc-2.15.1.0.orig/decl.h calc-2.15.1.0/decl.h
 --- calc-2.15.1.0.orig/decl.h	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/decl.h	2025-01-22 13:35:58.286515500 +0100
++++ calc-2.15.1.0/decl.h	2025-01-25 13:45:10.789399800 +0100
 @@ -58,7 +58,7 @@
  
  
@@ -144,7 +144,7 @@ diff -pur calc-2.15.1.0.orig/decl.h calc-2.15.1.0/decl.h
  #  else
 diff -pur calc-2.15.1.0.orig/errtbl.c calc-2.15.1.0/errtbl.c
 --- calc-2.15.1.0.orig/errtbl.c	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/errtbl.c	2025-01-22 13:35:58.304729300 +0100
++++ calc-2.15.1.0/errtbl.c	2025-01-25 13:45:10.809379500 +0100
 @@ -1432,8 +1432,8 @@ verify_error_table(void)
                   * check errnum - must be consecutive starting with E__BASE
                   */
@@ -158,7 +158,7 @@ diff -pur calc-2.15.1.0.orig/errtbl.c calc-2.15.1.0/errtbl.c
  
 diff -pur calc-2.15.1.0.orig/fposval.c calc-2.15.1.0/fposval.c
 --- calc-2.15.1.0.orig/fposval.c	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/fposval.c	2025-01-22 13:35:58.315998600 +0100
++++ calc-2.15.1.0/fposval.c	2025-01-25 13:45:10.834379700 +0100
 @@ -138,7 +138,7 @@ main(int UNUSED(argc), char **argv)
          /*
           * Little Endian
@@ -179,8 +179,25 @@ diff -pur calc-2.15.1.0.orig/fposval.c calc-2.15.1.0/fposval.c
  #else /* HAVE_OFF_T_SCALAR */
 diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
 --- calc-2.15.1.0.orig/func.c	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/func.c	2025-01-22 13:35:58.344691900 +0100
-@@ -88,6 +88,8 @@
++++ calc-2.15.1.0/func.c	2025-01-26 10:10:47.346520100 +0100
+@@ -34,6 +34,16 @@
+ 
+ #if defined(_WIN32) || defined(_WIN64)
+ # include <io.h>
++# define WIN32_LEAN_AND_MEAN
++# define INPUT WIN32_INPUT
++# include <windows.h>
++# undef CONST
++# undef IN
++# undef INPUT
++# undef MAXLONG
++# undef MAX_PATH
++# undef near
++# undef V_INT
+ # define _access access
+ #endif
+ 
+@@ -88,6 +98,8 @@
  #include "have_rusage.h"
  #if defined(HAVE_GETRUSAGE)
  # include <sys/resource.h>
@@ -189,7 +206,7 @@ diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
  #endif
  
  #include "have_const.h"
-@@ -7688,7 +7690,7 @@ f_listremove(VALUE *vp)
+@@ -7688,7 +7700,7 @@ f_listremove(VALUE *vp)
  S_FUNC NUMBER *
  f_usertime(void)
  {
@@ -198,7 +215,7 @@ diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
          struct rusage usage;            /* system resource usage */
          int who = RUSAGE_SELF;          /* obtain time for just this process */
          int status;                     /* getrusage() return code */
-@@ -7727,7 +7729,7 @@ f_usertime(void)
+@@ -7727,7 +7739,7 @@ f_usertime(void)
  S_FUNC NUMBER *
  f_systime(void)
  {
@@ -207,7 +224,7 @@ diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
          struct rusage usage;            /* system resource usage */
          int who = RUSAGE_SELF;          /* obtain time for just this process */
          int status;                     /* getrusage() return code */
-@@ -7765,7 +7767,7 @@ f_systime(void)
+@@ -7765,7 +7777,7 @@ f_systime(void)
  S_FUNC NUMBER *
  f_runtime(void)
  {
@@ -216,7 +233,45 @@ diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
          struct rusage usage;            /* system resource usage */
          int who = RUSAGE_SELF;          /* obtain time for just this process */
          int status;                     /* getrusage() return code */
-@@ -10137,7 +10139,7 @@ f_sleep(int count, VALUE **vals)
+@@ -10115,11 +10127,32 @@ f_system(VALUE *vp)
+                 printf("%s\n", vp->v_str->s_str);
+         }
+ #if defined(_WIN32) || defined(_WIN64)
+-        /* if the execute length is 0 then just return 0 */
+-        if (vp->v_str->s_len == 0) {
+-                result.v_num = itoq((long)0);
+-        } else {
+-                result.v_num = itoq((long)system(vp->v_str->s_str));
++        if (*shell) {
++                /* We have a posix shell */
++                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
++                DWORD fdwSaveStdinMode;
++                HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
++                DWORD fdwSaveStdoutMode;
++                GetConsoleMode(hStdin, &fdwSaveStdinMode);
++                GetConsoleMode(hStdout, &fdwSaveStdoutMode);
++                /* if the execute length is 0 then we launch the posix shell */
++                if (vp->v_str->s_len == 0) {
++                        result.v_num = itoq((long)_spawnl(_P_WAIT, shell, "-", NULL));
++                } else {
++                        size_t len = strlen(vp->v_str->s_str) + 3;
++                        char cmd1[len];
++                        snprintf(cmd1, len, "'%s'", vp->v_str->s_str);
++                        result.v_num = itoq((long)_spawnl(_P_WAIT, shell, "sh", "-c", cmd1, NULL));
++                }
++                SetConsoleMode(hStdin, fdwSaveStdinMode);
++                SetConsoleMode(hStdout, fdwSaveStdoutMode);
++        } else {
++                /* if the execute length is 0 then just return 0 */
++                if (vp->v_str->s_len == 0) {
++                        result.v_num = itoq((long)0);
++                } else {
++                        result.v_num = itoq((long)system(vp->v_str->s_str));
++                }
+         }
+ #else /* Windows free systems */
+         result.v_num = itoq((long)system(vp->v_str->s_str));
+@@ -10137,7 +10170,7 @@ f_sleep(int count, VALUE **vals)
  
          res.v_type = V_NULL;
          res.v_subtype = V_NOSUBTYPE;
@@ -227,7 +282,7 @@ diff -pur calc-2.15.1.0.orig/func.c calc-2.15.1.0/func.c
                                  return error_value(E_SLEEP);
 diff -pur calc-2.15.1.0.orig/func.h calc-2.15.1.0/func.h
 --- calc-2.15.1.0.orig/func.h	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/func.h	2025-01-22 13:35:58.363953600 +0100
++++ calc-2.15.1.0/func.h	2025-01-25 13:45:10.873689600 +0100
 @@ -49,20 +49,20 @@ struct func {
          unsigned int f_paramcount;      /* max number of parameters */
          char *f_name;                   /* function name */
@@ -261,10 +316,10 @@ diff -pur calc-2.15.1.0.orig/func.h calc-2.15.1.0/func.h
  E_FUNC void addop(long op);
  E_FUNC void endfunc(void);
  E_FUNC void addopone(long op, long arg);
-Only in calc-2.15.1.0: getrusage.c
+Seulement dans calc-2.15.1.0/: getrusage.c
 diff -pur calc-2.15.1.0.orig/hash.c calc-2.15.1.0/hash.c
 --- calc-2.15.1.0.orig/hash.c	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/hash.c	2025-01-22 13:35:58.376601300 +0100
++++ calc-2.15.1.0/hash.c	2025-01-25 13:45:10.910678000 +0100
 @@ -55,10 +55,10 @@ E_FUNC void MD5_init_state(HASH*);
  /*
   * hash_long can deal with bool's, int's, FLAGS's and LEN's
@@ -294,7 +349,7 @@ diff -pur calc-2.15.1.0.orig/hash.c calc-2.15.1.0/hash.c
           * initialize if state is NULL
 diff -pur calc-2.15.1.0.orig/hash.h calc-2.15.1.0/hash.h
 --- calc-2.15.1.0.orig/hash.h	2024-07-12 06:56:30.000000000 +0200
-+++ calc-2.15.1.0/hash.h	2025-01-22 13:35:58.410113300 +0100
++++ calc-2.15.1.0/hash.h	2025-01-25 13:45:10.928676600 +0100
 @@ -119,7 +119,7 @@ E_FUNC HASH* hash_copy(HASH*);
  E_FUNC int hash_cmp(HASH*, HASH*);
  E_FUNC void hash_print(HASH*);
@@ -306,7 +361,7 @@ diff -pur calc-2.15.1.0.orig/hash.h calc-2.15.1.0/hash.h
  E_FUNC HASH* hash_complex(int, void*, HASH*);
 diff -pur calc-2.15.1.0.orig/help/Makefile calc-2.15.1.0/help/Makefile
 --- calc-2.15.1.0.orig/help/Makefile	2024-07-12 06:58:22.000000000 +0200
-+++ calc-2.15.1.0/help/Makefile	2025-01-22 13:35:58.426339100 +0100
++++ calc-2.15.1.0/help/Makefile	2025-01-25 13:45:10.951704200 +0100
 @@ -570,7 +570,7 @@ builtin: builtin.top builtin.end ../func
  	${Q} ${RM} -f funclist.c
  	${Q} ${SED} -n -f funclist.sed ../func.c > funclist.c
@@ -318,7 +373,7 @@ diff -pur calc-2.15.1.0.orig/help/Makefile calc-2.15.1.0/help/Makefile
  	${Q} ${RM} -f builtin
 diff -pur calc-2.15.1.0.orig/help.c calc-2.15.1.0/help.c
 --- calc-2.15.1.0.orig/help.c	2024-07-12 06:56:33.000000000 +0200
-+++ calc-2.15.1.0/help.c	2025-01-22 13:35:58.440258400 +0100
++++ calc-2.15.1.0/help.c	2025-01-25 13:45:10.972267400 +0100
 @@ -29,7 +29,7 @@
  #include <ctype.h>
  #include <sys/types.h>
@@ -330,8 +385,25 @@ diff -pur calc-2.15.1.0.orig/help.c calc-2.15.1.0/help.c
  #include "conf.h"
 diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
 --- calc-2.15.1.0.orig/input.c	2024-07-12 06:56:33.000000000 +0200
-+++ calc-2.15.1.0/input.c	2025-01-22 13:35:58.460095100 +0100
-@@ -46,8 +46,13 @@
++++ calc-2.15.1.0/input.c	2025-01-26 10:10:48.103794400 +0100
+@@ -35,6 +35,16 @@
+ # include <pwd.h>
+ #else
+ # include <stdlib.h>
++# define WIN32_LEAN_AND_MEAN
++# define INPUT WIN32_INPUT
++# include <windows.h>
++# undef CONST
++# undef IN
++# undef INPUT
++# undef MAXLONG
++# undef MAX_PATH
++# undef near
++# undef V_INT
+ #endif
+ #include <sys/types.h>
+ #include <sys/stat.h>
+@@ -46,8 +56,13 @@
  
  #if defined(_WIN32) || defined(_WIN64)
  #include <limits.h>
@@ -345,7 +417,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
  
  #include "calc.h"
  #include "conf.h"
-@@ -141,6 +146,10 @@ opensearchfile(char *name, char *pathlis
+@@ -141,6 +156,10 @@ opensearchfile(char *name, char *pathlis
          char *cp;
          char *path;             /* name being searched for */
          size_t path_alloc;      /* length of malloced path */
@@ -356,7 +428,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
          struct stat statbuf;    /* stat of the path */
          size_t namelen; /* length of name */
          size_t extlen;  /* length of the extension if non-NULL or 0 */
-@@ -196,6 +205,16 @@ opensearchfile(char *name, char *pathlis
+@@ -196,6 +215,16 @@ opensearchfile(char *name, char *pathlis
          path[0] = '\0'; /* paranoia */
          path[path_alloc] = '\0';        /* paranoia */
  
@@ -373,7 +445,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
          /*
           * Don't try the extension if the filename already contains it.
           */
-@@ -217,13 +236,42 @@ opensearchfile(char *name, char *pathlis
+@@ -217,13 +246,42 @@ opensearchfile(char *name, char *pathlis
                          *cp++ = PATHCHAR;
                  strlcpy(cp, name, namelen+1);
                  i = openfile(path);
@@ -416,7 +488,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
          /* examine what our search produced */
          if (i < 0) {
                  free(path);
-@@ -407,18 +455,14 @@ f_pathopen(char *name, char *mode, char
+@@ -407,18 +465,14 @@ f_pathopen(char *name, char *mode, char
  S_FUNC char *
  homeexpand(char *name)
  {
@@ -439,7 +511,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
          size_t snprintf_len;    /* malloced snprintf buffer length */
  
          /* firewall */
-@@ -436,6 +480,9 @@ homeexpand(char *name)
+@@ -436,6 +490,9 @@ homeexpand(char *name)
                  break;
          default:                /* ~username or ~username/... */
  
@@ -449,7 +521,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
                  /* extract the username after the ~ */
                  after = (char *)strchr(name+2, PATHCHAR);
                  if (after == NULL) {
-@@ -470,6 +517,7 @@ homeexpand(char *name)
+@@ -470,6 +527,7 @@ homeexpand(char *name)
                  }
                  home2 = ent->pw_dir;
                  break;
@@ -457,7 +529,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
          }
  
          /*
-@@ -483,7 +531,6 @@ homeexpand(char *name)
+@@ -483,7 +541,6 @@ homeexpand(char *name)
          snprintf(fullpath, snprintf_len, "%s%s", home2, after);
          fullpath[snprintf_len] = '\0';  /* paranoia */
          return fullpath;
@@ -465,7 +537,39 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
  }
  
  
-@@ -927,6 +974,9 @@ void
+@@ -839,7 +896,31 @@ ttychar(void)
+                         if (conf->calc_debug & CALCDBG_SYSTEM) {
+                                 printf("%s\n", cmd);
+                         }
++#if !defined(_WIN32) && !defined(_WIN64)
+                         ret = system(cmd);
++#else /* Windows free systems */
++                        if (*shell) {
++                                /* We have a posix shell */
++                                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
++                                DWORD fdwSaveStdinMode;
++                                HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
++                                DWORD fdwSaveStdoutMode;
++                                GetConsoleMode(hStdin, &fdwSaveStdinMode);
++                                GetConsoleMode(hStdout, &fdwSaveStdoutMode);
++                                if (cmd == shell) {
++                                        ret = _spawnl(_P_WAIT, shell, "-", NULL);
++                                } else {
++                                        size_t len = strlen(cmd) + 3;
++                                        char cmd1[len];
++                                        snprintf(cmd1, len, "'%s'", cmd);
++                                        ret = _spawnl(_P_WAIT, shell, "sh", "-c", cmd1, NULL);
++                                }
++                                SetConsoleMode(hStdin, fdwSaveStdinMode);
++                                SetConsoleMode(hStdout, fdwSaveStdoutMode);
++                        } else {
++                                ret = system(*cmd ? cmd : getenv("COMSPEC"));
++                        }
++#endif /* Windows free systems */
+                         if (ret < 0) {
+                                 fprintf(stderr, "error in cmd: %s\n", cmd);
+                         }
+@@ -927,6 +1008,9 @@ void
  runrcfiles(void)
  {
          char path[MAX_CALCRC+1+1];      /* name being searched for */
@@ -475,7 +579,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
          char *cp;
          char *p;
  
-@@ -943,11 +993,18 @@ runrcfiles(void)
+@@ -943,11 +1027,18 @@ runrcfiles(void)
                  }
  
                  /* find the start of the path */
@@ -495,7 +599,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
                  /* process the current file in the list */
                  if (openfile(p) < 0) {
                          /* Unable to open rcfile */
-@@ -1093,7 +1150,6 @@ addreadset(char *name, char *path, struc
+@@ -1093,7 +1184,6 @@ addreadset(char *name, char *path, struc
  {
          int ret;                /* index to return */
          size_t name_len;        /* length of read set name */
@@ -503,7 +607,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
  
          /* find the inode */
          ret = isinoderead(sbuf);
-@@ -1135,7 +1191,7 @@ addreadset(char *name, char *path, struc
+@@ -1135,7 +1225,7 @@ addreadset(char *name, char *path, struc
                  }
           }
  #else /* Windows free systems */
@@ -514,7 +618,7 @@ diff -pur calc-2.15.1.0.orig/input.c calc-2.15.1.0/input.c
                  return -1;
 diff -pur calc-2.15.1.0.orig/lib_calc.c calc-2.15.1.0/lib_calc.c
 --- calc-2.15.1.0.orig/lib_calc.c	2024-07-12 06:56:33.000000000 +0200
-+++ calc-2.15.1.0/lib_calc.c	2025-01-23 10:02:54.248565800 +0100
++++ calc-2.15.1.0/lib_calc.c	2025-01-25 14:25:11.683029600 +0100
 @@ -31,6 +31,16 @@
  
  #if !defined(_WIN32) && !defined(_WIN64)
@@ -673,7 +777,21 @@ diff -pur calc-2.15.1.0.orig/lib_calc.c calc-2.15.1.0/lib_calc.c
          /* determine the $PAGER value */
          c = (no_env ? NULL : getenv(PAGER));
          pager = (c ? strdup(c) : NULL);
-@@ -573,19 +628,37 @@ initenv(void)
+@@ -561,8 +616,13 @@ initenv(void)
+         /* determine the $SHELL value */
+         c = (no_env ? NULL : getenv(SHELL));
+         shell = (c ? strdup(c) : NULL);
++#if defined(_WIN32) || defined(_WIN64)
++        if (shell == NULL || *shell == '\0')
++                shell = "";
++#else /* Windows free systems */
+         if (shell == NULL || *shell == '\0')
+                 shell = DEFAULTSHELL;
++#endif /* Windows free systems */
+ 
+         /* determine the $CALCHISTFILE value */
+         c = (no_env ? NULL : getenv(CALCHISTFILE));
+@@ -573,19 +633,37 @@ initenv(void)
          /* determine the $CALCHELP value */
          c = (no_env ? NULL : getenv(CALCHELP));
          calc_helpdir = (c ? strdup(c) : NULL);
@@ -715,7 +833,7 @@ diff -pur calc-2.15.1.0.orig/lib_calc.c calc-2.15.1.0/lib_calc.c
  
 diff -pur calc-2.15.1.0.orig/Makefile calc-2.15.1.0/Makefile
 --- calc-2.15.1.0.orig/Makefile	2024-07-12 06:58:22.000000000 +0200
-+++ calc-2.15.1.0/Makefile	2025-01-23 13:38:39.634319200 +0100
++++ calc-2.15.1.0/Makefile	2025-01-25 13:45:11.032794700 +0100
 @@ -127,10 +127,10 @@ V=@:
  #
  LIBSRC= addop.c assocfunc.c blkcpy.c block.c byteswap.c \
@@ -828,7 +946,7 @@ diff -pur calc-2.15.1.0.orig/Makefile calc-2.15.1.0/Makefile
  sample_many.o: banned.h
 diff -pur calc-2.15.1.0.orig/opcodes.c calc-2.15.1.0/opcodes.c
 --- calc-2.15.1.0.orig/opcodes.c	2024-07-12 06:56:33.000000000 +0200
-+++ calc-2.15.1.0/opcodes.c	2025-01-22 13:35:58.515518700 +0100
++++ calc-2.15.1.0/opcodes.c	2025-01-25 13:45:11.051788100 +0100
 @@ -4172,12 +4172,12 @@ calculate(FUNC *fp, int argcount)
                          break;
  
@@ -912,11 +1030,11 @@ diff -pur calc-2.15.1.0.orig/opcodes.c calc-2.15.1.0/opcodes.c
                  return 2;
          case OP_CALL:
                  printf(" %s with %ld args\n",
-Only in calc-2.15.1.0: random.c
-Only in calc-2.15.1.0: random.h
+Seulement dans calc-2.15.1.0/: random.c
+Seulement dans calc-2.15.1.0/: random.h
 diff -pur calc-2.15.1.0.orig/seed.c calc-2.15.1.0/seed.c
 --- calc-2.15.1.0.orig/seed.c	2024-07-12 06:56:33.000000000 +0200
-+++ calc-2.15.1.0/seed.c	2025-01-22 14:13:26.685772600 +0100
++++ calc-2.15.1.0/seed.c	2025-01-25 13:45:11.092048100 +0100
 @@ -50,6 +50,9 @@
  #if defined(_WIN32) || defined(_WIN64)
  # include <process.h>
@@ -1016,10 +1134,10 @@ diff -pur calc-2.15.1.0.orig/seed.c calc-2.15.1.0/seed.c
      (void) gettimeofday(&sdata.tp2, NULL);
      (void) times(&sdata.times);
      (void) utimes(".", sdata.times_dot);
-Only in calc-2.15.1.0: sys
+Seulement dans calc-2.15.1.0/: sys
 diff -pur calc-2.15.1.0.orig/value.h calc-2.15.1.0/value.h
 --- calc-2.15.1.0.orig/value.h	2024-07-12 06:56:33.000000000 +0200
-+++ calc-2.15.1.0/value.h	2025-01-22 13:35:58.543996200 +0100
++++ calc-2.15.1.0/value.h	2025-01-25 13:45:11.119065800 +0100
 @@ -89,7 +89,7 @@ struct value {
          short v_type;                   /* type of value - IMPORTANT: v_type < 0 is an error code */
          unsigned short v_subtype;       /* other data related to some types */
