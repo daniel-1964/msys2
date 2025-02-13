@@ -1,0 +1,133 @@
+diff -pur yabasic-2.91.1.orig/configure.ac yabasic-2.91.1/configure.ac
+--- yabasic-2.91.1.orig/configure.ac	2025-01-24 16:57:36.000000000 +0100
++++ yabasic-2.91.1/configure.ac	2025-02-06 07:59:59.886832400 +0100
+@@ -59,43 +59,52 @@ if test "x${with_ffi}" = xyes; then
+     fi
+ fi
+ 
+-dnl  check for dlopen
+-if test "x${with_ffi}" = xyes; then
+-    have_dlopen=no
+-    AC_SEARCH_LIBS([dlopen],[dl dld],[have_dlopen=yes])
+-    AC_CHECK_HEADERS([dlfcn.h],[],[have_dlopen=no])
+-    if test "x${have_dlopen}" = xno ; then
+-        AC_MSG_ERROR([Did not find dl library and/or header; please install them or supply '--without-ffi' to built without ffi and dlopen])
++if [ "$host" != *"mingw"* ]; then
++    dnl  check for dlopen
++    if test "x${with_ffi}" = xyes; then
++        have_dlopen=no
++        AC_SEARCH_LIBS([dlopen],[dl dld],[have_dlopen=yes])
++        AC_CHECK_HEADERS([dlfcn.h],[],[have_dlopen=no])
++        if test "x${have_dlopen}" = xno ; then
++            AC_MSG_ERROR([Did not find dl library and/or header; please install them or supply '--without-ffi' to built without ffi and dlopen])
++        fi
+     fi
+-fi
+ 
+-dnl  calling foreign libraries requires both dlopen and libffi
+-if test "x${have_ffi}" = xyes && test "x${have_dlopen}" = xyes; then
+-    AC_DEFINE([USE_DL_FFI],1,[libffi and dlopen available])
+-else
+-    AC_MSG_NOTICE([support for calling foreign libraries will NOT be available])
+-fi
++    dnl  calling foreign libraries requires both dlopen and libffi
++    if test "x${have_ffi}" = xyes && test "x${have_dlopen}" = xyes; then
++        AC_DEFINE([USE_DL_FFI],1,[libffi and dlopen available])
++    else
++        AC_MSG_NOTICE([support for calling foreign libraries will NOT be available])
++    fi
+ 
+-dnl  check for curses
+-have_curses_lib=no
+-AC_SEARCH_LIBS([initscr],[curses ncurses],[have_curses_lib=yes])
+-if test "x${have_curses_lib}" = xno ; then
+-    AC_MSG_ERROR([Did not find curses/ncurses library])
+-fi
+-have_curses_head=no
+-AC_CHECK_HEADERS([curses.h ncurses.h],[have_curses_head=yes])
+-if test "x${have_curses_head}" = xno ; then
+-    AC_MSG_ERROR([Did not find curses/ncurses header])
+-fi
+-AC_CHECK_FUNCS(getnstr)
++    dnl  check for curses
++    have_curses_lib=no
++    AC_SEARCH_LIBS([initscr],[curses ncurses],[have_curses_lib=yes])
++    if test "x${have_curses_lib}" = xno ; then
++        AC_MSG_ERROR([Did not find curses/ncurses library])
++    fi
++    have_curses_head=no
++    AC_CHECK_HEADERS([curses.h ncurses.h],[have_curses_head=yes])
++    if test "x${have_curses_head}" = xno ; then
++        AC_MSG_ERROR([Did not find curses/ncurses header])
++    fi
++    AC_CHECK_FUNCS(getnstr)
+ 
+-dnl  check for dladdr() function
+-AC_SEARCH_LIBS([dladdr], [dl dld])
++    dnl  check for dladdr() function
++    AC_SEARCH_LIBS([dladdr], [dl dld])
+ 
+-dnl  check for X-Window system
+-AC_PATH_XTRA
+-if test "x${no_x}" = xyes ; then
+-    AC_MSG_ERROR([Did not find X11 library and header])
++    dnl  check for X-Window system
++    AC_PATH_XTRA
++    if test "x${no_x}" = xyes ; then
++        AC_MSG_ERROR([Did not find X11 library and header])
++    fi
++    AC_SUBST(PLATFORM,"UNIX")
++    AC_SUBST(WINDOWS_LIBS,"")
++    AC_SUBST(X11_LIBS,"-lm -lX11")
++else
++    AC_SUBST(PLATFORM,"WINDOWS")
++    AC_SUBST(WINDOWS_LIBS,"-lgdi32 -lwinspool")
++    AC_SUBST(X11_LIBS,"")
+ fi
+ 
+ dnl  architecture of build machine
+diff -pur yabasic-2.91.1.orig/io.c yabasic-2.91.1/io.c
+--- yabasic-2.91.1.orig/io.c	2025-01-22 07:50:34.000000000 +0100
++++ yabasic-2.91.1/io.c	2025-02-06 08:04:15.685778800 +0100
+@@ -1159,7 +1159,7 @@ static void readline(void) /* read one l
+   char *nl; /* position of newline */
+   int x, y;
+ #else
+-  int read;
++  DWORD read;
+ #endif
+ 
+   if (!checkstream()) {
+@@ -1796,7 +1796,7 @@ void putchars(void) /* put rect onto scr
+   COORD cp;
+   WORD attributes;
+   char buff[2];
+-  int written;
++  DWORD written;
+ #endif
+ 
+   toy = (int)(pop(stNUMBER)->value);
+@@ -1905,7 +1905,7 @@ char *getchars(int xf, int yf, int xt, i
+   COORD cp;
+   char charbuff[2];
+   WORD attrbuff[2];
+-  int read;
++  DWORD read;
+ #endif
+ 
+   if (xf > xt) {
+diff -pur yabasic-2.91.1.orig/Makefile.am yabasic-2.91.1/Makefile.am
+--- yabasic-2.91.1.orig/Makefile.am	2025-01-03 08:37:15.000000000 +0100
++++ yabasic-2.91.1/Makefile.am	2025-02-06 07:59:59.916983400 +0100
+@@ -5,9 +5,9 @@
+ bin_PROGRAMS = yabasic
+ yabasic_SOURCES = main.c function.c io.c graphic.c symbol.c foreign.c flow.c flex.c bison.c whereami.c yabasic.h bison.h whereami.h
+ man_MANS = yabasic.1
+-LDADD = @X_PRE_LIBS@ -lm @LIBS@ -lX11 @X_LIBS@ @X_EXTRA_LIBS@ $(FFI_LDFLAGS)
++LDADD = @X_PRE_LIBS@ @LIBS@ @X11_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ @WINDOWS_LIBS@
+ # For profiling add option -pg in each of the next two lines
+-AM_CPPFLAGS = -DUNIX $(X_CFLAGS) $(FFI_CFLAGS) 
++AM_CPPFLAGS = -D@PLATFORM@ $(X_CFLAGS) $(FFI_CFLAGS) 
+ AM_LDFLAGS = 
+ EXTRA_DIST = runme yabasic.htm yabasic.flex yabasic.bison tests configure.ac LICENSE demo.yab $(man_MANS)
+ AUTOMAKE_OPTIONS = check-news subdir-objects

@@ -1,0 +1,51 @@
+# Maintainer: Frederic Bezies <fredbezies at gmail dot com>
+# Contributor: damir <damir@archlinux.org>
+# Contributor: Suzy Williams <suzanne.williams3@verizon.net>
+# Contributor: Allan McRae <allan@archlinux.org>
+
+_realname=yabasic
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.91.1
+pkgrel=1
+pkgdesc="Yet Another Basic"
+arch=('any')
+license=('MIT')
+url="http://www.yabasic.de/"
+depends=("${MINGW_PACKAGE_PREFIX}-ncurses" 
+         "${MINGW_PACKAGE_PREFIX}-libffi")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "make")
+source=("http://www.yabasic.de/download/$_realname-$pkgver.tar.gz"
+        "yabasic.patch")
+sha256sums=('6d925b6380aec9cb39efbf174c612130aa6fe32d0721888995a50f0bda9d736b'
+            '68b01e321a0a4fd5a46ca6100aca4580a28ceae7c9319d047d0e4717027e28ca')
+
+prepare() {
+    cd "${srcdir}/${_realname}-${pkgver}"
+
+    patch -Np1 -i "${srcdir}/${_realname}.patch"
+    autoreconf --install
+    automake --add-missing --copy
+}
+
+build() {
+  cd $_realname-$pkgver
+  ./configure --prefix=${MINGW_PREFIX}
+  make
+}
+
+check() {
+  cd $_realname-$pkgver
+  make check
+}
+
+package() {
+  cd $_realname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm644 LICENSE "$pkgdir"/${MINGW_PREFIX}/share/licenses/$_realname/LICENSE
+  install -Dm644 yabasic.htm "$pkgdir"/${MINGW_PREFIX}/share/doc/$_realname/yabasic.htm
+  install -Dm644 ChangeLog "$pkgdir"/${MINGW_PREFIX}/share/doc/$_realname/ChangeLog
+  install -Dm644 NEWS "$pkgdir"/${MINGW_PREFIX}/share/doc/$_realname/NEWS
+}
+
