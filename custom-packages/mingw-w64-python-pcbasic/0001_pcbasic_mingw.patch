@@ -1,0 +1,24 @@
+diff -pur pcbasic-2.0.7.orig/pcbasic/compat/__init__.py pcbasic-2.0.7/pcbasic/compat/__init__.py
+--- pcbasic-2.0.7.orig/pcbasic/compat/__init__.py	2023-04-02 21:13:36.000000000 +0200
++++ pcbasic-2.0.7/pcbasic/compat/__init__.py	2025-02-12 11:44:45.662206200 +0100
+@@ -155,7 +155,7 @@ def _build_split_regexp(split_by, quote,
+     quote = re.escape(quote)
+     if split_by is None:
+         # by default, split on whitespace
+-        split_by = u'\s'
++        split_by = u' '
+     else:
+         split_by = re.escape(split_by)
+     # https://stackoverflow.com/questions/16710076/python-split-a-string-respect-and-preserve-quotes
+diff -pur pcbasic-2.0.7.orig/pcbasic/interface/sdl2loader.py pcbasic-2.0.7/pcbasic/interface/sdl2loader.py
+--- pcbasic-2.0.7.orig/pcbasic/interface/sdl2loader.py	2023-04-02 21:13:36.000000000 +0200
++++ pcbasic-2.0.7/pcbasic/interface/sdl2loader.py	2025-02-12 11:44:45.751944200 +0100
+@@ -219,7 +219,7 @@ gfx_lib = None
+ 
+ # possible names of sdl and sdl_gfx library
+ SDL_NAMES = ('SDL2', 'SDL2-2.0')
+-GFX_NAMES = ('SDL2_gfx', 'SDL2_gfx-1.0')
++GFX_NAMES = ('SDL2_gfx', 'SDL2_gfx-1.0', 'libSDL2_gfx-1-0-0')
+ 
+ 
+ def load_dlls(*library_paths):

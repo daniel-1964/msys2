@@ -1,0 +1,49 @@
+Description: Make the build reproducible
+Author: Chris Lamb <lamby@debian.org>
+Last-Update: 2020-01-14
+
+Index: pcbasic-2.0.7/docs/htmldoc.py
+===================================================================
+--- pcbasic-2.0.7.orig/docs/htmldoc.py
++++ pcbasic-2.0.7/docs/htmldoc.py
+@@ -8,6 +8,7 @@ This file is released under the GNU GPL
+ 
+ import os
+ import json
++import time
+ from datetime import datetime
+ from io import StringIO
+ 
+@@ -169,7 +170,7 @@ def make_htmldoc(output_path, output_fil
+     predoc.write(licenses_html)
+     predoc.write(read_file(SOURCE_PATH + '/footer.html'))
+     predoc.seek(0)
+-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
++    now = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))))
+     if embedded_style:
+         subheader_html = u"""
+ <header>
+Index: pcbasic-2.0.7/make/common.py
+===================================================================
+--- pcbasic-2.0.7.orig/make/common.py
++++ pcbasic-2.0.7/make/common.py
+@@ -94,12 +94,18 @@ except (EnvironmentError, CalledProcessE
+     TAG = u''
+     COMMIT = u''
+ 
++# https://reproducible-builds.org/specs/source-date-epoch/
++try:
++    TIMESTAMP = str(datetime.datetime.utcfromtimestamp(int(os.environ['SOURCE_DATE_EPOCH'])))
++except KeyError:
++    TIMESTAMP = str(datetime.datetime.now())
++
+ # release info
+ RELEASE_ID = {
+     u'version': VERSION,
+     u'tag': TAG,
+     u'commit': COMMIT,
+-    u'timestamp': str(datetime.datetime.now())
++    u'timestamp': TIMESTAMP
+ }
+ 
+ def stamp_release():

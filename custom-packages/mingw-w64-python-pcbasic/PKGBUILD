@@ -1,0 +1,71 @@
+_realname=pcbasic
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+pkgver=2.0.7
+pkgrel=1
+pkgdesc="cross-platform emulator for the GW-BASIC family of interpreters (ucrt64)"
+arch=('any')
+url='http://pc-basic.org'
+license=('GPLV3+')
+depends=("${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-python-importlib_resources"
+         "${MINGW_PACKAGE_PREFIX}-python-pyserial"
+         "${MINGW_PACKAGE_PREFIX}-SDL2"
+         "${MINGW_PACKAGE_PREFIX}-SDL2_gfx")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-build"
+             "${MINGW_PACKAGE_PREFIX}-python-cx-freeze"
+             "${MINGW_PACKAGE_PREFIX}-python-hatch-nodejs-version"
+             "${MINGW_PACKAGE_PREFIX}-python-installer"
+             "${MINGW_PACKAGE_PREFIX}-python-lxml"
+             "${MINGW_PACKAGE_PREFIX}-python-markdown"
+             "${MINGW_PACKAGE_PREFIX}-python-pillow"
+             "${MINGW_PACKAGE_PREFIX}-python-pyproject-hooks"
+             "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+             "${MINGW_PACKAGE_PREFIX}-python-wheel")
+options=('staticlibs' 'strip' '!debug')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/robhagemans/${_realname}/archive/refs/tags/v${pkgver}.tar.gz"
+        "0001_pcbasic_mingw.patch" 
+        "0002_reproducible_build.patch" 
+        "0003_disable_unittest_needs_tty.patch")
+sha256sums=('d2a0a3210830692fe92c973742066e7b832ef9e16ce72d88e63a44bcbe0d4916'
+            'f2bf19da1311cf7597e15fcc3ccc9155a6a95c7d660be7fb3a59509e1e84f5b0'
+            '9e9f60e33fb89f5a27b55606536ffce445429e6a41a3e1422396be6faa181834'
+            'a0217ad19656fb63c23892d6357b913a2f0c21b15d51cd204ec2f94069bf3129')
+
+prepare() {
+    patch -d "${srcdir}/${_realname}-${pkgver}" -Np1 -i "${srcdir}/0001_pcbasic_mingw.patch"
+    patch -d "${srcdir}/${_realname}-${pkgver}" -Np1 -i "${srcdir}/0002_reproducible_build.patch"
+    patch -d "${srcdir}/${_realname}-${pkgver}" -Np1 -i "${srcdir}/0003_disable_unittest_needs_tty.patch"
+}
+
+build() {
+  msg "Python build for ${MSYSTEM}"
+  export SOURCE_DATE_EPOCH=$(date --utc +%s --date "2023-04-02 21:13:00")
+  cd "${srcdir}/${_realname}-${pkgver}"
+  PYBUILD_NAME=pcbasic python -m build -o build -n
+  python -m make docs
+}
+
+check() {
+  msg "Python test for ${MSYSTEM}"
+  cd "${srcdir}/${_realname}-${pkgver}"
+  #python -m tests --fast
+}
+
+package() {
+  msg "Python install for ${MSYSTEM}"
+  cd "${srcdir}/${_realname}-${pkgver}/build"
+  python -m installer -d "${pkgdir}" -p /"${MINGW_PREFIX}" "${_realname}-${pkgver}-py2.py3-none-any.whl"
+  install -Dm644 doc/pcbasic.1.gz "${pkgdir}/${MINGW_PREFIX}/share/man/man1/pcbasic.1.gz"
+  install -Dm644 doc/pc-basic_documentation.html "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/pcbasic.html"
+  cd "${srcdir}/${_realname}-${pkgver}"
+  install -Dm644 BUILD.md "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/BUILD.md"
+  install -Dm644 CONTRIBUTING.md "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/CONTRIBUTING.md"
+  install -Dm644 README.md "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/README.md"
+  install -Dm644 THANKS.md "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/THANKS.md"
+  install -Dm644 LICENSE.md "${pkgdir}/${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE.md"
+  install -Dm644 GPL3.txt "${pkgdir}/${MINGW_PREFIX}/share/licenses/${_realname}/GPL3.txt"
+}
