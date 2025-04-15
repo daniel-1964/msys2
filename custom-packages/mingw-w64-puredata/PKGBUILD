@@ -3,16 +3,23 @@
 _realname=puredata
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgrel=4
-pkgver=0.51
+pkgrel=2
+pkgver=0.55
 pkgdesc="Visual programming language for audio and visuals."
 arch=('any')
 url="https://puredata.info/"
 license=('LGPL')
 provides=("${MINGW_PACKAGE_PREFIX}-puredata")
+depends=("${MINGW_PACKAGE_PREFIX}-tk"
+         "${MINGW_PACKAGE_PREFIX}-portmidi"
+         "${MINGW_PACKAGE_PREFIX}-portaudio"
+         "${MINGW_PACKAGE_PREFIX}-fftw")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools")
 conflicts=("${MINGW_PACKAGE_PREFIX}-puredata")
-source=("https://msp.puredata.info/Software/pd-${pkgver}-${pkgrel}.src.tar.gz")
-sha256sums=('52591f18316e9f2471ca21c3d6b41c56336e0615ec40a093232e95cc230bfcc1')
+#https://msp.puredata.info/Software/
+source=("http://msp.ucsd.edu/Software/pd-${pkgver}-${pkgrel}.src.tar.gz")
+sha256sums=('108297f8d1dd190df8e8bb4a4ac348792accf704f9a2052d93cba8c9b8bb5a5b')
 
 build() {
     cd $srcdir/pd-${pkgver}-${pkgrel}
@@ -35,4 +42,6 @@ package() {
     make install DESTDIR=${pkgdir}
     cp -p src/libpd.a ${pkgdir}/${MINGW_PREFIX}/lib
     mv ${pkgdir}/${MINGW_PREFIX}/bin/pd.{def,lib} ${pkgdir}/${MINGW_PREFIX}/lib
+    mv ${pkgdir}/${MINGW_PREFIX}/bin/pd.exe ${pkgdir}/${MINGW_PREFIX}/lib/pd/bin
+    mv ${pkgdir}/${MINGW_PREFIX}/bin/pd.com ${pkgdir}/${MINGW_PREFIX}/bin/pd.exe
 }
