@@ -1,84 +1,374 @@
-diff -pur stk-4.6.1.orig/configure.ac stk-4.6.1/configure.ac
---- stk-4.6.1.orig/configure.ac	2019-04-18 15:27:12.000000000 +0200
-+++ stk-4.6.1/configure.ac	2021-10-10 21:42:12.414545200 +0200
-@@ -113,14 +113,21 @@ AC_CANONICAL_HOST
+diff -pur stk-5.0.1.orig/CMakeLists.txt stk-5.0.1/CMakeLists.txt
+--- stk-5.0.1.orig/CMakeLists.txt	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/CMakeLists.txt	2025-03-16 17:04:47.715539300 +0100
+@@ -1,6 +1,6 @@
+-cmake_minimum_required(VERSION 3.1) ##TODO: which version is better
++cmake_minimum_required(VERSION 3.10) ##TODO: which version is better
  
- basesharedname="libstk-\$(RELEASE)"
+-project(STK VERSION 4.6.1)
++project(STK VERSION 5.0.1)
+ set (CMAKE_CXX_STANDARD 11)
  
--AC_SUBST( sharedlib, ["libstk.so"] )
--AC_SUBST( sharedname, [${basesharedname}.so] )
--AC_SUBST( libflags, ["-shared -Wl,-soname,${basesharedname}.so -o $sharedname"] )
- case $host in
-   *-apple*)
--  AC_SUBST( sharedlib, ["libstk.dylib"] )
--  AC_SUBST( sharedname, ["${basesharedname}.dylib"] )
--  AC_SUBST( libflags, ["-dynamiclib -o ${basesharedname}.dylib"] )
-+    AC_SUBST( sharedlib, ["libstk.dylib"] )
-+    AC_SUBST( sharedname, ["${basesharedname}.dylib"] )
-+    AC_SUBST( libflags, ["-dynamiclib -o ${basesharedname}.dylib"] )
-+    ;;
-+  *mingw*)
-+    AC_SUBST( sharedlib, ["libstk.dll.a"] )
-+    AC_SUBST( sharedname, ["stk-4.dll"])
-+    AC_SUBST( libflags, ["-shared -Wl,--out-implib,${sharedlib} -o ${sharedname}"] )
-+    ;;
-+  *)
-+    AC_SUBST( sharedlib, ["libstk.so"] )
-+    AC_SUBST( sharedname, [${basesharedname}.so] )
-+    AC_SUBST( libflags, ["-shared -Wl,-soname,${basesharedname}.so -o $sharedname"] )
- esac
+ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+@@ -9,7 +9,7 @@ if(NOT CMAKE_BUILD_TYPE)
+     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+ endif()
+ SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel") 
+-message("Build type: " ${CMAKE_BUILD_TYPE})
++message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
  
- if test $realtime = yes; then
-@@ -181,7 +188,7 @@ api="$api -D__UNIX_JACK__"
-     AC_CHECK_LIB(pthread, pthread_create, , AC_MSG_ERROR(RtAudio requires the pthread library!))
-     ;;
+ if(MSVC)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /clr")
+@@ -21,8 +21,8 @@ else()
+ endif()
  
--    *-mingw32*)
-+    *-mingw*)
-     AC_ARG_WITH(asio, [  --with-asio = choose ASIO API support (windoze only)])
-     AS_IF([test "x$with_asio" == "xyes"], [
-     api="$api -D__WINDOWS_ASIO__"
-@@ -200,7 +207,7 @@ api="$api -D__UNIX_JACK__"
-     AS_IF([test "x$with_wasapi" == "xyes"], [
-     api="$api -D__WINDOWS_WASAPI__"
-     AC_MSG_RESULT(using WASAPI)
--    LIBS="-luuid -lksuser $LIBS" ])
-+    LIBS="-luuid -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid $LIBS" ])
+ if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+-    message("GCC.")
+-    set(CMAKE_CXX_FLAGS "-Wall")
++    message(STATUS "GCC.")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+ endif()
  
-     # If no audio api flags specified, use DirectSound
-     AS_IF([test "$api" == ""], [
-diff -pur stk-4.6.1.orig/src/Makefile.in stk-4.6.1/src/Makefile.in
---- stk-4.6.1.orig/src/Makefile.in	2019-04-18 15:27:12.000000000 +0200
-+++ stk-4.6.1/src/Makefile.in	2021-10-10 21:44:05.131272500 +0200
-@@ -88,9 +88,9 @@ $(STATICLIB) : $(OBJECTS)
- 	$(AR) $(STATICLIB) $(OBJECT_PATH)/*.o
+ option(BUILD_SHARED "Whether to build the shared library" ON)
+@@ -37,26 +37,89 @@ option(ENABLE_WASAPI "Enable Windows Aud
+ # option(ENABLE_CORE "Enable CoreAudio API support (mac only)" ON)
+ option(COMPILE_PROJECTS "Compile all the example projects" ON)
+ option(INSTALL_HEADERS "Install headers" ON)
++option(USE_SYSTEM_RTAUDIO "Use system libraries for RtAudio" "OFF")
++option(USE_SYSTEM_RTMIDI "Use system libraries for RtMidi" "OFF")
  
- $(SHAREDLIB) : $(OBJECTS)
--	$(RM) -f $(@) $(SHAREDLIB).$(MAJOR) $(SHAREDLIB)
-+	$(RM) -f $(@) #$(SHAREDLIB).$(MAJOR) $(SHAREDLIB)
- 	$(CC) $(LDFLAGS) -fPIC @libflags@ $(OBJECT_PATH)/*.o $(LIBS)
--	$(LN) -s @sharedname@ $(SHAREDLIB)
-+	#$(LN) -s @sharedname@ $(SHAREDLIB)
++include(FindPkgConfig)
++include(CheckFunctionExists)
+ include_directories("./include")
++
+ file(GLOB STK_SRC "./src/*.cpp") # GLOB instead of GLOB_RECURSE as the asio depends on system
  
- install-headers:
- 	install -d $(DESTDIR)$(PREFIX)$(INCLUDEDIR)/stk
-@@ -99,7 +99,7 @@ install-headers:
- install: $(SHAREDLIB) install-headers
- 	install -d $(DESTDIR)$(PREFIX)$(LIBDIR)
- 	install -m 644 @sharedname@ $(DESTDIR)$(PREFIX)$(LIBDIR)
--	ln -sf @sharedname@ $(DESTDIR)$(PREFIX)$(LIBDIR)/$(SHAREDLIB)
-+	#ln -sf @sharedname@ $(DESTDIR)$(PREFIX)$(LIBDIR)/$(SHAREDLIB)
++if(USE_SYSTEM_RTAUDIO)
++    pkg_check_modules(RTAUDIO "rtaudio")
++    if(RTAUDIO_FOUND)
++        message(STATUS "RTAUDIO_LINK_LIBRARIES==${RTAUDIO_LINK_LIBRARIES}")
++        message(STATUS "RTAUDIO_INCLUDE_DIRS=${RTAUDIO_INCLUDE_DIRS}")
++        include_directories(BEFORE ${RTAUDIO_INCLUDE_DIRS})
++        link_libraries(${RTAUDIO_LINK_LIBRARIES})
++        list(REMOVE_ITEM STK_SRC "${CMAKE_CURRENT_SOURCE_DIR}/./src/RtAudio.cpp")
++    else()
++        set(USE_SYSTEM_RTAUDIO 0)
++    endif()
++endif()
++
++if(USE_SYSTEM_RTMIDI)
++    pkg_check_modules(RTMIDI "rtmidi")
++    if(RTMIDI_FOUND)
++        message(STATUS "RTMIDI_LINK_LIBRARIES==${RTMIDI_LINK_LIBRARIES}")
++        message(STATUS "RTMIDI_INCLUDE_DIRS=${RTMIDI_INCLUDE_DIRS}")
++        include_directories(BEFORE ${RTMIDI_INCLUDE_DIRS})
++        link_libraries(${RTMIDI_LINK_LIBRARIES})
++        list(REMOVE_ITEM STK_SRC "${CMAKE_CURRENT_SOURCE_DIR}/./src/RtMidi.cpp")
++    else()
++        set(USE_SYSTEM_RTMIDI 0)
++    endif()
++endif()
++
+ #========================================#
+ #========== Realtime Support ============#
+ #========================================#
+ if(REALTIME)
+     if(ENABLE_JACK)
+-        find_library(JACK_LIBRARY jack) # find_package(JACK) # TODO: NEED FindJACK.cmake
+-        if(JACK_LIBRARY)
+-            message("Jack API found: ${JACK_LIBRARY}")
+-            link_libraries(${JACK_LIBRARY})
++        pkg_check_modules(JACK jack)
++        if(NOT JACK_FOUND)
++            # Jack was not found through it, try a fallback
++            message(STATUS "PkgConfig failed to find Jack, attempting fallback")            # Fallback: Search in common locations
++            find_path(JACK_INCLUDE_DIR
++                NAMES jack/jack.h
++                HINTS
++                    ENV JACK_ROOT
++                    "$ENV{ProgramFiles}/Jack"
++                    /usr/local/include
++                    /usr/include
++            )
++            find_library(JACK_LIBRARY
++                NAMES jack
++                HINTS
++                    ENV JACK_ROOT
++                    "$ENV{ProgramFiles}/Jack"
++                    /usr/local/lib
++                    /usr/lib
++            )
++            # Check if the fallback was successful
++            if(JACK_INCLUDE_DIR AND JACK_LIBRARY)
++                set(JACK_FOUND TRUE)
++                set(JACK_INCLUDE_DIRS ${JACK_INCLUDE_DIR})
++                set(JACK_LINK_LIBRARIES ${JACK_LIBRARY})
++                message(STATUS "Found Jack (fallback):")
++                message(STATUS "  Includes: ${JACK_INCLUDE_DIRS}")
++                message(STATUS "  Libraries: ${JACK_LIBRARIES}")
++            else()
++                message(WARNING "Failed to find Jack library even with fallback. Please install Jack development package or ensure it is in a standard location.")
++            endif()
++        endif()
++
++        if(JACK_FOUND)
++            message(STATUS "JAKC_LINK_LIBRARIES==${JACK_LINK_LIBRARIES}")
++            message(STATUS "JACK_INCLUDE_DIRS=${JACK_INCLUDE_DIRS}")
++            include_directories(${JACK_INCLUDE_DIRS})
++            link_libraries(${JACK_LINK_LIBRARIES})
+             add_definitions(-D__UNIX_JACK__)
+-        else()
+-            message(WARNING "JACK support requires the jack library!")
+         endif()
+     endif()
  
+-    message("${CMAKE_SYSTEM_NAME}")
++    message(STATUS "${CMAKE_SYSTEM_NAME}")
+     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+     find_package(Threads REQUIRED)
+@@ -64,7 +127,7 @@ if(REALTIME)
+     if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
+         # TODO: Finish Linux configuration, include different audio API supports
+         #==============    LINUX       ================#
+-        message("Linux DETECTED!")
++        message(STATUS "Linux DETECTED!")
+         if(ENABLE_ALSA)
+             find_package(ALSA REQUIRED)
+             if(ALSA_FOUND)
+@@ -75,7 +138,7 @@ if(REALTIME)
+         endif()
+     elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+         #==============    MAC OS    ================#
+-        message("Machintosh DETECTED!")
++        message(STATUS "Machintosh DETECTED!")
+         find_package(CoreAudio REQUIRED)
+         include_directories(${COREAUDIO_INCLUDE_DIRS})
+         add_definitions(-D__MACOSX_CORE__)
+@@ -84,32 +147,35 @@ if(REALTIME)
+         # TODO: MORE SUPPORT (e.g., MSYS)?
+         # Tested under MSYS2 with Mingw64 toolchain
+         #==============      WINDOWS      ================#
+-        message("Windows DETECTED!")
++        message(STATUS "Windows DETECTED!")
+         link_libraries(winmm ole32 wsock32)
+         add_definitions(-D__WINDOWS_MM__)
  
- $(OBJECTS) : Stk.h
-diff -pur stk-4.6.1.orig/src/RtAudio.cpp stk-4.6.1/src/RtAudio.cpp
---- stk-4.6.1.orig/src/RtAudio.cpp	2019-04-18 15:27:12.000000000 +0200
-+++ stk-4.6.1/src/RtAudio.cpp	2021-10-10 19:12:20.789465400 +0200
-@@ -43,6 +43,7 @@
+         # TODO: ASIO NOT WORKING YET
+         if(ENABLE_ASIO)
+-            message("ENALBING ASIO")
+-            include_directories("./src/include")
+-            # target_sources(stk PUBLIC "${CMAKE_SOURCE_DIR}/src/include/asio.cpp" "${CMAKE_SOURCE_DIR}/src/include/asiodrivers.cpp"
+-            #                     "${CMAKE_SOURCE_DIR}/src/include/asiolist.cpp" "${CMAKE_SOURCE_DIR}/src/include/iasiothiscallresolver.cpp")
++            message(STATUS "ENALBING ASIO")
++            if(NOT USE_SYSTEM_RTAUDIO)
++                include_directories("./src/include")
++                set(ASIO_SRC "${CMAKE_SOURCE_DIR}/src/include/asio.cpp" "${CMAKE_SOURCE_DIR}/src/include/asiodrivers.cpp"
++                             "${CMAKE_SOURCE_DIR}/src/include/asiolist.cpp" "${CMAKE_SOURCE_DIR}/src/include/iasiothiscallresolver.cpp")
++                list(APPEND STK_SRC ${ASIO_SRC})
++            endif()
+             add_definitions(-D__WINDOWS_ASIO__)
+         endif()
  
- #include "RtAudio.h"
- #include <iostream>
-+#include <cmath>
- #include <cstdlib>
- #include <cstring>
- #include <climits>
+         if(ENABLE_WASAPI)
+-            message("ENALBING WASAPI")
++            message(STATUS "ENALBING WASAPI")
+             link_libraries(mfuuid mfplat wmcodecdspuuid ksuser)
+             add_definitions(-D__WINDOWS_WASAPI__)
+         endif()
+         
+         if(ENABLE_DS)
+-            message("ENALBING Directsound")
++            message(STATUS "ENALBING Directsound")
+             link_libraries(dsound)
+             add_definitions(-D__WINDOWS_DS__)
+         endif()
+     else()
+-        message("CMAKE_SYSTEM_NAME:" ${CMAKE_SYSTEM_NAME})
++        message(STATUS "CMAKE_SYSTEM_NAME:" ${CMAKE_SYSTEM_NAME})
+         message(FATAL_ERROR "Unknown system type for realtime support.")
+     endif()
+ endif()
+@@ -122,6 +188,12 @@ endif()
+ add_definitions(-D_USE_MATH_DEFINES)
+ if(INSTALL_HEADERS)
+     file(GLOB STK_HEADERS "include/*.h")
++    if(USE_SYSTEM_RTAUDIO)
++        list(REMOVE_ITEM STK_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/RtAudio.h")
++    endif()
++    if(USE_SYSTEM_RTMIDI)
++        list(REMOVE_ITEM STK_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/RtMidi.h")
++    endif()
+     install(FILES ${STK_HEADERS} DESTINATION include/stk)
+ endif()
+ #========================================#
+@@ -146,7 +218,7 @@ endif()
+ #========= Build the examples ===========#
+ #========================================#
+ if(COMPILE_PROJECTS)
+-    message("COMPILE PROJECTS!")
++    message(STATUS "COMPILE PROJECTS!")
+     add_subdirectory(projects/examples)
+     add_subdirectory(projects/eguitar)
+     add_subdirectory(projects/demo)
+diff -pur stk-5.0.1.orig/include/Thread.h stk-5.0.1/include/Thread.h
+--- stk-5.0.1.orig/include/Thread.h	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/include/Thread.h	2025-03-16 17:04:47.741080900 +0100
+@@ -3,7 +3,7 @@
+ 
+ #include "Stk.h"
+ 
+-#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__))
++#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__MINGW32__))
+ 
+   #include <pthread.h>
+   #define THREAD_TYPE
+diff -pur stk-5.0.1.orig/projects/demo/CMakeLists.txt stk-5.0.1/projects/demo/CMakeLists.txt
+--- stk-5.0.1.orig/projects/demo/CMakeLists.txt	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/projects/demo/CMakeLists.txt	2025-03-16 17:04:47.745123200 +0100
+@@ -6,4 +6,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PR
+ 
+ add_executable(stk-demo "demo.cpp" "utilities.cpp")
+ target_include_directories(stk-demo PRIVATE "./")
+-target_link_libraries(stk-demo PUBLIC stk)
+\ Pas de fin de ligne à la fin du fichier
++target_link_libraries(stk-demo PUBLIC stk_SHARED)
+diff -pur stk-5.0.1.orig/projects/effects/CMakeLists.txt stk-5.0.1/projects/effects/CMakeLists.txt
+--- stk-5.0.1.orig/projects/effects/CMakeLists.txt	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/projects/effects/CMakeLists.txt	2025-03-16 17:04:47.760968800 +0100
+@@ -6,4 +6,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PR
+ 
+ add_executable(${PROJECT_NAME} ${EFFECTS_SRC})
+ target_include_directories(${PROJECT_NAME} PRIVATE "./")
+-target_link_libraries(${PROJECT_NAME} PUBLIC stk)
+\ Pas de fin de ligne à la fin du fichier
++target_link_libraries(${PROJECT_NAME} PUBLIC stk_SHARED)
+diff -pur stk-5.0.1.orig/projects/eguitar/CMakeLists.txt stk-5.0.1/projects/eguitar/CMakeLists.txt
+--- stk-5.0.1.orig/projects/eguitar/CMakeLists.txt	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/projects/eguitar/CMakeLists.txt	2025-03-16 17:04:47.774947900 +0100
+@@ -6,4 +6,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PR
+ 
+ add_executable(${PROJECT_NAME} ${EGUITAR_SRC})
+ target_include_directories(${PROJECT_NAME} PRIVATE "./")
+-target_link_libraries(${PROJECT_NAME} PUBLIC stk)
+\ Pas de fin de ligne à la fin du fichier
++target_link_libraries(${PROJECT_NAME} PUBLIC stk_SHARED)
+diff -pur stk-5.0.1.orig/projects/examples/CMakeLists.txt stk-5.0.1/projects/examples/CMakeLists.txt
+--- stk-5.0.1.orig/projects/examples/CMakeLists.txt	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/projects/examples/CMakeLists.txt	2025-03-16 17:04:47.778488200 +0100
+@@ -7,5 +7,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PR
+ foreach(src ${EXAMPLE_SRC})
+     get_filename_component(src_bin ${src} NAME_WE)
+     add_executable(${src_bin} ${src})
+-    target_link_libraries(${src_bin} PUBLIC stk)
++    target_link_libraries(${src_bin} PUBLIC stk_SHARED)
+ endforeach()
+diff -pur stk-5.0.1.orig/projects/ragamatic/CMakeLists.txt stk-5.0.1/projects/ragamatic/CMakeLists.txt
+--- stk-5.0.1.orig/projects/ragamatic/CMakeLists.txt	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/projects/ragamatic/CMakeLists.txt	2025-03-16 17:04:47.791641700 +0100
+@@ -6,4 +6,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PR
+ 
+ add_executable(${PROJECT_NAME} ${RAGMATIC_SRC})
+ target_include_directories(${PROJECT_NAME} PRIVATE "./")
+-target_link_libraries(${PROJECT_NAME} PUBLIC stk)
+\ Pas de fin de ligne à la fin du fichier
++target_link_libraries(${PROJECT_NAME} PUBLIC stk_SHARED)
+diff -pur stk-5.0.1.orig/src/RtAudio.cpp stk-5.0.1/src/RtAudio.cpp
+--- stk-5.0.1.orig/src/RtAudio.cpp	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/src/RtAudio.cpp	2025-03-16 17:04:47.826217000 +0100
+@@ -52,6 +52,10 @@
+ #include <locale>
+ 
+ #if defined(_WIN32)
++//avoid a warning for miss inclusion of winsock2 after windows.h
++#ifdef __MINGW32__
++#include <winsock2.h>
++#endif
+ #include <windows.h>
+ #endif
+ 
+@@ -2718,6 +2722,7 @@ static void *jackCloseStream( void *ptr
+   info->deviceDisconnected = true;
+   object->closeStream();
+   pthread_exit( NULL );
++  return NULL;
+ }
+ 
+ /*
+@@ -3178,6 +3183,7 @@ static void *jackStopStream( void *ptr )
+ 
+   object->stopStream();
+   pthread_exit( NULL );
++  return NULL;
+ }
+ 
+ bool RtApiJack :: callbackEvent( unsigned long nframes )
+diff -pur stk-5.0.1.orig/src/RtMidi.cpp stk-5.0.1/src/RtMidi.cpp
+--- stk-5.0.1.orig/src/RtMidi.cpp	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/src/RtMidi.cpp	2025-03-16 17:04:47.865516600 +0100
+@@ -73,6 +73,11 @@
+ // Default for Windows is to add an identifier to the port names; this
+ // flag can be defined (e.g. in your project file) to disable this behaviour.
+ //#define RTMIDI_DO_NOT_ENSURE_UNIQUE_PORTNAMES
++//avoid a warning for miss inclusion of winsock2 after windows.h
++#ifdef __MINGW32__
++#include <winsock2.h>
++#define JACK_HAS_PORT_RENAME
++#endif
+ 
+ // Default for Windows UWP is to enable a workaround to fix BLE-MIDI IN ports'
+ // wrong timestamps that occur at least in Windows 10 21H2;
+diff -pur stk-5.0.1.orig/src/RtWvIn.cpp stk-5.0.1/src/RtWvIn.cpp
+--- stk-5.0.1.orig/src/RtWvIn.cpp	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/src/RtWvIn.cpp	2025-03-16 17:04:47.898030400 +0100
+@@ -82,7 +82,7 @@ RtWvIn :: RtWvIn( unsigned int nChannels
+   if ( deviceIndex == 0 )
+     parameters.deviceId = adc_.getDefaultInputDevice();
+   else {
+-    if ( deviceIndex >= deviceIds.size() )
++    if ( deviceIndex >= static_cast<int>(deviceIds.size()) )
+       handleError( "RtWvIn: Device index is invalid.", StkError::AUDIO_SYSTEM );
+     parameters.deviceId = deviceIds[deviceIndex-1];
+   }
+diff -pur stk-5.0.1.orig/src/RtWvOut.cpp stk-5.0.1/src/RtWvOut.cpp
+--- stk-5.0.1.orig/src/RtWvOut.cpp	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/src/RtWvOut.cpp	2025-03-16 17:04:47.904025500 +0100
+@@ -102,7 +102,7 @@ RtWvOut :: RtWvOut( unsigned int nChanne
+   if ( deviceIndex == 0 )
+     parameters.deviceId = dac_.getDefaultOutputDevice();
+   else {
+-    if ( deviceIndex >= deviceIds.size() )
++    if ( deviceIndex >= static_cast<int>(deviceIds.size()) )
+       handleError( "RtWvOut: Device index is invalid.", StkError::AUDIO_SYSTEM );
+     parameters.deviceId = deviceIds[deviceIndex-1];
+   }
+diff -pur stk-5.0.1.orig/src/Thread.cpp stk-5.0.1/src/Thread.cpp
+--- stk-5.0.1.orig/src/Thread.cpp	2023-08-10 22:49:35.000000000 +0200
++++ stk-5.0.1/src/Thread.cpp	2025-03-16 17:04:47.907534400 +0100
+@@ -41,7 +41,7 @@ bool Thread :: start( THREAD_FUNCTION ro
+     return false;
+   }
+ 
+-#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__))
++#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__MINGW32__))
+ 
+   if ( pthread_create(&thread_, NULL, *routine, ptr) == 0 )
+     return true;
+@@ -57,7 +57,7 @@ bool Thread :: start( THREAD_FUNCTION ro
+ 
+ bool Thread :: cancel()
+ {
+-#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__))
++#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__MINGW32__))
+ 
+   if ( pthread_cancel(thread_) == 0 ) {
+     return true;
+@@ -74,7 +74,7 @@ bool Thread :: cancel()
+ 
+ bool Thread :: wait()
+ {
+-#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__))
++#if (defined(__OS_IRIX__) || defined(__OS_LINUX__) || defined(__OS_MACOSX__) || defined(__MINGW32__))
+ 
+   if ( pthread_join(thread_, NULL) == 0 ) {
+     thread_ = 0;

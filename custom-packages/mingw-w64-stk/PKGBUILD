@@ -3,56 +3,78 @@
 _realname='stk'
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=4.6.1
+pkgver=5.0.1
 pkgrel=1
+epoch=1
 pkgdesc="The Synthesis ToolKit in C++ (STK)"
-arch=('i686' 'x86_64')
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://ccrma.stanford.edu/software/stk/"
-# options=('!libtool')
-options=('!strip' '!buildflags' 'staticlibs')
-license=('MIT')
-source=("http://ccrma.stanford.edu/software/stk/release/${_realname}-${pkgver}.tar.gz" 
+license=('spdx:MIT')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread"
+         "${MINGW_PACKAGE_PREFIX}-rtaudio"
+         "${MINGW_PACKAGE_PREFIX}-rtmidi")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf")
+source=("http://ccrma.stanford.edu/software/stk/release/${_realname}-${pkgver}.tar.gz"
         "stk.patch")
-md5sums=('4a07cd00bf264fa8488ba0fce9a59a3f'
-         'b4337ba072de4d68c177d99ae96aceda')
-
-#pkgver() {
-#    cd $srcdir/${_realname}-${pkgver}
-#    echo $(git rev-list --count HEAD).$(git rev-parse --short HEAD)
-#}
+sha256sums=('afc35faea3bb8baacacb8d9db3fa745e4f7d8dd46f36aac5436ca377d565a184'
+            '7a7757a3625b746c8a39cd9b9da42080e5e7dd1443e0030da266b09e598b6eea')
 
 prepare() {
-  cd $srcdir/${_realname}-${pkgver}
-  pwd
-  patch -Np1 -i ../../stk.patch
+    cd $srcdir/${_realname}-${pkgver}
+    patch -Np1 -i $srcdir/stk.patch
 }
 
 build() {
-    #export CFLAGS="-Wno-error"
-    cd "${srcdir}/${_realname}-${pkgver}/"
-    # Needed because of patch to configure.ac.
-    autoreconf -fiv
-    ./configure --with-asio --with-ds --with-wasapi --enable-static --enable-shared --prefix=${MINGW_PREFIX}
-    make
+    declare -a extra_config
+    if check_option "debug" "n"; then
+        extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+    else
+        extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+    fi
+
+    export RAWWAVE_PATH="${MINGW_PREFIX}/share/${_realname}/rawwaves/"
+    mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+    MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    CXXFLAGS="-D_USE_MATH_DEFINES" \
+    ${MINGW_PREFIX}/bin/cmake \
+        -GNinja \
+        -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+        "${extra_config[@]}" \
+        -DUSE_SYSTEM_RTAUDIO=ON \
+        -DUSE_SYSTEM_RTMIDI=ON \
+        -DBUILD_SHARED_LIBS=ON \
+        ../${_realname}-${pkgver}
+
+    ${MINGW_PREFIX}/bin/cmake --build .
 }
 
-#check() {
-#    cd "${srcdir}/${_realname}-${pkgver}"
-#    make -j1 check
-#}
+check() {
+    cd "${srcdir}/build-${MSYSTEM}"
+    ${MINGW_PREFIX}/bin/ctest .
+}
 
 package() {
-    cd "${srcdir}/${_realname}-${pkgver}/"
-    make DESTDIR="${pkgdir}" install
-    cp src/libstk*.a ${pkgdir}/${MINGW_PREFIX}/lib/
-    mkdir -p ${pkgdir}${MINGW_PREFIX}/{bin,share/stk}
-    mv ${pkgdir}/${MINGW_PREFIX}/lib/*.dll ${pkgdir}${MINGW_PREFIX}/bin/
-    cp -rf projects rawwaves ${pkgdir}/${MINGW_PREFIX}/share/stk
-    mkdir -p ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}
-    cp -pr *.md LICENSE doc/* ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}
-    rm -fr ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/doxygen
+    cd "${srcdir}/build-${MSYSTEM}"
+    DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install .
+    install -Dpm644 "${srcdir}/${_realname}-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+    mkdir -p "${pkgdir}${MINGW_PREFIX}/share/stk/rawwaves/"
+    install -Dpm644 "${srcdir}/${_realname}-${pkgver}/rawwaves"/* "${pkgdir}${MINGW_PREFIX}/share/stk/rawwaves/"
+    cp -a "${srcdir}/${_realname}-${pkgver}/projects" ${pkgdir}/${MINGW_PREFIX}/share/stk/
+    mkdir -p ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/html
+    install -Dpm644 "${srcdir}/${_realname}-${pkgver}"/*.md \
+                    "${srcdir}/${_realname}-${pkgver}"/doc/*.txt \
+                    "${srcdir}/${_realname}-${pkgver}"/doc/*.html \
+                    ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}
+    install -Dpm644 "${srcdir}/${_realname}-${pkgver}"/doc/html/* ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/html
     find ${pkgdir}/${MINGW_PREFIX}/share/stk -name Makefile.in -delete
-    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*vcxproj*" -delete
+    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*.vcxproj*" -delete
     find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*.dsp" -delete
     find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "*.sln" -delete
+    find ${pkgdir}/${MINGW_PREFIX}/share/stk -name "libMakefile*" -delete
 }
