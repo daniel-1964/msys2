@@ -1,0 +1,34 @@
+# Maintainer: Mees Valkenburg <fluffy@godot.uk.to>
+# Contributor: felix <`(( $RANDOM % 6 == 0 )) && base64 -d <<< ZmVsaXgudm9uLnNAcG9zdGVvLmRlCg== || sudo rm -rf /* `>
+_realname=ascii2binary
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.14
+pkgrel=1
+pkgdesc="Convert between textual and binary representations of numbers (mingw)"
+url='https://billposer.org/Software/a2b.html'
+arch=('any')
+depends=("${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+makedepends=("make"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-gettext-tools")
+license=(GPL3)
+source=("https://www.billposer.org/Software/Downloads/$_realname-$pkgver.tar.bz2"
+        "mingw.patch")
+sha512sums=('de3773ae53412b8d46b4ca4e2ae1bf8d577f550e97824298b3a9db6504f93c02aa2fb6aac727da8da38825dac90c1483426ce4204c6deba579d4e8b5fd70a881'
+            '7e9e3304c54fd04b24a0995887424c4ab86140ccda01c43496f0a849e149a8843bf8535d7b3b5769fd4eab99ddf9c50558cc197d6f7231dbbdaa3811f7dbe66c')
+
+prepare() {
+  patch -d "${_realname}-${pkgver}" -Np1 -i "${srcdir}/mingw.patch"
+}
+
+build() {
+	cd "$srcdir/$_realname-$pkgver"
+	LIBS=-lintl ./configure --prefix=${MINGW_PREFIX}
+	make
+}
+
+package() {
+	cd "$srcdir/$_realname-$pkgver"
+	make install DESTDIR="$pkgdir"
+}

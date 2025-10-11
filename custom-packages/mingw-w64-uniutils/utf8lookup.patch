@@ -1,0 +1,17 @@
+--- uniutils-2.27.orig/utf8lookup	2007-06-30 07:31:37.000000000 +0200
++++ uniutils-2.27/utf8lookup	2015-01-15 15:42:59.347639300 +0100
+@@ -8,9 +8,11 @@
+ #       UTF-32   name
+ #	000543   ARMENIAN CAPITAL LETTER CHEH
+ #
+-echo 0x$1 |		 # feed command-line argument to ascii2binary's stdin
+-ascii2binary -t ui |	 # convert text to unsigned integer
+-iconv -f utf32 -t utf8 | # convert utf-32 to utf-8 encoding
++[ -z $LINES ] && LINES=24
++export LINES
++echo $1 |		 # feed command-line argument to ascii2binary's stdin
++ascii2binary -b 16 -t ui |	 # convert text to unsigned integer
++iconv -f utf-32le -t utf-8 | # Convert utf-32 to utf-8 encoding
+ uniname -b -c -e -g      # feed to uniname, suppressing byte and character offsets,
+ 			 # UTF-8 encoding, and glyph
+ 

@@ -1,0 +1,30 @@
+diff -pur a/ascii2binary.c b/ascii2binary.c
+--- a/ascii2binary.c	2010-08-08 08:18:57.000000000 +0200
++++ b/ascii2binary.c	2025-10-07 17:15:35.441403500 +0200
+@@ -38,7 +38,9 @@
+ #ifdef HAVE_LOCALE_H
+ #include <locale.h>
+ #endif
++#ifndef __MINGW32__
+ #include <langinfo.h>
++#endif
+ #ifdef HAVE_LIBINTL_H
+ #include <libintl.h>
+ #else
+diff -pur a/MachineInfo.c b/MachineInfo.c
+--- a/MachineInfo.c	2010-08-30 07:11:25.000000000 +0200
++++ b/MachineInfo.c	2025-10-07 17:13:55.901801900 +0200
+@@ -31,6 +31,13 @@
+ #ifdef HAVE_SYS_TYPES_H
+ #include <sys/types.h>
+ #endif
++#ifdef __MINGW32__
++#include <stdint.h>
++typedef uint8_t u_int8_t;
++typedef uint16_t u_int16_t;
++typedef uint32_t u_int32_t;
++typedef uint64_t u_int64_t;
++#endif
+ 
+ void
+ Print_Byte_Order(void)

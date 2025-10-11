@@ -1,0 +1,128 @@
+diff -pur a/unifuzz.c b/unifuzz.c
+--- a/unifuzz.c	2025-10-07 16:05:52.192589900 +0200
++++ b/unifuzz.c	2025-10-07 15:43:31.244426700 +0200
+@@ -19,6 +19,10 @@
+ 
+ 
+ #include "config.h"
++#ifdef __MINGW32__
++#define WIN32_LEAN_AND_MEAN
++#include <windows.h>
++#endif
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <time.h>
+@@ -119,7 +123,7 @@ void EmitRandomCharacters(unsigned long
+   extern void putu8(UTF32);
+ 
+   while (k < n) {
+-    c = (UTF32) random();
++    c = (UTF32) rand();
+     if (AboveBMPP) {
+       c %=  (UNI_MAX_UTF32 + 1);
+     }
+@@ -242,6 +246,10 @@ int main (int ac, char *av[])
+   } 
+ 
+ 
++#ifdef __MINGW32__
++   SetConsoleCP(CP_UTF8);
++   SetConsoleOutputCP(CP_UTF8);
++#endif
+ #ifdef HAVE_SETLOCALE
+    setlocale(LC_ALL,"");
+ #endif
+@@ -254,7 +261,7 @@ int main (int ac, char *av[])
+   if (SpecificStringsP) EmitSpecificStrings(AboveBMPP);
+   if (ScanRangesP) EmitAllRanges(AboveBMPP);
+   if(RandomCharactersToEmit) {
+-    srandom(Seed);
++    srand(Seed);
+     if(VerboseP) fprintf(stderr,"Generating %d random characters.\n",RandomCharactersToEmit);
+     printf("Seed = %u\n",Seed);
+     EmitRandomCharacters(RandomCharactersToEmit,AboveBMPP);
+diff -pur a/unihist.c b/unihist.c
+--- a/unihist.c	2020-11-20 09:28:53.000000000 +0100
++++ b/unihist.c	2025-10-07 15:40:34.041574000 +0200
+@@ -18,6 +18,10 @@
+  */
+ 
+ #include "config.h"
++#ifdef __MINGW32__
++#define WIN32_LEAN_AND_MEAN
++#include <windows.h>
++#endif
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+@@ -171,6 +175,10 @@ main(int ac, char **av)
+      }
+    }
+ 
++#ifdef __MINGW32__
++   SetConsoleCP(CP_UTF8);
++   SetConsoleOutputCP(CP_UTF8);
++#endif
+ #ifdef HAVE_SETLOCALE
+    setlocale(LC_ALL,"");
+ #endif
+diff -pur a/uniname.c b/uniname.c
+--- a/uniname.c	2025-10-07 16:05:52.253730300 +0200
++++ b/uniname.c	2025-10-07 15:26:03.770338200 +0200
+@@ -21,6 +21,10 @@
+  */
+ 
+ #include "config.h"
++#ifdef __MINGW32__
++#define WIN32_LEAN_AND_MEAN
++#include <windows.h>
++#endif
+ #include <ctype.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -310,6 +314,15 @@ int main (int ac, char *av[])
+   Current_Char_Offset = 0L;
+   Maximum_Known_Code = Offset_Table[Offset_Entries-1].e;
+ 
++#ifdef __MINGW32__
++  CONSOLE_SCREEN_BUFFER_INFO csbi;
++  HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
++  if (GetConsoleScreenBufferInfo(hConsole, &csbi)) {
++    Screen_Lines = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
++  }
++  SetConsoleCP(CP_UTF8);
++  SetConsoleOutputCP(CP_UTF8);
++#endif
+ #ifdef HAVE_SETLOCALE
+    setlocale(LC_ALL,"");
+ #endif
+diff -pur a/unisurrogate.c b/unisurrogate.c
+--- a/unisurrogate.c	2025-10-07 16:05:52.303239700 +0200
++++ b/unisurrogate.c	2025-10-07 10:07:13.886959000 +0200
+@@ -1,3 +1,4 @@
++#include <stdint.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <errno.h>
+@@ -27,11 +28,10 @@ ShowUsage(void){
+ }
+ 
+ int main(int ac, char **av) {
+-  u_int32_t cp, cpi, high, low;
++  uint32_t cp, cpi, high, low;
+   char *istr;
+   char *endptr;
+ 
+-  extern int errno;
+ 
+   if (ac != 2) {
+     ShowUsage(); exit(1);
+@@ -47,7 +47,7 @@ int main(int ac, char **av) {
+   istr = av[1];
+   if( (istr[0] == 'U') && (istr[1] == '+')) istr = istr+2;
+   errno=0;
+-  cp = (u_int32_t) strtoull(istr,&endptr,16);
++  cp = (uint32_t) strtoull(istr,&endptr,16);
+   if( (errno != 0) || (*endptr != '\0')){
+     fprintf(stderr,"%s is not a valid codepoint.\n",istr);
+     exit(2);

