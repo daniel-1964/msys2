@@ -8,7 +8,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
-pkgver=4.1.6
+pkgver=4.2
 pkgrel=1
 pkgdesc="Provides a Python package for performing high-precision astronomy computations. (mingw-64)"
 arch=('any')
@@ -22,8 +22,15 @@ depends=("${MINGW_PACKAGE_PREFIX}-python")
 makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools"
              "${MINGW_PACKAGE_PREFIX}-cc")
 options=(!emptydirs)
-source=("${_realname}-${pkgver}.tar.gz::https://github.com/brandon-rhodes/${_realname}/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('d7a4b3b30e1ae5341d7f70567fc3928d39f447de875790cd839ae09ebf3453b3')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/brandon-rhodes/${_realname}/archive/refs/tags/${pkgver}.tar.gz"
+        "pyephem.patch")
+sha256sums=('9899940b6185642fc842ad63b98c21fafbb1c9ad4a9448c201c73e075a767b0a'
+            '1bdb7f7e0c9e67d4208ac77a3975102d0b639dc9e7f60ad1aa9a0e3c5d9ecdeb')
+
+prepare() {
+    > "${srcdir}/${_realname}-${pkgver}/pyproject.toml"
+    patch -d "${srcdir}/${_realname}-${pkgver}" -Np1 -i "${srcdir}/pyephem.patch"
+}
 
 build() {
   cd "${srcdir}"

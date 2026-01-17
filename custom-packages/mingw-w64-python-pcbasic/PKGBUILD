@@ -13,6 +13,7 @@ license=('GPLV3+')
 depends=("${MINGW_PACKAGE_PREFIX}-python"
          "${MINGW_PACKAGE_PREFIX}-python-importlib_resources"
          "${MINGW_PACKAGE_PREFIX}-python-pyserial"
+         "${MINGW_PACKAGE_PREFIX}-python-standard-aifc"
          "${MINGW_PACKAGE_PREFIX}-SDL2"
          "${MINGW_PACKAGE_PREFIX}-SDL2_gfx")
 makedepends=("${MINGW_PACKAGE_PREFIX}-python-build"
