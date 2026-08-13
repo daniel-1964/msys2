@@ -1,0 +1,177 @@
+README for fortunes-quotation-fr
+--------------------------------
+
+This package contains French Fortunes for GNU/Linux. They are all in French
+languages, so this package is interesting for people who know French language.
+
+Therefore, any further information will be provided in French. However, please
+note that an English version of the license is provided in the file COPYING.
+
+------------------------------------------------------------------------------
+ QU'EST CE QUE C'EST ?
+------------------------------------------------------------------------------
+
+Le programme fortune, disponible sous GNU/Linux mais qui provient à l'origine
+du monde BSD, permet d'afficher aléatoirement des citations.
+
+fortunes-quotation-fr est une base de  donnée pour le programme fortune,
+qui regroupe 31467  citations en français provenant  de différents sites
+web de citations.
+
+------------------------------------------------------------------------------
+
+Un exemple ?
+
+Toute naïveté court le risque d’un ridicule et n’en mérite aucun. - Dans
+toute naïveté,  il y  a confiance  sans réflexion.  - Toute  naïveté est
+témoignage d’innocence.
+
+        -+- Joseph JOUBERT --> Carnets <20 février 1804 t.1 p.608> -+-
+
+------------------------------------------------------------------------------
+
+Les citations sont réparties dans différents fichiers, qui correspondent
+chacun à un site web référencé ci-après. Il est donc possible d'afficher
+uniquement les citations provenant d'un site web particulier.
+Voici la  liste des  différents site  web qui  ont permis  de constituer
+cette collection :
+
+Nom             Nombre  URL Description
+Aphorismes-*      583   (1) Ensemble d'aphorismes célèbres ou anonymes
+bribes           4750   (2) Dictionnaire de citations célèbres avec notes circonstanciées.
+citations         364   n/a Ensemble de citations trouvées sur un CD de freeware des années 90.
+Dictons-et-
+Proverbes        1250   (3) Ensemble de dictons loufoques déposés par des utilisateurs.
+Perles           8174   (4) Coquilles et perles en milieu scolaire.
+Proverbes-*      4126   (5) Divers proverbes de tous pays.
+VosCitations 12220      (6) Ensemble  de citations célèbre ou anonymes déposées par les membres du site.
+
+URLs :
+1) https://aphorismeschroniques.wordpress.com
+2) http://www.bribes.org
+3) http://saintpinpinsurmoumoune.e-monsite.com/pages/les-dictons-et-proverbe-de-saint-pinpin-sur-moumoune.html
+4) http://www.perlesdeprofs.com
+5) http://proverbes.pagesperso-orange.fr
+6) http://www.vos-citations.com
+
+N.B. :
+  * L'ensemble de ces URLs sont  disponibles au moment de l'écriture de
+  ce  document. Vu  qu'il s'agit  souvent de  sites personnels,  rien ne
+  garanti que ces références seront valides dans quelques années.
+
+  * Certaines citations  ont subit des corrections  orthographiques. Des
+  fichiers patch sont  fournis pour appliquer ces  corrections à partir
+  des flux provenant des sites originaux.
+
+------------------------------------------------------------------------------
+ UTILISATION DE FORTUNES-QUOTATION-FR
+------------------------------------------------------------------------------
+
+Avant   d'utiliser   fortunes-quotation-fr,   il   faut   tout   d'abord
+l'installer. Pour cela, en tant que root exécuter la commande :
+dest=/ ./getall install
+
+Les citations seront copiées dans le répertoire
+${dest}/usr/share/fortune/fr.
+Si ça  ne vous convient  pas, veuillez modifier  les chemins en  tête du
+fichier getall.
+
+Une fois l'installation effectuée, il suffit d'exécuter le programme fortune
+pour voir apparaître une citation :
+
+$ fortune
+
+Grand diseur n’est pas grand faiseur.
+
+        -+-  Proverbe Français  -+-
+
+Cette  citation provient  du fichier  proverbes-francais. Lorsque  aucun
+fichier n'est  spécifié, la citation  est choisie au  hasard parmi
+tous les  fichiers (en tenant compte  de leurs poids respectifs).  Si au
+contraire on  souhaite choisir une citation  d'un fichier spécifique,
+il est possible de le spécifier :
+
+$ fortune dictons-et-proverbes
+
+* Les femmes tronc peuvent-elles avoir un arbre généalogique ?
+
+La liste de toutes les fichiers s'obtient avec l'option -f. Il est également
+indiqué l'origine des fichiers et leur poids relatif de citations :
+
+$ fortune -f
+   100,00% fr
+     0,96% aphorismes-celebres
+     0,90% aphorismes-maison
+    15,10% bribes
+     1,16% citations
+     3,97% dictons-et-proverbes
+    25,98% perles
+     0,06% proverbes-allemand
+     0,45% proverbes-anglais
+     0,72% proverbes-arabe
+     0,80% proverbes-chinois
+     0,39% proverbes-divers
+     0,11% proverbes-ecossais
+     0,31% proverbes-espagnol
+     0,03% proverbes-flamand
+     5,14% proverbes-francais
+     0,06% proverbes-indien
+     1,14% proverbes-italien
+     0,17% proverbes-juif
+     0,23% proverbes-occitan
+     1,01% proverbes-religieux
+     0,48% proverbes-russe
+     1,41% proverbes-saison
+     0,58% proverbes-turc
+    38,83% voscitations
+
+Pour ceux qui veulent aller plus  loin, la page man fortune(1) est d'une
+grande aide.
+
+------------------------------------------------------------------------------
+ RAJOUTER DES CITATIONS
+------------------------------------------------------------------------------
+
+Par défaut, le programme fortune va chercher ses fichiers de citation
+à partir des répertoires /usr/local/share/fortune ou /usr/share/fortune.
+Chaque  groupe de  citations est  composé de  deux fichiers,  le fichier
+source  (qui contient  les citations),  et  le fichier  de données  (qui
+contient la longueur  et la position des citations), de  même nom que le
+fichier source  avec l'extension  ".dat". Par exemple,  si "litterature"
+est un fichier  de citations, alors "litterature.dat" est  le fichier de
+données qui le décrit. La page de man strfile(8) vous en dis un peu plus
+sur l'utilité de ces fichiers.
+
+Le séparateur  de citation doit  être le  caractère %, précédé  et suivi
+d'un retour à la ligne. Ne  pas oublier de terminer la dernière citation
+par le même caractère %, sinon celle-ci ne sera pas prise en compte.
+
+Pour rajouter des citations, il faut donc éditer le fichier source, puis
+mettre à jour le fichier de données à l'aide du programme strfile.
+
+
+------------------------------------------------------------------------------
+ FORMATAGE DES CITATIONS
+------------------------------------------------------------------------------
+
+Cette partie décrit le format des citations dans la base de données, afin
+de rendre plus facile sa maintenance, mais ce ne sont pas des règles
+absolues :
+
+ - Toutes les citations sont passées  au travers du filtre correctypo.pl
+   afin de garantir que les  règles typographiques du français sont bien
+   respectées.  De   plus,  ce  filtre  effectue   quelques  corrections
+   automatiques telle que oeu sera automatiquement remplacé par œu.
+
+ - Dans la mesure du possible, le nom de l'auteur de la citation doit être
+   indiqué. Il doit être placé juste après la citation, et doit être placé
+   entre deux séquences "-+-", le tout précédé par une tabulation.
+   Par exemple :
+
+	-+- Voltaire -+-
+
+ - Si le nom de l'œuvre est connu, il peut alors être précisé après le nom
+   de l'auteur, séparé par la séquence de caractères " --> ".
+   Par exemple :
+
+	-+- Voltaire --> Dictionnaire philosophique -+-

@@ -1,0 +1,32 @@
+_realname=fortunes-quotation-fr
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.1
+pkgrel=1
+pkgdesc="French fortunes cookies from various web sites of French quotations"
+arch=('any')
+url="https://github.com/daniel-1964/msys2/"
+license=('BSD')
+depends=("${MINGW_PACKAGE_PREFIX}-fortunes-fr")
+makedepends=('curl' 'gawk' 'lynx')
+source=()
+sha512sums=()
+
+prepare()
+{
+    cd $srcdir
+    cp -a ../quotations .
+}
+
+build()
+{
+    cd ${srcdir}/quotations
+    ./getall build
+}
+
+package()
+{
+    cd ${srcdir}/quotations
+    dest=${pkgdir} ./getall install
+    install -pDm644 README COPYING -t ${pkgdir}${MINGW_PREFIX}/share/doc/fortunes-fr/quotations
+}
