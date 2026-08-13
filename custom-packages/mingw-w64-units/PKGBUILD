@@ -1,7 +1,7 @@
 _realname="units"
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=2.23
+pkgver=2.27
 pkgrel=1
 pkgdesc="Console unit converter (mingw-64)"
 arch=('any')
@@ -12,8 +12,16 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-python-requests")
 optdepends=("${MINGW_PACKAGE_PREFIX}-python-requests: Update currency units")
 options=('strip' 'staticlibs' '!makeflags' '!emptydirs')
-source=("https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('d957b451245925c9e614c4513397449630eaf92bd62b8495ba09bbe351a17370')
+source=("https://ftp.gnu.org/gnu/${_realname}/${_realname}-${pkgver}.tar.gz"
+        "units.patch"
+       )
+sha256sums=('e1bbdb09672e7c08eee986749e7a1629eb84a6bdf41f5a2a79d6804444abbe10'
+            '480da8d3386744231d2039324196631eb2b1fafa5a28170d81622e43b61c3a09') 
+
+prepare() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  patch -Np1 -i "${srcdir}/units.patch"
+}
 
 build() {
   msg2 "Compile ${_realname}"

@@ -1,0 +1,27 @@
+diff -pur units-2.27.orig/units.c units-2.27/units.c
+--- units-2.27.orig/units.c	2026-03-30 02:57:15.000000000 +0200
++++ units-2.27/units.c	2026-08-13 09:01:25.525413000 +0200
+@@ -5377,12 +5377,14 @@ printversion()
+   puts("With MKS Toolkit");
+ #  endif
+ 
++#  ifdef _MSC_VER
+   if (! utf8mode) {
+     printf("To enable UTF-8: ");
+     if (! getenv(WINDOWS_TERMINAL))
+       printf("run in Windows Terminal and ");
+     printf("set code page to 65001\n");
+   }
++#  endif
+ #else
+   printf("GNU Units version %s\n%s, %s%s, locale %s\n",
+          VERSION, RVERSTR, UTF8VERSTR, utf8mode ? "" : " (disabled)", mylocale);
+@@ -7135,7 +7137,7 @@ checklocale()
+     mylocale = dupstr(temp, "(checklocale)");
+     temp = strchr(mylocale,'.');
+     if (temp)
+-      *temp = NULL;
++      *temp = '\0';
+   }
+ }
+ 
