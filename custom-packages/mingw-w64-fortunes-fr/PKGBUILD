@@ -1,0 +1,114 @@
+_realname=fortunes-fr
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.65+nmu3
+pkgrel=1
+pkgdesc="French fortunes cookies from Debian"
+arch=('any')
+url="http://fortunes-fr.org/"
+license=('BSD')
+makedepends=("${MINGW_PACKAGE_PREFIX}-recode"
+             "gawk")
+depends=("${MINGW_PACKAGE_PREFIX}-fortune-mod")
+source=("http://ftp.debian.org/debian/pool/main/f/${_realname}/${_realname}_${pkgver}.tar.gz")
+sha512sums=('1e549ab231797ca734c21a7f9cb015af3cb4f410371240737c0380e890cc7cf00f2ce90d655ad12267cd8b2c8820824271f19d78c3c3b03c7062f832ee516439')
+
+build()
+{
+    cd ${srcdir}/${_realname}-${pkgver}/fortunes-fr-0.02
+    ./configure --prefix=${MINGW_PREFIX} --with-fortunesdir=${MINGW_PREFIX}/share/fortune/fr
+    make
+    cd ${srcdir}/${_realname}-${pkgver}/linuxfr-undernet
+    tar xfz linuxfr-20020411.tar.gz
+    cd ${srcdir}/${_realname}-${pkgver}/tolkien
+    tar xfz tolkien_fr-1.6.tgz
+}
+
+package()
+{
+    cd ${srcdir}/${_realname}-${pkgver}
+    # All the fortunes are converted to the fortune format here, in
+    # order to keep the integrity of the upstream sources.
+    DST=${MINGW_PREFIX}/share/fortune/fr
+    #
+    # fortunes-fr
+    make -C fortunes-fr-0.02 install DESTDIR=${pkgdir}
+    mkdir ${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/fortunes-fr.org
+    mv -f ${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/{AUTHORS,CHANGES,COPYING,README,*.txt} ${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/fortunes-fr.org/
+    rm -f ${pkgdir}${DST}/*.dat
+    mv ${pkgdir}${DST}/GDP ${pkgdir}${DST}/gdp
+    #
+    # ellislk
+    install -pDm644 ellisllk/mauriceetpatapon -t ${pkgdir}${DST}
+    install -pDm644 ellisllk/oulipo -t ${pkgdir}${DST}
+    #
+    # GCU - Guide du Cabaliste Usenet
+    lines=$(wc -l gcu/cabale.txt | sed -e 's/gcu\/cabale.txt//g')
+    head -n $(($lines - 2)) gcu/cabale.txt | sed -e 's/^$/%/g' > ${pkgdir}${DST}/gcu
+    #
+    # GFA - Guide Fmblien Assassin
+    sed -e 's/^$/%/g' gfa/GFA > ${pkgdir}${DST}/gfa
+    #
+    # GPJ - Guide du Petit Joueur
+    (cat gpj/gpj; echo) | sed -e 's/^$/%/g' > ${pkgdir}${DST}/gpj
+    #
+    # GLP - Guide du Linuxien Pervers
+    (cat glp/glp.txt; echo) | sed -e 's/^$/%/g' > ${pkgdir}${DST}/glp
+    #
+    # La tribune de linuxfr
+    install -pDm644 tribune-linuxfr/tribune.fortune -T ${pkgdir}${DST}/tribune-linuxfr
+    #
+    # Les bonnes fortunes de J.R.R. Tolkien
+    install -pDm644 tolkien/tolkien_fr-1.6/tolkien_fr  -t ${pkgdir}${DST}
+    #
+    # Les fortunes de Multidesk OS
+    install -pDm644  multidesk/multidesk -t ${pkgdir}${DST}
+    #
+    # Les fortunes de Multidesk OS (2)
+    install -pDm644  mdos/fortunes-mdos.txt -T ${pkgdir}${DST}/multidesk2
+    #
+    # #linuxfr@Undernet
+    install -pDm644  linuxfr-undernet/linuxfr-20020411/linuxfr -T ${pkgdir}${DST}/linuxfr-undernet
+    #
+    # #debian-fr@freenode
+    install -pDm644 debian-fr/debian-fr -t ${pkgdir}${DST}
+    install -pDm644  debian/copyright  -t ${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}
+    install -pDm644  debian/changelog -t ${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}
+    cd ${pkgdir}${DST}
+    #
+    # remove "^-- $" from datafiles
+    echo -e "\nRemoving \"^-- \$\" from datafiles"
+    for file in *
+    do
+        sed -i -e '/^-- $/d' $file
+    done
+    #
+    # verify fortunes datafiles
+    echo -e "\nVerifying fortunes datafiles..."
+    for file in *
+    do
+        awk '/^%/ {
+                gsub("((.*)/)*","", FILENAME);
+                if ($0 != "%")
+                    print FILENAME"("NR") WARNING: extranumerous characters after %"
+            }
+            END {
+                if ($0 != "%")
+                    print FILENAME": ERROR: file does not end with %"
+            }' $file
+        awk '{
+                gsub("\t", "        ");
+                gsub("((.*)/)*","", FILENAME);
+                if (length($0) > 79)
+                    print FILENAME"("NR") WARNING: line too long ("length($0)" characters)"
+            }' $file
+    done
+    #
+    # recode files to UTF-8 and generate.dat files
+    for i in *
+    do
+        recode iso-8859-15..UTF-8 $i
+        touch $i.u8
+        strfile $i
+    done
+}
