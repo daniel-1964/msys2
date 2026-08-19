@@ -1,10 +1,10 @@
 # Maintainer: Martell Malone <martellmalone@gmail.com>
 
 _realname=busybox
-_tag="FRP-5467-g9376eebd8"
+_tag="FRP-6075-g169694ebd"
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.37.0
+pkgver=1.38.0
 pkgrel=1
 pkgdesc="BusyBox: The Swiss Army Knife of Embedded Linux (mingw64)"
 arch=('x86_64')
@@ -14,7 +14,7 @@ license=('GPL2')
 makedepends=('make'
              "${MINGW_PACKAGE_PREFIX}-cc")
 source=("https://github.com/rmyorston/busybox-w32/archive/refs/tags/${_tag}.tar.gz")
-sha256sums=('21fe55a824ee8e9bb1600252025276a6e72d2f3eb46096d0f6a46c7450f18cce')
+sha256sums=('aa953010f16989cec8e165c5ffddaa9f6633f65670e20d5d7678c987d776f1d7') 
 
 build() {
   cd "${srcdir}/${_realname}-w32-${_tag}"
