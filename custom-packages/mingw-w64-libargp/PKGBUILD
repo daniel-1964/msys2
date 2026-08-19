@@ -3,52 +3,62 @@
 _realname=libargp
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=20110921
-pkgrel=3
-arch=('x86_64')
+pkgver=20260115
+pkgrel=1
+arch=('any')
 pkgdesc="Interface for parsing command-line arguments (ucrt64)"
-url="https://www.gnu.org/software/libc/libc.html"
-license=('GPL' 'LGPL')
-makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-gcc")
-source=(${_realname}-${pkgver}.tar.bz2
-        ${_realname}-so.patch
-        ${_realname}-optional-variables.patch
-        README COPYING COPYING.LESSER)
-sha256sums=('775c236a0c87005e5b27779894bc82055cdb3906f7f2359cca893e803762109a'
-            'e404bd845e62c9664eac3ef020113be76a15c2b10257cbbd60531f63f0053f97'
-            '73591d22f58ff20c879d931ee116f63ff943ed10a5f1e67ff82a718131b2fbd2'
-            '975d628768674c1ebf62530c445c8b57f0d917a1782e019cf850a7baa848483e'
-            '8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903'
-            'da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768')
+url="https://www.gnu.org/software/gnulib/"
+license=('spdx:LGPL-3.0-or-later')
+makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc" git)
+_commit=e93789db7e86c51d6cb9683ea508e676a55cdefa
+source=("git+git://git.savannah.gnu.org/gnulib.git#commit=${_commit}"
+        libargp-config.patch
+        libargp-global-variables.patch
+        libargp-so.patch
+        COPYING
+        README)
+sha256sums=('a8f47c22f6c85f2c877d01e51fabdf3a209b01825e8afa5c4daf50e642f3f755'
+            'daa133c2b8cbc8218ba2c11b86783e3e5acef79f833a9e126ce86acf30336564'
+            '2ec8108e7583711768355a8d30226219cdfe1bc9a4d49d89c6c659dbfaeb2d39'
+            '5da276e3c59417e7f1611bc51101c95005f11f90dc6e022558124ddb8db1ea92'
+            'da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768'
+            '975d628768674c1ebf62530c445c8b57f0d917a1782e019cf850a7baa848483e')
 
 prepare() {
-  cd ${_realname}-${pkgver}
-  patch -p1 -i ${srcdir}/${_realname}-so.patch
-  patch -p2 -i ${srcdir}/${_realname}-optional-variables.patch
+  cd "gnulib"
+  ./gnulib-tool.sh --verbose --create-testdir --dir="${srcdir}/argp" --libtool --lib=libargp --lgpl 3 argp
+  cd "${srcdir}/argp"
 
-  autoreconf -fi
+  # from cygwin (https://cygwin.com/cgit/cygwin-packages/libargp/tree/)
+  patch -p2 -i ${srcdir}/libargp-config.patch
+  patch -p2 -i ${srcdir}/libargp-global-variables.patch
+  patch -p2 -i ${srcdir}/libargp-so.patch
+
+  autoreconf -fiv
 }
 
 build() {
   mkdir -p "${srcdir}/build-${CHOST}"
   cd "${srcdir}/build-${CHOST}"
 
-  ../${_realname}-${pkgver}/configure \
+  ../argp/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${CHOST} \
     --host=${CHOST} \
     --target=${CHOST}
 
+  cp config.h gllib/argp-config.h
   make
 }
 
 package() {
   cd "${srcdir}/build-${CHOST}"
   make DESTDIR="${pkgdir}" install
+  cp gllib/argp-config.h "${pkgdir}/${MINGW_PREFIX}/include"
 
   mkdir -p "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
   cp ${srcdir}/README "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
   mkdir -p "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
-  cp ${srcdir}/COPYING{,.LESSER} "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+  cp ${srcdir}/COPYING "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
 }
 
