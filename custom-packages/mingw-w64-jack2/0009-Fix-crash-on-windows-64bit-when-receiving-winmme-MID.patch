@@ -1,0 +1,66 @@
+From 0d730dd3567f250edaa899af906b8a8593e3492f Mon Sep 17 00:00:00 2001
+From: falkTX <falktx@falktx.com>
+Date: Sat, 28 Oct 2023 14:35:08 +0200
+Subject: [PATCH] Fix crash on windows 64bit when receiving winmme MIDI
+ messages
+
+Signed-off-by: falkTX <falktx@falktx.com>
+---
+ windows/winmme/JackWinMMEInputPort.cpp | 7 ++++---
+ windows/winmme/JackWinMMEInputPort.h   | 8 +++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/windows/winmme/JackWinMMEInputPort.cpp b/windows/winmme/JackWinMMEInputPort.cpp
+index 395980c0..df1db58e 100644
+--- a/windows/winmme/JackWinMMEInputPort.cpp
++++ b/windows/winmme/JackWinMMEInputPort.cpp
+@@ -35,8 +35,9 @@ using Jack::JackWinMMEInputPort;
+ 
+ void CALLBACK
+ JackWinMMEInputPort::HandleMidiInputEvent(HMIDIIN handle, UINT message,
+-                                          DWORD port, DWORD param1,
+-                                          DWORD param2)
++                                          DWORD_PTR port,
++                                          DWORD_PTR param1,
++                                          DWORD_PTR param2)
+ {
+     ((JackWinMMEInputPort *) port)->ProcessWinMME(message, param1, param2);
+ }
+@@ -201,7 +202,7 @@ JackWinMMEInputPort::ProcessJack(JackMidiBuffer *port_buffer,
+ }
+ 
+ void
+-JackWinMMEInputPort::ProcessWinMME(UINT message, DWORD param1, DWORD param2)
++JackWinMMEInputPort::ProcessWinMME(UINT message, DWORD_PTR param1, DWORD_PTR param2)
+ {
+     set_threaded_log_function();
+     switch (message) {
+diff --git a/windows/winmme/JackWinMMEInputPort.h b/windows/winmme/JackWinMMEInputPort.h
+index 74571068..98f8a18a 100644
+--- a/windows/winmme/JackWinMMEInputPort.h
++++ b/windows/winmme/JackWinMMEInputPort.h
+@@ -33,8 +33,10 @@ namespace Jack {
+     private:
+ 
+         static void CALLBACK
+-        HandleMidiInputEvent(HMIDIIN handle, UINT message, DWORD port,
+-                             DWORD param1, DWORD param2);
++        HandleMidiInputEvent(HMIDIIN handle, UINT message,
++                             DWORD_PTR port,
++                             DWORD_PTR param1,
++                             DWORD_PTR param2);
+ 
+         void
+         EnqueueMessage(DWORD timestamp, size_t length, jack_midi_data_t *data);
+@@ -43,7 +45,7 @@ namespace Jack {
+         GetInErrorString(MMRESULT error, LPTSTR text);
+ 
+         void
+-        ProcessWinMME(UINT message, DWORD param1, DWORD param2);
++        ProcessWinMME(UINT message, DWORD_PTR param1, DWORD_PTR param2);
+ 
+         void
+         WriteInError(const char *jack_func, const char *mm_func,
+-- 
+2.43.0
+
